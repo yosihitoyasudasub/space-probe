@@ -1,0 +1,36 @@
+{
+  "name": "space-probe-game-next",
+  "version": "1.0.0",
+  "description": "A space probe game built with React and Next.js using Three.js for 3D rendering.",
+  "main": "src/app/page.tsx",
+  "scripts": {
+    "dev": "next dev",
+    "test": "vitest",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "three": "^0.160.0"
+  },
+  "devDependencies": {
+    "@types/node": "24.9.1",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "eslint": "latest",
+    "eslint-config-next": "latest",
+    "typescript": "latest",
+    "vitest": "^3.2.4"
+  },
+  "keywords": [
+    "nextjs",
+    "react",
+    "threejs",
+    "game"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}

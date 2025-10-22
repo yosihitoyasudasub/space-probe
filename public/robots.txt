@@ -1,0 +1,8 @@
+User's request for the contents of the file: /space-probe-game-next/space-probe-game-next/public/robots.txt
+
+User's project specification indicates that this file is used to control how search engines index the site. Here is the content for the robots.txt file:
+
+User-agent: *
+Disallow: /api/
+Disallow: /private/
+Allow: /

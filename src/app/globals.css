@@ -1,0 +1,121 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Courier New', monospace;
+    background: #000;
+    overflow: hidden;
+    color: #0f0;
+}
+
+#gameCanvas {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+}
+
+#ui {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 15px;
+    border: 2px solid #0f0;
+    border-radius: 5px;
+    font-size: 14px;
+    max-width: 300px;
+    z-index: 10;
+}
+
+#ui h2 {
+    margin-bottom: 10px;
+    color: #0ff;
+    font-size: 18px;
+}
+
+#ui p {
+    margin: 5px 0;
+    line-height: 1.4;
+}
+
+.stat-label {
+    color: #0ff;
+    display: inline-block;
+    width: 120px;
+}
+
+.stat-value {
+    color: #0f0;
+    font-weight: bold;
+}
+
+#controls {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    left: auto;
+    bottom: auto;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 15px;
+    border: 2px solid #0f0;
+    border-radius: 5px;
+    font-size: 12px;
+    z-index: 10;
+}
+
+#controls h3 {
+    color: #0ff;
+    margin-bottom: 10px;
+}
+
+#controls p {
+    margin: 3px 0;
+    color: #0f0;
+}
+
+#message {
+    position: absolute;
+    top: 120px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    padding: 20px 30px;
+    border: 3px solid #0f0;
+    border-radius: 10px;
+    font-size: 18px;
+    color: #0f0;
+    display: none;
+    text-align: center;
+    z-index: 100;
+    max-width: 400px;
+}
+
+.success {
+    border-color: #0f0 !important;
+    color: #0f0 !important;
+}
+
+.warning {
+    border-color: #ff0 !important;
+    color: #ff0 !important;
+}
+
+#trajectory {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 15px;
+    border: 2px solid #0f0;
+    border-radius: 5px;
+    font-size: 12px;
+    z-index: 10;
+}
+
+#trajectory h3 {
+    color: #0ff;
+    margin-bottom: 10px;
+}

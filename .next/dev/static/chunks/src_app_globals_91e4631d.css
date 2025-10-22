@@ -1,0 +1,121 @@
+/* [project]/src/app/globals.css [app-client] (css) */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  color: #0f0;
+  background: #000;
+  font-family: Courier New, monospace;
+  overflow: hidden;
+}
+
+#gameCanvas {
+  width: 100vw;
+  height: 100vh;
+  display: block;
+}
+
+#ui {
+  z-index: 10;
+  background: #000c;
+  border: 2px solid #0f0;
+  border-radius: 5px;
+  max-width: 300px;
+  padding: 15px;
+  font-size: 14px;
+  position: absolute;
+  top: 20px;
+  left: 20px;
+}
+
+#ui h2 {
+  color: #0ff;
+  margin-bottom: 10px;
+  font-size: 18px;
+}
+
+#ui p {
+  margin: 5px 0;
+  line-height: 1.4;
+}
+
+.stat-label {
+  color: #0ff;
+  width: 120px;
+  display: inline-block;
+}
+
+.stat-value {
+  color: #0f0;
+  font-weight: bold;
+}
+
+#controls {
+  z-index: 10;
+  background: #000c;
+  border: 2px solid #0f0;
+  border-radius: 5px;
+  padding: 15px;
+  font-size: 12px;
+  position: absolute;
+  inset: 20px 20px auto auto;
+}
+
+#controls h3 {
+  color: #0ff;
+  margin-bottom: 10px;
+}
+
+#controls p {
+  color: #0f0;
+  margin: 3px 0;
+}
+
+#message {
+  color: #0f0;
+  text-align: center;
+  z-index: 100;
+  background: #000000e6;
+  border: 3px solid #0f0;
+  border-radius: 10px;
+  max-width: 400px;
+  padding: 20px 30px;
+  font-size: 18px;
+  display: none;
+  position: absolute;
+  top: 120px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.success {
+  color: #0f0 !important;
+  border-color: #0f0 !important;
+}
+
+.warning {
+  color: #ff0 !important;
+  border-color: #ff0 !important;
+}
+
+#trajectory {
+  z-index: 10;
+  background: #000c;
+  border: 2px solid #0f0;
+  border-radius: 5px;
+  padding: 15px;
+  font-size: 12px;
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
+#trajectory h3 {
+  color: #0ff;
+  margin-bottom: 10px;
+}
+
+/*# sourceMappingURL=src_app_globals_91e4631d.css.map*/

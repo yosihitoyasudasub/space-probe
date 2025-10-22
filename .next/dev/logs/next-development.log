@@ -1,0 +1,337 @@
+[00:00:08.094] Server  LOG      ✓ Ready in 5.4s
+[00:01:44.708] Server  LOG      ○ Compiling / ...
+[00:01:52.005] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:01:53.562] Browser LOG     COM-zero velocity applied, offset: -0.157429 0.000000 -0.160558
+[00:01:53.562] Browser LOG     COM-zero position applied: 17.146 0.000 -42.938
+[00:03:25.719] Browser LOG     COM-zero velocity applied, offset: -0.157429 0.000000 -0.160558
+[00:03:25.719] Browser LOG     COM-zero position applied: 17.146 0.000 -42.938
+[00:03:29.537] Browser LOG     COM-zero velocity applied, offset: -0.157429 0.000000 -0.160558
+[00:03:29.537] Browser LOG     COM-zero position applied: 17.146 0.000 -42.938
+[00:03:36.313] Browser LOG     COM-zero velocity applied, offset: -0.157429 0.000000 -0.160558
+[00:03:36.313] Browser LOG     COM-zero position applied: 17.146 0.000 -42.938
+[00:03:44.678] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:03:45.113] Browser LOG     COM-zero velocity applied, offset: -0.157429 0.000000 -0.160558
+[00:03:45.113] Browser LOG     COM-zero position applied: 17.146 0.000 -42.938
+[00:04:25.349] Browser LOG     COM-zero velocity applied, offset: -0.125158 0.000000 -0.127645
+[00:04:25.349] Browser LOG     COM-zero position applied: 10.379 0.000 -25.991
+[00:29:12.030] Server  LOG      ✓ Compiled in 206ms
+[00:30:12.528] Server  LOG      ✓ Compiled in 40ms
+[00:31:13.135] Server  LOG      ✓ Compiled in 29ms
+[00:31:45.932] Server  LOG      ✓ Compiled in 182ms
+[00:31:46.560] Browser LOG     COM-zero velocity applied, offset: -0.006987 0.000000 -0.007126
+[00:31:46.560] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[00:32:28.169] Server  LOG      ✓ Compiled in 20ms
+[00:33:20.906] Server  LOG      ✓ Compiled in 33ms
+[00:33:21.565] Browser LOG     COM-zero velocity applied, offset: -0.006987 0.000000 -0.007126
+[00:33:21.566] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[00:37:10.105] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:37:10.372] Browser LOG     COM-zero velocity applied, offset: -0.006987 0.000000 -0.007126
+[00:37:10.373] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[00:37:20.013] Browser LOG     Swing-by detected at t=9.63: probe around Venus deltaV=0.010
+[00:37:20.416] Browser LOG     Swing-by detected at t=10.03: probe around Venus deltaV=0.012
+[00:37:20.814] Browser LOG     Swing-by detected at t=10.43: probe around Venus deltaV=0.014
+[00:37:21.214] Browser LOG     Swing-by detected at t=10.83: probe around Venus deltaV=0.016
+[00:37:21.614] Browser LOG     Swing-by detected at t=11.23: probe around Venus deltaV=0.017
+[00:37:22.014] Browser LOG     Swing-by detected at t=11.63: probe around Venus deltaV=0.019
+[00:37:22.414] Browser LOG     Swing-by detected at t=12.03: probe around Venus deltaV=0.020
+[00:38:18.632] Browser LOG     Swing-by detected at t=68.23: probe around star deltaV=0.695
+[00:38:30.461] Browser LOG     Swing-by detected at t=80.08: probe around star deltaV=0.724
+[00:38:42.069] Browser LOG     Swing-by detected at t=91.68: probe around star deltaV=2.341
+[00:38:53.163] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:38:53.415] Browser LOG     COM-zero velocity applied, offset: -0.006987 0.000000 -0.007126
+[00:38:53.415] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[00:39:03.050] Browser LOG     Swing-by detected at t=9.63: probe around Venus deltaV=0.010
+[00:39:03.450] Browser LOG     Swing-by detected at t=10.03: probe around Venus deltaV=0.012
+[00:39:03.852] Browser LOG     Swing-by detected at t=10.43: probe around Venus deltaV=0.014
+[00:39:04.251] Browser LOG     Swing-by detected at t=10.83: probe around Venus deltaV=0.016
+[00:39:04.651] Browser LOG     Swing-by detected at t=11.23: probe around Venus deltaV=0.017
+[00:39:05.051] Browser LOG     Swing-by detected at t=11.63: probe around Venus deltaV=0.019
+[00:39:05.451] Browser LOG     Swing-by detected at t=12.03: probe around Venus deltaV=0.020
+[00:40:18.235] Browser LOG     Swing-by detected at t=84.82: probe around star deltaV=2.404
+[00:41:34.469] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:41:34.685] Browser LOG     COM-zero velocity applied, offset: -0.006987 0.000000 -0.007126
+[00:41:34.685] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[00:41:44.343] Browser LOG     Swing-by detected at t=9.63: probe around Venus deltaV=0.010
+[00:41:44.743] Browser LOG     Swing-by detected at t=10.03: probe around Venus deltaV=0.012
+[00:41:45.144] Browser LOG     Swing-by detected at t=10.43: probe around Venus deltaV=0.014
+[00:41:45.547] Browser LOG     Swing-by detected at t=10.83: probe around Venus deltaV=0.016
+[00:41:45.947] Browser LOG     Swing-by detected at t=11.23: probe around Venus deltaV=0.017
+[00:41:46.348] Browser LOG     Swing-by detected at t=11.63: probe around Venus deltaV=0.019
+[00:41:46.748] Browser LOG     Swing-by detected at t=12.03: probe around Venus deltaV=0.020
+[00:42:19.452] Browser LOG     Swing-by detected at t=44.73: probe around Venus deltaV=0.018
+[00:42:19.868] Browser LOG     Swing-by detected at t=45.15: probe around Venus deltaV=0.020
+[00:42:20.285] Browser LOG     Swing-by detected at t=45.57: probe around Venus deltaV=0.021
+[00:42:20.704] Browser LOG     Swing-by detected at t=45.98: probe around Venus deltaV=0.021
+[00:44:14.613] Browser LOG     Swing-by detected at t=159.90: probe around Mercury deltaV=0.075
+[00:44:15.016] Browser LOG     Swing-by detected at t=160.30: probe around Mercury deltaV=0.086
+[00:44:15.414] Browser LOG     Swing-by detected at t=160.70: probe around Mercury deltaV=0.085
+[00:46:17.056] Browser LOG     Swing-by detected at t=249.32: probe around Venus deltaV=0.043
+[00:46:17.462] Browser LOG     Swing-by detected at t=249.72: probe around Venus deltaV=0.052
+[00:46:17.775] Browser LOG     Swing-by detected at t=250.12: probe around Venus deltaV=0.065
+[00:46:18.284] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:46:18.499] Browser LOG     COM-zero velocity applied, offset: -0.006987 0.000000 -0.007126
+[00:46:18.499] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[00:46:32.700] Browser LOG     Swing-by detected at t=9.63: probe around Venus deltaV=0.010
+[00:46:33.099] Browser LOG     Swing-by detected at t=10.03: probe around Venus deltaV=0.012
+[00:46:33.500] Browser LOG     Swing-by detected at t=10.43: probe around Venus deltaV=0.014
+[00:46:33.898] Browser LOG     Swing-by detected at t=10.83: probe around Venus deltaV=0.016
+[00:46:34.299] Browser LOG     Swing-by detected at t=11.23: probe around Venus deltaV=0.017
+[00:46:34.701] Browser LOG     Swing-by detected at t=11.63: probe around Venus deltaV=0.019
+[00:46:35.098] Browser LOG     Swing-by detected at t=12.03: probe around Venus deltaV=0.020
+[00:46:40.118] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007158
+[00:46:40.119] Browser LOG     COM-zero position applied: 0.231 0.000 -0.578
+[00:46:40.119] Browser LOG     COM-zero velocity applied, offset: -0.009122 0.000000 -0.009303
+[00:46:40.119] Browser LOG     COM-zero position applied: 0.390 0.000 -0.977
+[00:46:40.119] Browser LOG     COM-zero velocity applied, offset: -0.017896 0.000000 -0.018251
+[00:46:40.119] Browser LOG     COM-zero position applied: 1.512 0.000 -3.785
+[00:47:48.968] Browser LOG     Swing-by detected at t=68.82: probe around star deltaV=0.350
+[00:53:17.769] Server  LOG      ✓ Compiled in 64ms
+[00:53:48.672] Server  LOG      ✓ Compiled in 110ms
+[00:56:21.737] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:56:21.975] Browser LOG     COM-zero velocity applied, offset: -0.006987 0.000000 -0.007126
+[00:56:21.975] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[00:56:29.690] Browser LOG     Swing-by detected at t=7.67: probe around Venus deltaV=0.010
+[00:56:30.076] Browser LOG     Swing-by detected at t=8.07: probe around Venus deltaV=0.013
+[00:56:30.474] Browser LOG     Swing-by detected at t=8.47: probe around Venus deltaV=0.017
+[00:56:30.879] Browser LOG     Swing-by detected at t=8.87: probe around Venus deltaV=0.020
+[00:56:31.274] Browser LOG     Swing-by detected at t=9.27: probe around Venus deltaV=0.024
+[00:56:42.174] Browser LOG     COM-zero velocity applied, offset: -0.007360 0.000000 -0.007507
+[00:56:42.174] Browser LOG     COM-zero position applied: 0.254 0.000 -0.636
+[00:56:42.174] Browser LOG     COM-zero velocity applied, offset: -0.017896 0.000000 -0.018251
+[00:56:42.174] Browser LOG     COM-zero position applied: 1.512 0.000 -3.785
+[00:57:43.107] Browser LOG     Swing-by detected at t=60.92: probe around star deltaV=0.351
+[00:58:44.365] Browser LOG     Swing-by detected at t=90.23: probe around Mercury deltaV=0.036
+[00:58:44.783] Browser LOG     Swing-by detected at t=90.65: probe around Mercury deltaV=0.052
+[00:58:45.718] Browser LOG     Swing-by detected at t=91.58: probe around star deltaV=0.371
+[00:58:46.135] Browser LOG     Swing-by detected at t=92.00: probe around star deltaV=2.864
+[01:00:05.853] Server  LOG      ✓ Compiled in 25ms
+[01:02:22.084] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[01:02:22.314] Browser LOG     COM-zero velocity applied, offset: -0.006987 0.000000 -0.007126
+[01:02:22.314] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[01:02:23.698] Browser LOG     COM-zero velocity applied, offset: -0.007127 0.000000 -0.007269
+[01:02:23.698] Browser LOG     COM-zero position applied: 0.238 0.000 -0.596
+[01:02:23.698] Browser LOG     COM-zero velocity applied, offset: -0.017896 0.000000 -0.018251
+[01:02:23.698] Browser LOG     COM-zero position applied: 1.512 0.000 -3.785
+[01:11:31.976] Server  LOG      ✓ Compiled in 144ms
+[01:11:32.547] Browser LOG     COM-zero velocity applied, offset: -0.017896 0.000000 -0.018251
+[01:11:32.547] Browser LOG     COM-zero position applied: 1.512 0.000 -3.785
+[01:13:16.415] Server  LOG      ✓ Compiled in 43ms
+[01:13:17.553] Browser LOG     COM-zero velocity applied, offset: -0.017896 0.000000 -0.018251
+[01:13:17.553] Browser LOG     COM-zero position applied: 1.512 0.000 -3.785
+[01:17:20.278] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[01:17:20.598] Browser LOG     COM-zero velocity applied, offset: -0.006987 0.000000 -0.007126
+[01:17:20.598] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[01:17:30.173] Browser LOG     Swing-by detected at t=9.63: probe around Venus deltaV=0.010
+[01:17:30.570] Browser LOG     Swing-by detected at t=10.03: probe around Venus deltaV=0.012
+[01:17:30.971] Browser LOG     Swing-by detected at t=10.43: probe around Venus deltaV=0.014
+[01:17:31.369] Browser LOG     Swing-by detected at t=10.83: probe around Venus deltaV=0.016
+[01:17:31.773] Browser LOG     Swing-by detected at t=11.23: probe around Venus deltaV=0.017
+[01:17:32.175] Browser LOG     Swing-by detected at t=11.63: probe around Venus deltaV=0.019
+[01:17:32.572] Browser LOG     Swing-by detected at t=12.03: probe around Venus deltaV=0.020
+[01:17:42.520] Browser LOG     COM-zero velocity applied, offset: -0.006929 0.000000 -0.007126
+[01:17:42.520] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[01:17:47.511] Browser LOG     COM-zero velocity applied, offset: -0.007023 0.000000 -0.007126
+[01:17:47.511] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[01:18:01.706] Browser LOG     COM-zero velocity applied, offset: -0.012186 0.000000 -0.012365
+[01:18:01.706] Browser LOG     COM-zero position applied: 0.690 0.000 -1.729
+[01:18:01.706] Browser LOG     COM-zero velocity applied, offset: -0.012775 0.000000 -0.012963
+[01:18:01.706] Browser LOG     COM-zero position applied: 0.759 0.000 -1.901
+[01:18:01.706] Browser LOG     COM-zero velocity applied, offset: -0.016444 0.000000 -0.016686
+[01:18:01.706] Browser LOG     COM-zero position applied: 1.262 0.000 -3.159
+[01:18:01.706] Browser LOG     COM-zero velocity applied, offset: -0.017987 0.000000 -0.018251
+[01:18:01.706] Browser LOG     COM-zero position applied: 1.512 0.000 -3.785
+[01:18:11.951] Browser LOG     COM-zero velocity applied, offset: -0.017873 0.000000 -0.018251
+[01:18:11.951] Browser LOG     COM-zero position applied: 1.512 0.000 -3.785
+[01:19:32.952] Browser LOG     Swing-by detected at t=79.23: probe around star deltaV=0.287
+[01:22:27.392] Server  LOG      ✓ Compiled in 76ms
+[01:22:28.549] Browser LOG     COM-zero velocity applied, offset: -0.017873 0.000000 -0.018251
+[01:22:28.549] Browser LOG     COM-zero position applied: 1.512 0.000 -3.785
+[01:22:45.670] Server  LOG      ✓ Compiled in 76ms
+[01:22:46.553] Browser LOG     COM-zero velocity applied, offset: -0.017873 0.000000 -0.018251
+[01:22:46.553] Browser LOG     COM-zero position applied: 1.512 0.000 -3.785
+[01:23:51.599] Server  LOG      ✓ Compiled in 43ms
+[01:23:52.548] Browser LOG     COM-zero velocity applied, offset: -0.017873 0.000000 -0.018251
+[01:23:52.548] Browser LOG     COM-zero position applied: 1.512 0.000 -3.785
+[01:27:49.560] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[01:27:50.008] Browser LOG     COM-zero velocity applied, offset: -0.006987 0.000000 -0.007126
+[01:27:50.008] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[01:27:59.596] Browser LOG     Swing-by detected at t=9.63: probe around Venus deltaV=0.010
+[01:27:59.996] Browser LOG     Swing-by detected at t=10.03: probe around Venus deltaV=0.012
+[01:28:00.398] Browser LOG     Swing-by detected at t=10.43: probe around Venus deltaV=0.014
+[01:28:00.796] Browser LOG     Swing-by detected at t=10.83: probe around Venus deltaV=0.016
+[01:28:01.199] Browser LOG     Swing-by detected at t=11.23: probe around Venus deltaV=0.017
+[01:28:01.600] Browser LOG     Swing-by detected at t=11.63: probe around Venus deltaV=0.019
+[01:28:02.000] Browser LOG     Swing-by detected at t=12.03: probe around Venus deltaV=0.020
+[01:38:20.309] Browser LOG     COM-zero velocity applied, offset: -0.006915 0.000000 -0.007052
+[01:38:20.309] Browser LOG     COM-zero position applied: 0.224 0.000 -0.561
+[01:38:20.309] Browser LOG     COM-zero velocity applied, offset: -0.017896 0.000000 -0.018251
+[01:38:20.309] Browser LOG     COM-zero position applied: 1.512 0.000 -3.785
+[01:44:49.158] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[01:44:49.557] Browser LOG     COM-zero velocity applied, offset: -0.006987 0.000000 -0.007126
+[01:44:49.557] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[01:44:58.592] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[01:44:58.988] Browser LOG     COM-zero velocity applied, offset: -0.006987 0.000000 -0.007126
+[01:44:58.988] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[01:45:08.609] Browser LOG     Swing-by detected at t=9.63: probe around Venus deltaV=0.010
+[01:45:09.008] Browser LOG     Swing-by detected at t=10.03: probe around Venus deltaV=0.012
+[01:45:09.408] Browser LOG     Swing-by detected at t=10.43: probe around Venus deltaV=0.014
+[01:45:09.823] Browser LOG     Swing-by detected at t=10.83: probe around Venus deltaV=0.016
+[01:45:10.213] Browser LOG     Swing-by detected at t=11.23: probe around Venus deltaV=0.017
+[01:45:10.622] Browser LOG     Swing-by detected at t=11.63: probe around Venus deltaV=0.019
+[01:45:11.014] Browser LOG     Swing-by detected at t=12.03: probe around Venus deltaV=0.020
+[04:22:15.279] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[04:22:16.022] Browser LOG     COM-zero velocity applied, offset: -0.006987 0.000000 -0.007126
+[04:22:16.022] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[04:22:25.512] Browser LOG     Swing-by detected at t=9.63: probe around Venus deltaV=0.010
+[04:22:25.883] Browser LOG     Swing-by detected at t=10.03: probe around Venus deltaV=0.012
+[04:22:26.289] Browser LOG     Swing-by detected at t=10.43: probe around Venus deltaV=0.014
+[04:22:26.703] Browser LOG     Swing-by detected at t=10.83: probe around Venus deltaV=0.016
+[04:22:27.084] Browser LOG     Swing-by detected at t=11.23: probe around Venus deltaV=0.017
+[04:22:27.557] Browser LOG     Swing-by detected at t=11.63: probe around Venus deltaV=0.019
+[04:22:27.903] Browser LOG     Swing-by detected at t=12.03: probe around Venus deltaV=0.020
+[04:22:41.798] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[04:22:42.391] Browser LOG     COM-zero velocity applied, offset: -0.006987 0.000000 -0.007126
+[04:22:42.391] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[04:22:51.917] Browser LOG     Swing-by detected at t=9.63: probe around Venus deltaV=0.010
+[04:22:52.327] Browser LOG     Swing-by detected at t=10.03: probe around Venus deltaV=0.012
+[04:22:52.724] Browser LOG     Swing-by detected at t=10.43: probe around Venus deltaV=0.014
+[04:22:53.109] Browser LOG     Swing-by detected at t=10.83: probe around Venus deltaV=0.016
+[04:22:53.503] Browser LOG     Swing-by detected at t=11.23: probe around Venus deltaV=0.017
+[04:22:53.903] Browser LOG     Swing-by detected at t=11.63: probe around Venus deltaV=0.019
+[04:22:54.305] Browser LOG     Swing-by detected at t=12.03: probe around Venus deltaV=0.020
+[04:28:14.681] Browser LOG     Swing-by detected at t=72.68: probe around Earth deltaV=0.010
+[04:28:15.087] Browser LOG     Swing-by detected at t=73.10: probe around Earth deltaV=0.011
+[04:28:15.481] Browser LOG     Swing-by detected at t=73.52: probe around Earth deltaV=0.011
+[04:28:15.900] Browser LOG     Swing-by detected at t=73.93: probe around Earth deltaV=0.012
+[04:28:16.320] Browser LOG     Swing-by detected at t=74.35: probe around Earth deltaV=0.013
+[04:28:16.725] Browser LOG     Swing-by detected at t=74.77: probe around Earth deltaV=0.014
+[04:28:17.154] Browser LOG     Swing-by detected at t=75.18: probe around Earth deltaV=0.014
+[04:33:44.500] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[04:33:45.096] Browser LOG     COM-zero velocity applied, offset: -0.006987 0.000000 -0.007126
+[04:33:45.096] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[04:33:54.609] Browser LOG     Swing-by detected at t=9.63: probe around Venus deltaV=0.010
+[04:33:55.008] Browser LOG     Swing-by detected at t=10.03: probe around Venus deltaV=0.012
+[04:33:55.432] Browser LOG     Swing-by detected at t=10.43: probe around Venus deltaV=0.014
+[04:33:55.829] Browser LOG     Swing-by detected at t=10.83: probe around Venus deltaV=0.015
+[04:33:56.204] Browser LOG     Swing-by detected at t=11.23: probe around Venus deltaV=0.016
+[04:33:56.606] Browser LOG     Swing-by detected at t=11.63: probe around Venus deltaV=0.016
+[04:33:56.997] Browser LOG     Swing-by detected at t=12.03: probe around Venus deltaV=0.015
+[04:33:57.391] Browser LOG     Swing-by detected at t=12.43: probe around Venus deltaV=0.012
+[04:34:32.067] Server  LOG      ✓ Compiled in 237ms
+[04:34:32.611] Browser LOG     COM-zero velocity applied, offset: -0.006987 0.000000 -0.007126
+[04:34:32.611] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[04:34:47.661] Browser LOG     Swing-by detected at t=9.63: probe around Venus deltaV=0.010
+[04:34:48.051] Browser LOG     Swing-by detected at t=10.03: probe around Venus deltaV=0.012
+[04:34:48.470] Browser LOG     Swing-by detected at t=10.43: probe around Venus deltaV=0.014
+[04:34:48.897] Browser LOG     Swing-by detected at t=10.83: probe around Venus deltaV=0.016
+[04:34:49.273] Browser LOG     Swing-by detected at t=11.23: probe around Venus deltaV=0.017
+[04:34:49.693] Browser LOG     Swing-by detected at t=11.63: probe around Venus deltaV=0.018
+[04:34:50.088] Browser LOG     Swing-by detected at t=12.03: probe around Venus deltaV=0.019
+[04:43:21.468] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[04:43:22.024] Browser LOG     COM-zero velocity applied, offset: -0.006987 0.000000 -0.007126
+[04:43:22.024] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[04:43:31.543] Browser LOG     Swing-by detected at t=9.63: probe around Venus deltaV=0.010
+[04:43:31.924] Browser LOG     Swing-by detected at t=10.03: probe around Venus deltaV=0.012
+[04:43:32.330] Browser LOG     Swing-by detected at t=10.43: probe around Venus deltaV=0.014
+[04:43:32.724] Browser LOG     Swing-by detected at t=10.83: probe around Venus deltaV=0.016
+[04:43:33.125] Browser LOG     Swing-by detected at t=11.23: probe around Venus deltaV=0.017
+[04:43:33.523] Browser LOG     Swing-by detected at t=11.63: probe around Venus deltaV=0.019
+[04:43:33.925] Browser LOG     Swing-by detected at t=12.03: probe around Venus deltaV=0.020
+[04:51:34.011] Server  LOG      ✓ Compiled in 324ms
+[04:51:34.586] Browser LOG     COM-zero velocity applied, offset: -0.007016 0.000000 -0.007126
+[04:51:34.586] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[04:51:56.046] Server  LOG      ✓ Compiled in 108ms
+[04:51:56.581] Browser LOG     COM-zero velocity applied, offset: -0.007016 0.000000 -0.007126
+[04:51:56.581] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[04:52:19.824] Server  LOG      ✓ Compiled in 85ms
+[04:52:34.622] Server  LOG      ✓ Compiled in 222ms
+[04:53:20.530] Server  LOG      ✓ Compiled in 56ms
+[04:53:21.589] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
+[04:53:21.590] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[05:08:30.949] Server  LOG      ✓ Compiled in 154ms
+[05:08:31.559] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
+[05:08:31.559] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[05:09:14.902] Server  LOG      ✓ Compiled in 332ms
+[05:09:28.305] Server  LOG      ✓ Compiled in 52ms
+[05:13:46.755] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[05:13:47.486] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
+[05:13:47.486] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[05:17:37.524] Server  LOG      ✓ Compiled in 23ms
+[05:17:58.734] Server  LOG      ✓ Compiled in 34ms
+[05:18:40.931] Server  LOG      ✓ Compiled in 30ms
+[05:18:41.550] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
+[05:18:41.550] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[05:19:21.094] Server  LOG      ✓ Compiled in 42ms
+[05:19:21.548] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
+[05:19:21.548] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[05:19:51.623] Server  LOG      ✓ Compiled in 49ms
+[05:20:06.865] Server  LOG      ✓ Compiled in 43ms
+[05:20:23.895] Server  LOG      ✓ Compiled in 32ms
+[05:20:43.133] Server  LOG      ✓ Compiled in 62ms
+[05:20:43.558] Browser ERROR   The final argument passed to %s changed size between renders. The order and size of this array must remain constant.
+
+Previous: %s
+Incoming: %s useEffect [[object Object], 1.05, 0.133, 333000] [[object Object], 1.05, 0.133, 333000, free]
+[05:21:36.115] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[05:21:36.479] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
+[05:21:36.479] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[05:21:40.916] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
+[05:21:40.916] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[05:21:43.713] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
+[05:21:43.713] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[05:25:12.966] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
+[05:25:12.966] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[05:25:19.915] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
+[05:25:19.915] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[05:25:21.973] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
+[05:25:21.973] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[05:25:26.845] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
+[05:25:26.845] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[05:25:31.681] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
+[05:25:31.682] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[05:28:56.622] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
+[05:28:56.622] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[05:28:59.592] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[05:28:59.928] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
+[05:28:59.928] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[05:29:02.960] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
+[05:29:02.960] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[05:31:43.798] Server  LOG      ✓ Compiled in 48ms
+[05:32:12.506] Server  LOG      ✓ Compiled in 73ms
+[05:32:13.605] Browser ERROR   The final argument passed to %s changed size between renders. The order and size of this array must remain constant.
+
+Previous: %s
+Incoming: %s useEffect [[object Object], 1.05, 0.133, 333000, free] [[object Object], 1.05, 0.133, 333000]
+[05:32:31.494] Server  LOG      ✓ Compiled in 60ms
+[05:32:32.547] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
+[05:32:32.547] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[05:33:04.632] Server  LOG      ✓ Compiled in 30ms
+[05:33:58.984] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[05:33:59.276] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
+[05:33:59.277] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[05:34:46.422] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
+[05:34:46.422] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[05:34:54.657] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
+[05:34:54.657] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[05:34:58.936] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
+[05:34:58.937] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[05:49:46.013] Server  LOG      ✓ Compiled in 96ms
+[05:49:46.551] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
+[05:49:46.551] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[05:50:22.117] Server  LOG      ✓ Compiled in 56ms
+[05:51:04.623] Server  LOG      ✓ Compiled in 45ms
+[05:51:05.551] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
+[05:51:05.551] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[05:51:18.441] Server  LOG      ✓ Compiled in 26ms
+[05:51:45.626] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[05:51:45.931] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
+[05:51:45.931] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[06:04:45.343] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[06:04:45.991] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
+[06:04:45.992] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[06:10:26.219] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[06:10:26.674] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
+[06:10:26.674] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[06:15:14.111] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[06:15:14.633] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
+[06:15:14.633] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
