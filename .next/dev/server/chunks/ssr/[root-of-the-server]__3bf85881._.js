@@ -193,7 +193,9 @@ __turbopack_context__.s([
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/three/build/three.module.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$examples$2f$jsm$2f$controls$2f$OrbitControls$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/three/examples/jsm/controls/OrbitControls.js [app-ssr] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$examples$2f$jsm$2f$loaders$2f$GLTFLoader$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/three/examples/jsm/loaders/GLTFLoader.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$physics$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/physics.ts [app-ssr] (ecmascript)");
+;
 ;
 ;
 ;
@@ -218,6 +220,137 @@ const PHYSICS_SCALE = {
     FUEL_CONSUMPTION_RATE: 1.0
 };
 const DEFAULT_G = PHYSICS_SCALE.G;
+// ====================================================================
+// Probe Model Creation Functions
+// ====================================================================
+/**
+ * Create a Voyager-style probe using Three.js primitives
+ */ function createVoyagerProbe() {
+    const probe = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Group"]();
+    // Main body (10-sided cylinder approximation)
+    const bodyGeom = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CylinderGeometry"](0.5, 0.5, 0.4, 10);
+    const bodyMat = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["MeshStandardMaterial"]({
+        color: 0xcccccc,
+        metalness: 0.6,
+        roughness: 0.4
+    });
+    const body = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Mesh"](bodyGeom, bodyMat);
+    body.rotation.x = Math.PI / 2;
+    probe.add(body);
+    // Parabolic antenna (dish)
+    const dishGeom = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CylinderGeometry"](1.2, 1.2, 0.1, 32);
+    const dishMat = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["MeshStandardMaterial"]({
+        color: 0xeeeeee,
+        metalness: 0.8,
+        roughness: 0.2
+    });
+    const dish = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Mesh"](dishGeom, dishMat);
+    dish.rotation.x = Math.PI / 2;
+    dish.position.set(0, 0, 0.3);
+    probe.add(dish);
+    // Antenna feed (center of dish)
+    const feedGeom = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["ConeGeometry"](0.15, 0.4, 8);
+    const feedMat = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["MeshStandardMaterial"]({
+        color: 0x888888
+    });
+    const feed = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Mesh"](feedGeom, feedMat);
+    feed.rotation.x = Math.PI / 2;
+    feed.position.set(0, 0, 0.5);
+    probe.add(feed);
+    // RTG boom (Radioisotope Thermoelectric Generator)
+    const rtgBoomGeom = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CylinderGeometry"](0.05, 0.05, 3, 8);
+    const rtgBoomMat = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["MeshStandardMaterial"]({
+        color: 0x666666
+    });
+    const rtgBoom = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Mesh"](rtgBoomGeom, rtgBoomMat);
+    rtgBoom.rotation.z = Math.PI / 2;
+    rtgBoom.position.set(-1.5, -0.3, 0);
+    probe.add(rtgBoom);
+    // RTG power source (box at end of boom)
+    const rtgGeom = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["BoxGeometry"](0.2, 0.2, 0.3);
+    const rtgMat = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["MeshStandardMaterial"]({
+        color: 0x444444,
+        emissive: 0x330000
+    });
+    const rtg = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Mesh"](rtgGeom, rtgMat);
+    rtg.position.set(-3, -0.3, 0);
+    probe.add(rtg);
+    // Magnetometer boom
+    const magBoomGeom = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CylinderGeometry"](0.03, 0.03, 4, 6);
+    const magBoomMat = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["MeshStandardMaterial"]({
+        color: 0x888888
+    });
+    const magBoom = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Mesh"](magBoomGeom, magBoomMat);
+    magBoom.rotation.z = Math.PI / 2;
+    magBoom.position.set(2, 0.2, 0);
+    probe.add(magBoom);
+    // Magnetometer sensor
+    const magSensorGeom = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["BoxGeometry"](0.15, 0.15, 0.15);
+    const magSensorMat = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["MeshStandardMaterial"]({
+        color: 0xffaa00
+    });
+    const magSensor = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Mesh"](magSensorGeom, magSensorMat);
+    magSensor.position.set(4, 0.2, 0);
+    probe.add(magSensor);
+    // Science instruments platform
+    const instrumentsGeom = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["BoxGeometry"](0.4, 0.3, 0.3);
+    const instrumentsMat = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["MeshStandardMaterial"]({
+        color: 0x999999
+    });
+    const instruments = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Mesh"](instrumentsGeom, instrumentsMat);
+    instruments.position.set(0, 0.35, 0);
+    probe.add(instruments);
+    // Scale up for visibility
+    probe.scale.set(3, 3, 3);
+    return probe;
+}
+/**
+ * Load a GLB model and return it as a Group
+ * @param modelPath Path to the GLB file (relative to public folder)
+ * @param onLoad Callback when model is loaded successfully
+ * @param onError Callback when loading fails
+ */ function loadGLBProbe(modelPath, onLoad, onError) {
+    const loader = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$examples$2f$jsm$2f$loaders$2f$GLTFLoader$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["GLTFLoader"]();
+    loader.load(modelPath, (gltf)=>{
+        const model = gltf.scene;
+        // Adjust model orientation and scale as needed
+        // (These values may need adjustment based on your specific GLB file)
+        model.scale.set(0.05, 0.05, 0.05);
+        model.rotation.y = Math.PI; // Rotate 180 degrees if needed
+        // Brighten all materials in the model
+        model.traverse((child)=>{
+            if (child.isMesh && child.material) {
+                const material = child.material;
+                // Handle both single material and array of materials
+                const materials = Array.isArray(material) ? material : [
+                    material
+                ];
+                materials.forEach((mat)=>{
+                    // Increase color brightness
+                    if (mat.color) {
+                        mat.color.multiplyScalar(1.1); // Make 2.5x brighter
+                    }
+                    // Adjust other properties for better visibility
+                    if (mat.metalness !== undefined) {
+                        mat.metalness = Math.min(mat.metalness * 1.2, 1.0);
+                    }
+                    if (mat.roughness !== undefined) {
+                        mat.roughness = Math.max(mat.roughness * 0.7, 0.3);
+                    }
+                });
+            }
+        });
+        console.log('GLB model loaded successfully:', modelPath);
+        onLoad(model);
+    }, (progress)=>{
+        // Loading progress (optional)
+        const percent = progress.loaded / progress.total * 100;
+        console.log(`Loading model: ${percent.toFixed(0)}%`);
+    }, (error)=>{
+        console.error('Error loading GLB model:', error);
+        onError(error);
+    });
+}
 function initThreeJS(canvas, options) {
     const scene = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Scene"]();
     const camera = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["PerspectiveCamera"](60, window.innerWidth / window.innerHeight, 0.1, 50000);
@@ -390,14 +523,30 @@ function initThreeJS(canvas, options) {
         });
     }
     // probe initial (starts at 1.0 AU - Earth orbit distance)
-    const probeGeom = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SphereGeometry"](0.6, 10, 10);
-    const probeMat = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["MeshStandardMaterial"]({
-        color: 0xffaa00
-    });
-    const probe = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Mesh"](probeGeom, probeMat);
+    // Create Voyager-style probe (will be replaced by GLB model if loading succeeds)
+    let probe = createVoyagerProbe();
     const probeR = 100; // 1.0 AU (same as Earth orbit)
     probe.position.set(0, 0, probeR);
     scene.add(probe);
+    // Attempt to load GLB model from public/models/ directory
+    // If loading fails, fallback to the Voyager probe created above
+    loadGLBProbe('/models/space_fighter.glb', (loadedModel)=>{
+        // Success: replace the probe with the loaded GLB model
+        console.log('GLB model loaded, replacing probe');
+        // Copy position from current probe to loaded model
+        loadedModel.position.copy(probe.position);
+        // Remove old probe from scene
+        scene.remove(probe);
+        // Add loaded model to scene
+        scene.add(loadedModel);
+        // Update probe reference to point to loaded model
+        probe = loadedModel;
+        console.log('Probe replaced with GLB model successfully');
+    }, (error)=>{
+        // Error: keep using the Voyager probe as fallback
+        console.log('Failed to load GLB model, using Voyager probe as fallback');
+        console.error('GLB loading error:', error);
+    });
     const gVal = options?.G ?? DEFAULT_G;
     const probeMult = options?.probeSpeedMult ?? 1.05; // Realistic escape velocity (5% above circular)
     const vCircular = Math.sqrt(gVal * starMass / probeR);
@@ -857,6 +1006,24 @@ function initThreeJS(canvas, options) {
                 } else {
                     state.status = state.velocity.length() > 1e-3 ? 'Running' : 'Idle';
                 }
+                // Smoothly rotate probe to face velocity direction
+                const speed = state.velocity.length();
+                if (speed > 0.1) {
+                    // Calculate target direction from velocity vector
+                    const direction = state.velocity.clone().normalize();
+                    // Create a matrix that looks in the velocity direction
+                    // Note: direction is negated because the 3D model's front faces the opposite way
+                    const targetMatrix = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Matrix4"]();
+                    targetMatrix.lookAt(new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Vector3"](0, 0, 0), direction.negate(), new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Vector3"](0, 1, 0) // up vector
+                    );
+                    // Extract target quaternion from matrix
+                    const targetQuaternion = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Quaternion"]();
+                    targetQuaternion.setFromRotationMatrix(targetMatrix);
+                    // Smoothly interpolate (slerp) from current to target rotation
+                    // Lower value = smoother/slower rotation, higher = faster
+                    const rotationSpeed = 0.15; // 15% per frame
+                    probe.quaternion.slerp(targetQuaternion, rotationSpeed);
+                }
             }
             // update planet meshes (check if this body's id is in planetMeshes array)
             const pm = planetMeshes.find((p)=>p.id === nb.id);
@@ -902,9 +1069,10 @@ function initThreeJS(canvas, options) {
                             if (i >= 0) eventMarkers.splice(i, 1);
                         }, 1200);
                     }
-                    // flash probe material if available
+                    // flash probe material if available (main body)
                     try {
-                        const mat = probe.material;
+                        const bodyMesh = probe.children[0]; // Main body is first child
+                        const mat = bodyMesh?.material;
                         if (mat && mat.emissive) {
                             const prev = mat.emissive.clone ? mat.emissive.clone() : null;
                             mat.emissive.setHex(0xff4444);

@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { Body, cloneBodies, stepBodies } from './physics';
 
 // ====================================================================
@@ -49,6 +50,145 @@ export type ProbeState = {
     slingshots: number;
     status: string;
 };
+
+// ====================================================================
+// Probe Model Creation Functions
+// ====================================================================
+
+/**
+ * Create a Voyager-style probe using Three.js primitives
+ */
+function createVoyagerProbe(): THREE.Group {
+    const probe = new THREE.Group();
+
+    // Main body (10-sided cylinder approximation)
+    const bodyGeom = new THREE.CylinderGeometry(0.5, 0.5, 0.4, 10);
+    const bodyMat = new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 0.6, roughness: 0.4 });
+    const body = new THREE.Mesh(bodyGeom, bodyMat);
+    body.rotation.x = Math.PI / 2;
+    probe.add(body);
+
+    // Parabolic antenna (dish)
+    const dishGeom = new THREE.CylinderGeometry(1.2, 1.2, 0.1, 32);
+    const dishMat = new THREE.MeshStandardMaterial({ color: 0xeeeeee, metalness: 0.8, roughness: 0.2 });
+    const dish = new THREE.Mesh(dishGeom, dishMat);
+    dish.rotation.x = Math.PI / 2;
+    dish.position.set(0, 0, 0.3);
+    probe.add(dish);
+
+    // Antenna feed (center of dish)
+    const feedGeom = new THREE.ConeGeometry(0.15, 0.4, 8);
+    const feedMat = new THREE.MeshStandardMaterial({ color: 0x888888 });
+    const feed = new THREE.Mesh(feedGeom, feedMat);
+    feed.rotation.x = Math.PI / 2;
+    feed.position.set(0, 0, 0.5);
+    probe.add(feed);
+
+    // RTG boom (Radioisotope Thermoelectric Generator)
+    const rtgBoomGeom = new THREE.CylinderGeometry(0.05, 0.05, 3, 8);
+    const rtgBoomMat = new THREE.MeshStandardMaterial({ color: 0x666666 });
+    const rtgBoom = new THREE.Mesh(rtgBoomGeom, rtgBoomMat);
+    rtgBoom.rotation.z = Math.PI / 2;
+    rtgBoom.position.set(-1.5, -0.3, 0);
+    probe.add(rtgBoom);
+
+    // RTG power source (box at end of boom)
+    const rtgGeom = new THREE.BoxGeometry(0.2, 0.2, 0.3);
+    const rtgMat = new THREE.MeshStandardMaterial({ color: 0x444444, emissive: 0x330000 });
+    const rtg = new THREE.Mesh(rtgGeom, rtgMat);
+    rtg.position.set(-3, -0.3, 0);
+    probe.add(rtg);
+
+    // Magnetometer boom
+    const magBoomGeom = new THREE.CylinderGeometry(0.03, 0.03, 4, 6);
+    const magBoomMat = new THREE.MeshStandardMaterial({ color: 0x888888 });
+    const magBoom = new THREE.Mesh(magBoomGeom, magBoomMat);
+    magBoom.rotation.z = Math.PI / 2;
+    magBoom.position.set(2, 0.2, 0);
+    probe.add(magBoom);
+
+    // Magnetometer sensor
+    const magSensorGeom = new THREE.BoxGeometry(0.15, 0.15, 0.15);
+    const magSensorMat = new THREE.MeshStandardMaterial({ color: 0xffaa00 });
+    const magSensor = new THREE.Mesh(magSensorGeom, magSensorMat);
+    magSensor.position.set(4, 0.2, 0);
+    probe.add(magSensor);
+
+    // Science instruments platform
+    const instrumentsGeom = new THREE.BoxGeometry(0.4, 0.3, 0.3);
+    const instrumentsMat = new THREE.MeshStandardMaterial({ color: 0x999999 });
+    const instruments = new THREE.Mesh(instrumentsGeom, instrumentsMat);
+    instruments.position.set(0, 0.35, 0);
+    probe.add(instruments);
+
+    // Scale up for visibility
+    probe.scale.set(3, 3, 3);
+
+    return probe;
+}
+
+/**
+ * Load a GLB model and return it as a Group
+ * @param modelPath Path to the GLB file (relative to public folder)
+ * @param onLoad Callback when model is loaded successfully
+ * @param onError Callback when loading fails
+ */
+function loadGLBProbe(
+    modelPath: string,
+    onLoad: (model: THREE.Group) => void,
+    onError: (error: any) => void
+): void {
+    const loader = new GLTFLoader();
+
+    loader.load(
+        modelPath,
+        (gltf) => {
+            const model = gltf.scene;
+
+            // Adjust model orientation and scale as needed
+            // (These values may need adjustment based on your specific GLB file)
+            model.scale.set(0.05, 0.05, 0.05);
+            model.rotation.y = Math.PI; // Rotate 180 degrees if needed
+
+            // Brighten all materials in the model
+            model.traverse((child: any) => {
+                if (child.isMesh && child.material) {
+                    const material = child.material;
+
+                    // Handle both single material and array of materials
+                    const materials = Array.isArray(material) ? material : [material];
+
+                    materials.forEach((mat: any) => {
+                        // Increase color brightness
+                        if (mat.color) {
+                            mat.color.multiplyScalar(1.1); // Make 2.5x brighter
+                        }
+
+                        // Adjust other properties for better visibility
+                        if (mat.metalness !== undefined) {
+                            mat.metalness = Math.min(mat.metalness * 1.2, 1.0);
+                        }
+                        if (mat.roughness !== undefined) {
+                            mat.roughness = Math.max(mat.roughness * 0.7, 0.3);
+                        }
+                    });
+                }
+            });
+
+            console.log('GLB model loaded successfully:', modelPath);
+            onLoad(model);
+        },
+        (progress) => {
+            // Loading progress (optional)
+            const percent = (progress.loaded / progress.total) * 100;
+            console.log(`Loading model: ${percent.toFixed(0)}%`);
+        },
+        (error) => {
+            console.error('Error loading GLB model:', error);
+            onError(error);
+        }
+    );
+}
 
 export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMult?: number; G?: number; starMass?: number; gravityGridEnabled?: boolean }) {
     const scene = new THREE.Scene();
@@ -138,12 +278,42 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     }
 
     // probe initial (starts at 1.0 AU - Earth orbit distance)
-    const probeGeom = new THREE.SphereGeometry(0.6, 10, 10);
-    const probeMat = new THREE.MeshStandardMaterial({ color: 0xffaa00 });
-    const probe = new THREE.Mesh(probeGeom, probeMat);
+    // Create Voyager-style probe (will be replaced by GLB model if loading succeeds)
+    let probe = createVoyagerProbe();
+
     const probeR = 100;  // 1.0 AU (same as Earth orbit)
     probe.position.set(0, 0, probeR);
     scene.add(probe);
+
+    // Attempt to load GLB model from public/models/ directory
+    // If loading fails, fallback to the Voyager probe created above
+    loadGLBProbe(
+        '/models/space_fighter.glb',
+        (loadedModel) => {
+            // Success: replace the probe with the loaded GLB model
+            console.log('GLB model loaded, replacing probe');
+
+            // Copy position from current probe to loaded model
+            loadedModel.position.copy(probe.position);
+
+            // Remove old probe from scene
+            scene.remove(probe);
+
+            // Add loaded model to scene
+            scene.add(loadedModel);
+
+            // Update probe reference to point to loaded model
+            probe = loadedModel;
+
+            console.log('Probe replaced with GLB model successfully');
+        },
+        (error) => {
+            // Error: keep using the Voyager probe as fallback
+            console.log('Failed to load GLB model, using Voyager probe as fallback');
+            console.error('GLB loading error:', error);
+        }
+    );
+
     const gVal = options?.G ?? DEFAULT_G;
     const probeMult = options?.probeSpeedMult ?? 1.05;  // Realistic escape velocity (5% above circular)
     const vCircular = Math.sqrt((gVal * starMass) / probeR);
@@ -652,6 +822,31 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
                 } else {
                     state.status = state.velocity.length() > 1e-3 ? 'Running' : 'Idle';
                 }
+
+                // Smoothly rotate probe to face velocity direction
+                const speed = state.velocity.length();
+                if (speed > 0.1) { // Only rotate if moving fast enough
+                    // Calculate target direction from velocity vector
+                    const direction = state.velocity.clone().normalize();
+
+                    // Create a matrix that looks in the velocity direction
+                    // Note: direction is negated because the 3D model's front faces the opposite way
+                    const targetMatrix = new THREE.Matrix4();
+                    targetMatrix.lookAt(
+                        new THREE.Vector3(0, 0, 0),  // origin
+                        direction.negate(),           // reversed direction (model's front is opposite)
+                        new THREE.Vector3(0, 1, 0)   // up vector
+                    );
+
+                    // Extract target quaternion from matrix
+                    const targetQuaternion = new THREE.Quaternion();
+                    targetQuaternion.setFromRotationMatrix(targetMatrix);
+
+                    // Smoothly interpolate (slerp) from current to target rotation
+                    // Lower value = smoother/slower rotation, higher = faster
+                    const rotationSpeed = 0.15; // 15% per frame
+                    probe.quaternion.slerp(targetQuaternion, rotationSpeed);
+                }
             }
             // update planet meshes (check if this body's id is in planetMeshes array)
             const pm = planetMeshes.find((p) => p.id === nb.id);
@@ -699,9 +894,10 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
                             if (i >= 0) eventMarkers.splice(i, 1);
                         }, 1200);
                     }
-                    // flash probe material if available
+                    // flash probe material if available (main body)
                     try {
-                        const mat: any = probe.material;
+                        const bodyMesh: any = probe.children[0]; // Main body is first child
+                        const mat: any = bodyMesh?.material;
                         if (mat && mat.emissive) {
                             const prev = mat.emissive.clone ? mat.emissive.clone() : null;
                             mat.emissive.setHex(0xff4444);
