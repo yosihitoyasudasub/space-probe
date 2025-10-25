@@ -50,7 +50,7 @@ export type ProbeState = {
     status: string;
 };
 
-export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMult?: number; G?: number; starMass?: number }) {
+export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMult?: number; G?: number; starMass?: number; gravityGridEnabled?: boolean }) {
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 50000);
     camera.position.set(0, 400, 2200);
@@ -66,8 +66,31 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     scene.add(directional);
 
     // Simple grid for reference (large enough to show outer planets)
-    const grid = new THREE.GridHelper(7000, 140, 0x444444, 0x222222);
+    const grid = new THREE.GridHelper(7000, 1000, 0x444444, 0x222222);
     scene.add(grid);
+
+    // ====================================================================
+    // Gravity Well Grid (curved based on gravitational potential)
+    // ====================================================================
+    const gridSize = 7000;
+    const gridDivisions = 200; // High resolution for smooth curvature
+    const gravityWellGeometry = new THREE.PlaneGeometry(gridSize, gridSize, gridDivisions, gridDivisions);
+    gravityWellGeometry.rotateX(-Math.PI / 2); // Rotate to horizontal (XZ plane)
+
+    // Wireframe material for the gravity well
+    const gravityWellMaterial = new THREE.MeshBasicMaterial({
+        color: 0xd3d3d3,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.05
+    });
+
+    const gravityWellMesh = new THREE.Mesh(gravityWellGeometry, gravityWellMaterial);
+    gravityWellMesh.visible = options?.gravityGridEnabled ?? false;
+    scene.add(gravityWellMesh);
+
+    // Store original positions for reset
+    const originalPositions = new Float32Array(gravityWellGeometry.attributes.position.array);
 
     // Create a list of bodies: central star, planets, probe
     const bodies: Body[] = [];
@@ -207,7 +230,7 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
         starGeometry.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
 
         const starMaterial = new THREE.PointsMaterial({
-            size: 2,
+            size: 10,
             vertexColors: true,
             sizeAttenuation: true,
             transparent: true,
@@ -651,6 +674,9 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
         // Update predicted trajectory (Phase 2)
         updatePredictedTrajectory();
 
+        // Update gravity well grid if enabled
+        updateGravityWellGrid();
+
         // handle events (swing-bys)
         if (events && events.swingBys && events.swingBys.length) {
             for (const ev of events.swingBys) {
@@ -709,6 +735,85 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
         }
     })();
 
+    // ====================================================================
+    // Gravity Well Grid Update Function
+    // ====================================================================
+    function updateGravityWellGrid() {
+        if (!gravityWellMesh.visible) return;
+
+        const positions = gravityWellGeometry.attributes.position.array as Float32Array;
+        const gVal = options?.G ?? DEFAULT_G;
+        const depthScale = 50; // Scale factor for visual effect (adjust for visibility)
+
+        // Reset to original positions
+        for (let i = 0; i < positions.length; i++) {
+            positions[i] = originalPositions[i];
+        }
+
+        // Calculate reference potential at grid corners (far from bodies)
+        const halfSize = gridSize / 2;
+        const cornerPositions = [
+            [halfSize, halfSize],
+            [halfSize, -halfSize],
+            [-halfSize, halfSize],
+            [-halfSize, -halfSize]
+        ];
+
+        let referencePotential = 0;
+        for (const [cx, cz] of cornerPositions) {
+            let cornerPotential = 0;
+            for (const body of bodies) {
+                if (body.isProbe) continue;
+                const dx = cx - body.position[0];
+                const dz = cz - body.position[2];
+                const distance = Math.sqrt(dx * dx + dz * dz);
+                if (distance > 0.1) {
+                    cornerPotential += -(gVal * body.mass) / distance;
+                }
+            }
+            referencePotential += cornerPotential;
+        }
+        referencePotential /= cornerPositions.length; // Average
+
+        // Apply gravitational deformation for each vertex
+        for (let i = 0; i < positions.length; i += 3) {
+            const x = positions[i];
+            const z = positions[i + 2];
+            let totalPotential = 0;
+
+            // Calculate gravitational potential from all massive bodies
+            for (const body of bodies) {
+                if (body.isProbe) continue; // Skip probe (negligible mass)
+
+                const dx = x - body.position[0];
+                const dz = z - body.position[2];
+                const distance = Math.sqrt(dx * dx + dz * dz);
+
+                if (distance > 0.1) { // Avoid division by zero
+                    // Gravitational potential: -GM/r (negative, creates a well)
+                    const potential = -(gVal * body.mass) / distance;
+                    totalPotential += potential;
+                }
+            }
+
+            // Apply depth relative to reference (grid edges at Y=0)
+            const relativeDepth = totalPotential - referencePotential;
+            positions[i + 1] = relativeDepth * depthScale;
+        }
+
+        gravityWellGeometry.attributes.position.needsUpdate = true;
+        gravityWellGeometry.computeVertexNormals(); // Update normals for proper lighting
+    }
+
+    // Toggle gravity grid visibility
+    function updateGravityGrid(enabled: boolean) {
+        gravityWellMesh.visible = enabled;
+        grid.visible = !enabled;
+        if (enabled) {
+            updateGravityWellGrid();
+        }
+    }
+
     function dispose() {
         window.removeEventListener('resize', onResize);
         renderer.dispose();
@@ -722,7 +827,7 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
         });
     }
 
-    return { scene, camera, renderer, dispose, state, probe, controls, addTrailPoint, stepSimulation };
+    return { scene, camera, renderer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid };
 }
 
 // small helper to allow external callers to apply delta-v to the probe

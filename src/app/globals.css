@@ -21,9 +21,9 @@ body {
     position: absolute;
     top: 20px;
     left: 20px;
-    background: rgba(0, 0, 0, 0.8);
-    padding: 15px;
-    border: 2px solid #0f0;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 8px 12px;
+    border: none;
     border-radius: 5px;
     font-size: 14px;
     max-width: 300px;
@@ -53,27 +53,7 @@ body {
 }
 
 #controls {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    left: auto;
-    bottom: auto;
-    background: rgba(0, 0, 0, 0.8);
-    padding: 15px;
-    border: 2px solid #0f0;
-    border-radius: 5px;
-    font-size: 12px;
-    z-index: 10;
-}
-
-#controls h3 {
-    color: #0ff;
-    margin-bottom: 10px;
-}
-
-#controls p {
-    margin: 3px 0;
-    color: #0f0;
+    display: none;
 }
 
 #message {
@@ -118,4 +98,503 @@ body {
 #trajectory h3 {
     color: #0ff;
     margin-bottom: 10px;
+}
+
+/* HUD コンテナ - コンパクト表示 */
+.hud-container.hud-compact {
+    max-width: none;
+    width: auto;
+    padding: 8px 12px;
+}
+
+.hud-compact-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+}
+
+.hud-toggle-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.toggle-btn {
+    background: rgba(0, 255, 255, 0.1);
+    border: 1px solid #0ff;
+    color: #0ff;
+    padding: 4px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 11px;
+    transition: all 0.2s ease;
+    font-family: 'Courier New', monospace;
+    white-space: nowrap;
+}
+
+.toggle-btn:hover {
+    background: rgba(0, 255, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+.toggle-btn.active {
+    background: rgba(0, 255, 255, 0.3);
+    border-color: #0f0;
+    color: #0f0;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.stat-separator {
+    color: #0ff;
+    opacity: 0.5;
+    margin: 0 2px;
+}
+
+.stat-item {
+    color: #0ff;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.stat-item .stat-value {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.status-idle {
+    color: #888;
+}
+
+.status-running {
+    color: #0f0;
+    animation: pulse 2s infinite;
+}
+
+.status-fuel-depleted {
+    color: #f00;
+    animation: blink 1s infinite;
+}
+
+.low-fuel {
+    color: #ff0 !important;
+    animation: blink 1s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.6;
+    }
+}
+
+@keyframes blink {
+    0%, 50%, 100% {
+        opacity: 1;
+    }
+    25%, 75% {
+        opacity: 0.3;
+    }
+}
+
+/* チャートセクション - 独立パネル */
+.hud-charts-panel {
+    position: absolute;
+    top: 60px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 15px;
+    border: 2px solid #0ff;
+    border-radius: 5px;
+    z-index: 10;
+    animation: slideDown 0.3s ease;
+    max-width: 300px;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.mini-chart {
+    margin-bottom: 15px;
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.chart-label {
+    color: #0ff;
+    font-size: 12px;
+}
+
+.chart-current {
+    font-weight: bold;
+    font-size: 13px;
+}
+
+.mini-chart canvas {
+    width: 100%;
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.chart-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: #888;
+    margin-top: 3px;
+}
+
+/* ミッションセクション - 独立パネル */
+.hud-missions-panel {
+    position: absolute;
+    top: 60px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 15px;
+    border: 2px solid #0ff;
+    border-radius: 5px;
+    z-index: 10;
+    animation: slideDown 0.3s ease;
+    max-width: 350px;
+}
+
+/* 操作方法パネル - 独立パネル */
+.hud-help-panel {
+    position: absolute;
+    top: 60px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 15px;
+    border: 2px solid #0ff;
+    border-radius: 5px;
+    z-index: 10;
+    animation: slideDown 0.3s ease;
+    max-width: 300px;
+}
+
+.controls-help h3 {
+    color: #0ff;
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+.help-content p {
+    color: #0f0;
+    margin: 5px 0;
+    line-height: 1.4;
+    font-size: 13px;
+}
+
+.help-note {
+    font-size: 11px !important;
+    color: #888 !important;
+    margin-top: 10px !important;
+}
+
+/* 設定パネル - 独立パネル */
+.hud-settings-panel {
+    position: absolute;
+    top: 60px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 15px;
+    border: 2px solid #0ff;
+    border-radius: 5px;
+    z-index: 10;
+    animation: slideDown 0.3s ease;
+    max-width: 300px;
+}
+
+.settings-panel h3 {
+    color: #0ff;
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+.settings-content {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.setting-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.setting-item label {
+    color: #0f0;
+    font-size: 12px;
+}
+
+.setting-item input[type="range"] {
+    width: 100%;
+    height: 6px;
+    background: rgba(0, 255, 255, 0.2);
+    border-radius: 3px;
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.setting-item input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    background: #0f0;
+    cursor: pointer;
+    border-radius: 50%;
+    box-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+}
+
+.setting-item input[type="range"]::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    background: #0f0;
+    cursor: pointer;
+    border-radius: 50%;
+    box-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+    border: none;
+}
+
+.mission-progress {
+    color: #0f0;
+}
+
+.mission-header h3 {
+    color: #0ff;
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+.overall-progress {
+    margin-bottom: 15px;
+}
+
+.progress-text {
+    display: block;
+    color: #0f0;
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+
+.progress-bar-container {
+    width: 100%;
+    height: 8px;
+    background: rgba(0, 255, 0, 0.1);
+    border: 1px solid #0f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #0f0, #0ff);
+    transition: width 0.5s ease;
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+}
+
+.mission-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.mission-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.mission-list::-webkit-scrollbar-track {
+    background: rgba(0, 255, 255, 0.1);
+}
+
+.mission-list::-webkit-scrollbar-thumb {
+    background: #0ff;
+    border-radius: 3px;
+}
+
+.mission-item {
+    margin-bottom: 12px;
+    padding: 8px;
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.mission-item:hover {
+    background: rgba(0, 255, 255, 0.05);
+    border-color: #0ff;
+}
+
+.mission-item.completed {
+    border-color: #0f0;
+    background: rgba(0, 255, 0, 0.1);
+}
+
+.mission-info {
+    margin-bottom: 8px;
+}
+
+.mission-title {
+    color: #0ff;
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 3px;
+}
+
+.mission-item.completed .mission-title {
+    color: #0f0;
+}
+
+.checkmark {
+    color: #0f0;
+    margin-right: 5px;
+    font-size: 14px;
+}
+
+.mission-description {
+    color: #888;
+    font-size: 11px;
+}
+
+.mission-status {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.mission-value {
+    color: #0f0;
+    font-size: 11px;
+    text-align: right;
+}
+
+.mission-progress-bar {
+    width: 100%;
+    height: 6px;
+    background: rgba(0, 255, 0, 0.1);
+    border: 1px solid rgba(0, 255, 0, 0.3);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.mission-progress-fill {
+    height: 100%;
+    background: #0f0;
+    transition: width 0.5s ease;
+    box-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+}
+
+.mission-item.completed .mission-progress-fill {
+    background: linear-gradient(90deg, #0f0, #0ff);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        filter: brightness(1);
+    }
+    50% {
+        filter: brightness(1.3);
+    }
+    100% {
+        filter: brightness(1);
+    }
+}
+
+/* カメラコントロール - 画面左下 */
+.camera-controls {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    display: flex;
+    gap: 10px;
+    z-index: 10;
+}
+
+.camera-btn {
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid #0ff;
+    color: #0ff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: 'Courier New', monospace;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.camera-btn:hover {
+    background: rgba(0, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 255, 255, 0.3);
+}
+
+.camera-btn.active {
+    background: rgba(0, 255, 0, 0.2);
+    border-color: #0f0;
+    color: #0f0;
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+}
+
+.camera-btn.active:hover {
+    background: rgba(0, 255, 0, 0.3);
+}
+
+/* 重力井戸グリッドチェックボックス */
+.gravity-grid-checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 3px;
+    transition: background 0.2s ease;
+    font-size: 12px;
+    color: #0ff;
+    user-select: none;
+}
+
+.gravity-grid-checkbox:hover {
+    background: rgba(0, 255, 255, 0.1);
+}
+
+.gravity-grid-checkbox input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+    accent-color: #0f0;
+    border: 1px solid #0ff;
+}
+
+.gravity-grid-checkbox span {
+    white-space: nowrap;
 }

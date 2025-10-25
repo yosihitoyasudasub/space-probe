@@ -18,9 +18,10 @@ interface Props {
     gravityG?: number;
     starMass?: number;
     cameraView?: CameraView;
+    gravityGridEnabled?: boolean;
 }
 
-const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravityG = 1.0, starMass = 4000, cameraView = 'free' }) => {
+const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravityG = 1.0, starMass = 4000, cameraView = 'free', gravityGridEnabled = false }) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const rafRef = useRef<number | null>(null);
     const cameraViewRef = useRef<CameraView>(cameraView);
@@ -30,6 +31,14 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
         cameraViewRef.current = cameraView;
     }, [cameraView]);
 
+    // Update gravity grid when gravityGridEnabled changes
+    const gravityGridRef = useRef<any>(null);
+    useEffect(() => {
+        if (gravityGridRef.current && gravityGridRef.current.updateGravityGrid) {
+            gravityGridRef.current.updateGravityGrid(gravityGridEnabled);
+        }
+    }, [gravityGridEnabled]);
+
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -37,8 +46,9 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
     const trailRef = { current: undefined as any } as React.MutableRefObject<any>;
 
     // pass simulation tuning options to initThreeJS
-    let threeObj: any = (initThreeJS as any)(canvas, { probeSpeedMult, G: gravityG, starMass });
-    let { scene, camera, renderer, dispose, state, probe, controls, addTrailPoint, stepSimulation } = threeObj;
+    let threeObj: any = (initThreeJS as any)(canvas, { probeSpeedMult, G: gravityG, starMass, gravityGridEnabled });
+    let { scene, camera, renderer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid } = threeObj;
+    gravityGridRef.current = { updateGravityGrid };
 
     // input state
     const inputState = { left: false, right: false, up: false, down: false } as any;
@@ -56,8 +66,8 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
             try {
                 dispose();
             } catch (e) {}
-            threeObj = (initThreeJS as any)(canvas, { probeSpeedMult, G: gravityG, starMass });
-            ({ scene, camera, renderer, dispose, state, probe, controls, addTrailPoint, stepSimulation } = threeObj);
+            threeObj = (initThreeJS as any)(canvas, { probeSpeedMult, G: gravityG, starMass, gravityGridEnabled });
+            ({ scene, camera, renderer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid } = threeObj);
             // Restart animation loop
             lastTime = performance.now() / 1000;
             accumulator = 0;
