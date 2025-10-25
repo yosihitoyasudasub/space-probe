@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { DataPoint } from '../app/page';
+import { DataPoint, PROBE_MODELS } from '../app/page';
 import MiniChart from './MiniChart';
 import MissionProgress from './MissionProgress';
 import ControlsHelp from './ControlsHelp';
@@ -21,6 +21,8 @@ interface HUDProps {
     setStarMass?: (v: number) => void;
     gravityGridEnabled?: boolean;
     setGravityGridEnabled?: (v: boolean) => void;
+    selectedModel?: string;
+    setSelectedModel?: (v: string) => void;
 }
 
 const HUD: React.FC<HUDProps> = ({
@@ -39,6 +41,8 @@ const HUD: React.FC<HUDProps> = ({
     setStarMass = () => {},
     gravityGridEnabled = false,
     setGravityGridEnabled = () => {},
+    selectedModel = 'space_fighter',
+    setSelectedModel = () => {},
 }) => {
     const [showCharts, setShowCharts] = useState(false);
     const [showMissions, setShowMissions] = useState(false);
@@ -122,6 +126,21 @@ const HUD: React.FC<HUDProps> = ({
                             onChange={(e) => setGravityGridEnabled(e.target.checked)}
                         />
                         <span>重力井戸</span>
+                    </label>
+                    <span className="stat-separator">|</span>
+                    <label className="model-selector" title="探査機モデル選択">
+                        <span>モデル:</span>
+                        <select
+                            value={selectedModel}
+                            onChange={(e) => setSelectedModel(e.target.value)}
+                            className="model-dropdown"
+                        >
+                            {PROBE_MODELS.map((model) => (
+                                <option key={model.value} value={model.value}>
+                                    {model.label}
+                                </option>
+                            ))}
+                        </select>
                     </label>
                     <span className="stat-separator">|</span>
                     <span className="stat-item">

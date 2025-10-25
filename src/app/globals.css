@@ -598,3 +598,47 @@ body {
 .gravity-grid-checkbox span {
     white-space: nowrap;
 }
+
+/* モデル選択ドロップダウン */
+.model-selector {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    color: #0ff;
+    user-select: none;
+}
+
+.model-selector span {
+    white-space: nowrap;
+}
+
+.model-dropdown {
+    background: rgba(0, 20, 40, 0.9);
+    color: #0ff;
+    border: 1px solid #0ff;
+    border-radius: 3px;
+    padding: 3px 6px;
+    font-size: 11px;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.model-dropdown:hover {
+    background: rgba(0, 40, 80, 0.95);
+    border-color: #0f0;
+}
+
+.model-dropdown:focus {
+    border-color: #0f0;
+    box-shadow: 0 0 5px rgba(0, 255, 0, 0.3);
+}
+
+.model-dropdown option {
+    background: #001428;
+    color: #0ff;
+    padding: 5px;
+}

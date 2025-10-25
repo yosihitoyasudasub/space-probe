@@ -3,6 +3,7 @@
 import React, { useEffect, useRef } from 'react';
 import { initThreeJS, PHYSICS_SCALE } from '../lib/threeSetup';
 import { CameraView } from './Controls';
+import { PROBE_MODELS } from '../app/page';
 
 type HUDSetters = {
     setStatus: React.Dispatch<React.SetStateAction<string>>;
@@ -19,9 +20,10 @@ interface Props {
     starMass?: number;
     cameraView?: CameraView;
     gravityGridEnabled?: boolean;
+    selectedModel?: string;
 }
 
-const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravityG = 1.0, starMass = 4000, cameraView = 'free', gravityGridEnabled = false }) => {
+const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravityG = 1.0, starMass = 4000, cameraView = 'free', gravityGridEnabled = false, selectedModel = 'space_fighter' }) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const rafRef = useRef<number | null>(null);
     const cameraViewRef = useRef<CameraView>(cameraView);
@@ -45,8 +47,12 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
     const hudUpdateRef = { current: undefined as any } as React.MutableRefObject<any>;
     const trailRef = { current: undefined as any } as React.MutableRefObject<any>;
 
+    // Get model path from selected model
+    const modelData = PROBE_MODELS.find(m => m.value === selectedModel);
+    const probeModelPath = modelData?.path ?? null;
+
     // pass simulation tuning options to initThreeJS
-    let threeObj: any = (initThreeJS as any)(canvas, { probeSpeedMult, G: gravityG, starMass, gravityGridEnabled });
+    let threeObj: any = (initThreeJS as any)(canvas, { probeSpeedMult, G: gravityG, starMass, gravityGridEnabled, probeModelPath });
     let { scene, camera, renderer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid } = threeObj;
     gravityGridRef.current = { updateGravityGrid };
 
@@ -281,7 +287,7 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
             window.removeEventListener('keydown', onKeyDown);
             window.removeEventListener('keyup', onKeyUp);
         };
-    }, [hudSetters, probeSpeedMult, gravityG, starMass]);
+    }, [hudSetters, probeSpeedMult, gravityG, starMass, selectedModel]);
 
     return <canvas ref={canvasRef} style={{ display: 'block', width: '100vw', height: '100vh' }} />;
 };

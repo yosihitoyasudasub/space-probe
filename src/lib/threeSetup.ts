@@ -190,7 +190,7 @@ function loadGLBProbe(
     );
 }
 
-export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMult?: number; G?: number; starMass?: number; gravityGridEnabled?: boolean }) {
+export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMult?: number; G?: number; starMass?: number; gravityGridEnabled?: boolean; probeModelPath?: string | null }) {
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 50000);
     camera.position.set(0, 400, 2200);
@@ -286,33 +286,38 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     scene.add(probe);
 
     // Attempt to load GLB model from public/models/ directory
-    // If loading fails, fallback to the Voyager probe created above
-    loadGLBProbe(
-        '/models/space_fighter.glb',
-        (loadedModel) => {
-            // Success: replace the probe with the loaded GLB model
-            console.log('GLB model loaded, replacing probe');
+    // If loading fails or probeModelPath is null, use the Voyager probe
+    const modelPath = options?.probeModelPath;
+    if (modelPath) {
+        loadGLBProbe(
+            modelPath,
+            (loadedModel) => {
+                // Success: replace the probe with the loaded GLB model
+                console.log('GLB model loaded, replacing probe');
 
-            // Copy position from current probe to loaded model
-            loadedModel.position.copy(probe.position);
+                // Copy position from current probe to loaded model
+                loadedModel.position.copy(probe.position);
 
-            // Remove old probe from scene
-            scene.remove(probe);
+                // Remove old probe from scene
+                scene.remove(probe);
 
-            // Add loaded model to scene
-            scene.add(loadedModel);
+                // Add loaded model to scene
+                scene.add(loadedModel);
 
-            // Update probe reference to point to loaded model
-            probe = loadedModel;
+                // Update probe reference to point to loaded model
+                probe = loadedModel;
 
-            console.log('Probe replaced with GLB model successfully');
-        },
-        (error) => {
-            // Error: keep using the Voyager probe as fallback
-            console.log('Failed to load GLB model, using Voyager probe as fallback');
-            console.error('GLB loading error:', error);
-        }
-    );
+                console.log('Probe replaced with GLB model successfully');
+            },
+            (error) => {
+                // Error: keep using the Voyager probe as fallback
+                console.log('Failed to load GLB model, using Voyager probe as fallback');
+                console.error('GLB loading error:', error);
+            }
+        );
+    } else {
+        console.log('Using built-in Voyager probe (no GLB model specified)');
+    }
 
     const gVal = options?.G ?? DEFAULT_G;
     const probeMult = options?.probeSpeedMult ?? 1.05;  // Realistic escape velocity (5% above circular)
@@ -445,6 +450,8 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     // Velocity Vector Visualization
     // ====================================================================
     // Display probe's velocity as an arrow (direction and magnitude)
+    // Temporarily disabled
+    /*
     const velocityArrow = new THREE.ArrowHelper(
         new THREE.Vector3(1, 0, 0), // initial direction
         probe.position,              // origin
@@ -454,7 +461,9 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
         2                            // head width
     );
     scene.add(velocityArrow);
+    */
 
+    /*
     function updateVelocityArrow() {
         const speed = state.velocity.length();
         if (speed > 0.001) {
@@ -486,6 +495,7 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
             velocityArrow.visible = false;
         }
     }
+    */
 
     // ====================================================================
     // Swing-by Influence Zones Visualization
@@ -864,7 +874,7 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
         }
 
         // Update velocity arrow visualization
-        updateVelocityArrow();
+        // updateVelocityArrow(); // Temporarily disabled
 
         // Update predicted trajectory (Phase 2)
         updatePredictedTrajectory();
