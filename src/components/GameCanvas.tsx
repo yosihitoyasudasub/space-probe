@@ -6,8 +6,8 @@ import { CameraView } from './Controls';
 
 type HUDSetters = {
     setStatus: React.Dispatch<React.SetStateAction<string>>;
-    setVelocity: React.Dispatch<React.SetStateAction<number>>;
-    setDistance: React.Dispatch<React.SetStateAction<number>>;
+    setVelocity: (value: number) => void;
+    setDistance: (value: number) => void;
     setFuel: React.Dispatch<React.SetStateAction<number>>;
     setSlingshots: React.Dispatch<React.SetStateAction<number>>;
 };

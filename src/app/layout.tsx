@@ -1,7 +1,7 @@
 import React from 'react';
 import './globals.css';
 
-const Layout = ({ children }) => {
+const Layout = ({ children }: { children: React.ReactNode }) => {
     return (
         <html lang="ja">
             <body>
