@@ -91,25 +91,33 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
     // input state
     const inputState = { left: false, right: false, up: false, down: false } as any;
 
+    // Expose input state to window for touch controls
+    (window as any).__gameInputState = inputState;
+
+    // Expose restart function for touch controls
+    const restartSimulation = () => {
+        try {
+            if (rafRef.current) cancelAnimationFrame(rafRef.current);
+        } catch (e) {}
+        try {
+            dispose();
+        } catch (e) {}
+        threeObj = (initThreeJS as any)(canvas, { probeSpeedMult, G: gravityG, starMass, gravityGridEnabled });
+        ({ scene, camera, renderer, composer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid } = threeObj);
+        // Restart animation loop
+        lastTime = performance.now() / 1000;
+        accumulator = 0;
+        rafRef.current = requestAnimationFrame(animate);
+    };
+    (window as any).__restartSimulation = restartSimulation;
+
     const onKeyDown = (e: KeyboardEvent) => {
         if (e.key === 'ArrowLeft') inputState.left = true;
         if (e.key === 'ArrowRight') inputState.right = true;
         if (e.key === 'ArrowUp') inputState.up = true;
         if (e.key === 'ArrowDown') inputState.down = true;
         if (e.key === 'r' || e.key === 'R') {
-            // restart: dispose and reinit
-            try {
-                if (rafRef.current) cancelAnimationFrame(rafRef.current);
-            } catch (e) {}
-            try {
-                dispose();
-            } catch (e) {}
-            threeObj = (initThreeJS as any)(canvas, { probeSpeedMult, G: gravityG, starMass, gravityGridEnabled });
-            ({ scene, camera, renderer, composer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid } = threeObj);
-            // Restart animation loop
-            lastTime = performance.now() / 1000;
-            accumulator = 0;
-            rafRef.current = requestAnimationFrame(animate);
+            restartSimulation();
         }
     };
 
@@ -324,6 +332,9 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
             dispose();
             window.removeEventListener('keydown', onKeyDown);
             window.removeEventListener('keyup', onKeyUp);
+            // Cleanup window properties
+            delete (window as any).__gameInputState;
+            delete (window as any).__restartSimulation;
         };
     }, [hudSetters, probeSpeedMult, gravityG, starMass]);
 

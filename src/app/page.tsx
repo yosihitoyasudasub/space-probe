@@ -5,6 +5,7 @@ import GameCanvas from '../components/GameCanvas';
 import HUD from '../components/HUD';
 import Controls, { CameraView } from '../components/Controls';
 import CameraControls from '../components/CameraControls';
+import TouchControls from '../components/TouchControls';
 import { PHYSICS_SCALE } from '../lib/threeSetup';
 
 export interface DataPoint {
@@ -112,6 +113,7 @@ const Page = () => {
                 setIsSimulationStarted={setIsSimulationStarted}
             />
             <CameraControls cameraView={cameraView} setCameraView={setCameraView} />
+            <TouchControls />
         </div>
     );
 };

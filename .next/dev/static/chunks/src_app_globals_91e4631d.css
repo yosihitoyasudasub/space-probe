@@ -695,4 +695,72 @@ body {
   transform: scale(.98);
 }
 
+.touch-arrows {
+  pointer-events: auto;
+  z-index: 900;
+  flex-direction: column;
+  gap: 4px;
+  display: flex;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+}
+
+.touch-row {
+  justify-content: center;
+  gap: 4px;
+  display: flex;
+}
+
+.touch-btn {
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+  color: #0ff;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  background: #000000b3;
+  border: 1px solid #0ff9;
+  border-radius: 5px;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  font-size: 16px;
+  font-weight: bold;
+  transition: all .1s;
+  display: flex;
+}
+
+.touch-btn:active {
+  color: #0f0;
+  background: #00ffff4d;
+  border-color: #0f0;
+  transform: scale(.95);
+  box-shadow: 0 0 20px #00ff0080;
+}
+
+.touch-restart {
+  pointer-events: auto;
+  z-index: 900;
+  position: fixed;
+  top: 50%;
+  right: 20px;
+  transform: translateY(-50%);
+}
+
+.touch-btn-restart {
+  border-radius: 50%;
+  width: 45px;
+  height: 45px;
+  font-size: 18px;
+}
+
+@media (min-width: 769px) {
+  .touch-arrows, .touch-restart {
+    display: none;
+  }
+}
+
 /*# sourceMappingURL=src_app_globals_91e4631d.css.map*/

@@ -1,6 +1,6 @@
 # SPEC.md - 宇宙探査機シミュレーションゲーム 仕様書兼設計書
 
-バージョン: 2.0
+バージョン: 2.2
 最終更新日: 2025-10-26
 プロジェクト: space-probe-game-next
 
@@ -1818,6 +1818,268 @@ if (isSimulationStartedRef.current) {
 - 初期化処理と実行を明確に分離
 - デバッグやテストが容易
 
+### 3.14 Bloomエフェクト（太陽の発光）
+
+Three.jsのポストプロセッシングを使用して、太陽に美しい発光エフェクトを追加する機能。UnrealBloomPassにより、太陽が周囲に光を滲ませる視覚効果を実現。
+
+#### 3.14.1 概要
+
+**目的:**
+- 太陽をリアルに発光させる
+- 周囲に光が滲む美しいエフェクト
+- 宇宙空間の雰囲気を向上
+
+**実装方式:**
+- EffectComposerによるポストプロセッシング
+- UnrealBloomPassで発光効果
+- emissive materialで太陽の自己発光を強化
+
+#### 3.14.2 技術仕様
+
+**ポストプロセッシング構成:**
+```typescript
+const composer = new EffectComposer(renderer);
+const renderPass = new RenderPass(scene, camera);
+composer.addPass(renderPass);
+
+const bloomPass = new UnrealBloomPass(
+    new THREE.Vector2(window.innerWidth, window.innerHeight),
+    1.5,  // strength - ブルームの強さ
+    0.4,  // radius - ブルームの広がり
+    0.85  // threshold - 発光閾値
+);
+composer.addPass(bloomPass);
+```
+
+**太陽のマテリアル強化:**
+```typescript
+const starMat = new THREE.MeshStandardMaterial({
+    color: 0xffee88,
+    emissive: 0xffaa00,  // 明るいオレンジ色の発光
+    emissiveIntensity: 2.5  // 発光強度を大幅アップ
+});
+```
+
+#### 3.14.3 パラメータ詳細
+
+**UnrealBloomPass パラメータ:**
+| パラメータ | 値 | 説明 |
+|----------|---|------|
+| strength | 1.5 | ブルームエフェクトの強さ（明るさ） |
+| radius | 0.4 | ブルームの広がり範囲 |
+| threshold | 0.85 | 発光開始の閾値（0.85以上の明るさで発光） |
+
+**太陽のEmissive設定:**
+| プロパティ | 値 | 説明 |
+|----------|---|------|
+| emissive | 0xffaa00 | オレンジ色の発光色 |
+| emissiveIntensity | 2.5 | 発光強度（デフォルトは1.0） |
+
+#### 3.14.4 実装箇所
+
+**インポート:**
+- `src/lib/threeSetup.ts:4-6` - EffectComposer、RenderPass、UnrealBloomPass
+
+**セットアップ:**
+- `src/lib/threeSetup.ts:271-283` - Composerとブルームパスの設定
+- `src/lib/threeSetup.ts:312-316` - 太陽マテリアルの強化
+
+**レンダリング:**
+- `src/components/GameCanvas.tsx:86, 108, 316` - `composer.render()` への変更
+- `src/lib/threeSetup.ts:1136, 889` - Composerのdispose処理とリサイズ対応
+
+#### 3.14.5 視覚効果
+
+**ブルームエフェクトの特徴:**
+- 太陽から周囲に光が滲み出る
+- threshold値（0.85）により、太陽のような明るいオブジェクトのみが発光
+- 探査機や惑星は影響を受けず、太陽だけが美しく輝く
+
+**レンダリングフロー:**
+```
+Scene → RenderPass → UnrealBloomPass → 最終出力
+         (通常描画)    (発光エフェクト)
+```
+
+#### 3.14.6 パフォーマンス
+
+**影響:**
+- ポストプロセッシングによる軽微なパフォーマンスコスト
+- 最新のGPUでは問題なく動作
+- モバイルデバイスでも許容範囲内
+
+**最適化:**
+- ブルームは1パスのみで効率的
+- threshold設定により不要なオブジェクトは処理対象外
+
+### 3.15 タッチコントロール（スマホ対応）
+
+スマートフォンやタブレット端末で探査機を操作できるよう、タッチボタンを画面に配置する機能。矢印ボタンで推進操作、Rボタンでリスタート。
+
+#### 3.15.1 概要
+
+**目的:**
+- スマホ/タブレットでの操作を可能にする
+- キーボードがない環境での操作性向上
+- モバイルファーストなUX提供
+
+**実装方式:**
+- 画面タッチボタン（矢印 + R）
+- タッチイベントとマウスイベント両対応
+- レスポンシブデザイン（PC画面では非表示）
+
+#### 3.15.2 ボタン配置
+
+**レイアウト:**
+```
+              [R]  ← 右端、中央高さ
+
+
+
+
+                ↑
+              ← ↓ →  ← 右下
+```
+
+**配置詳細:**
+| ボタン | 位置 | サイズ |
+|-------|------|--------|
+| 矢印ボタン | 右下（bottom: 20px, right: 20px） | 40px × 40px |
+| Rボタン | 右端中央（right: 20px, top: 50%） | 45px × 45px（円形） |
+
+#### 3.15.3 デザイン仕様
+
+**矢印ボタン:**
+- サイズ: 40px × 40px
+- フォント: 16px
+- ボーダー: 1px solid rgba(0, 255, 255, 0.6)
+- 背景: rgba(0, 0, 0, 0.7)
+- border-radius: 5px
+- ボタン間隔: 4px
+
+**Rボタン（リスタート）:**
+- サイズ: 45px × 45px
+- フォント: 18px
+- 形状: 円形（border-radius: 50%）
+- デザインは矢印ボタンと統一
+
+**視覚フィードバック:**
+```css
+.touch-btn:active {
+    background: rgba(0, 255, 255, 0.3);
+    border-color: #0f0;
+    color: #0f0;
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+    transform: scale(0.95);
+}
+```
+
+#### 3.15.4 実装詳細
+
+**TouchControlsコンポーネント:**
+```typescript
+// src/components/TouchControls.tsx
+const TouchControls: React.FC = () => {
+    const handleTouchStart = (key: 'left' | 'right' | 'up' | 'down' | 'restart') => {
+        if (key === 'restart') {
+            (window as any).__restartSimulation();
+        } else {
+            const inputState = (window as any).__gameInputState;
+            if (inputState) {
+                inputState[key] = true;
+            }
+        }
+    };
+
+    const handleTouchEnd = (key: 'left' | 'right' | 'up' | 'down') => {
+        const inputState = (window as any).__gameInputState;
+        if (inputState) {
+            inputState[key] = false;
+        }
+    };
+    // ...
+};
+```
+
+**GameCanvas統合:**
+```typescript
+// src/components/GameCanvas.tsx:94-112
+// 入力状態をwindowオブジェクトに公開
+(window as any).__gameInputState = inputState;
+(window as any).__restartSimulation = restartSimulation;
+```
+
+#### 3.15.5 レスポンシブ対応
+
+**メディアクエリ:**
+```css
+/* src/app/globals.css:763-769 */
+@media (min-width: 769px) {
+    .touch-arrows,
+    .touch-restart {
+        display: none;
+    }
+}
+```
+
+**動作:**
+- **768px以下（スマホ/タブレット）**: タッチボタン表示
+- **769px以上（PC）**: タッチボタン非表示、キーボード操作のみ
+
+#### 3.15.6 イベント処理
+
+**対応イベント:**
+- `touchstart` / `touchend` - タッチデバイス用
+- `mousedown` / `mouseup` / `mouseleave` - マウス用（PCでのテスト用）
+
+**入力状態管理:**
+```typescript
+// ボタン押下時
+inputState.left = true;  // 左矢印ボタン押下
+inputState.up = true;    // 上矢印ボタン押下
+// ... etc
+
+// ボタン解放時
+inputState.left = false;
+```
+
+#### 3.15.7 実装箇所
+
+**コンポーネント:**
+- `src/components/TouchControls.tsx` - タッチコントロールコンポーネント
+- `src/app/page.tsx:8, 116` - TouchControlsのインポートとレンダリング
+
+**スタイリング:**
+- `src/app/globals.css:698-769` - タッチボタンのCSS
+
+**統合:**
+- `src/components/GameCanvas.tsx:94-112, 330-338` - 入力状態とリスタート関数の公開
+
+#### 3.15.8 操作方法
+
+**矢印ボタン:**
+| ボタン | 動作 |
+|-------|------|
+| ↑ | 前進加速 |
+| ↓ | 減速（ブレーキ） |
+| ← | 左方向推進 |
+| → | 右方向推進 |
+
+**Rボタン:**
+- シミュレーションをリスタート（キーボードのRキーと同じ）
+
+#### 3.15.9 デザイン統一
+
+**カメラボタンとの統一:**
+- タッチボタンのサイズとデザインをカメラ視点変更ボタンと統一
+- 同じ背景色、ボーダースタイル、フォントを使用
+- 一貫性のあるUIデザイン
+
+**サイバーパンク風デザイン:**
+- シアン/グリーンカラー
+- 半透明背景
+- タップ時の発光エフェクト
+
 ---
 
 ## 4. 物理エンジン設計
@@ -3025,6 +3287,8 @@ SOFTWARE.
 | 2025-10-26 | 1.8 | 動的モデル切り替え機能（状態保持） - シミュレーション中にモデル切り替え可能、位置・速度・燃料・軌跡など全状態を保持、シーン再初期化なしでモデルのみ置き換え |
 | 2025-10-26 | 1.9 | モデル個別回転設定と長手方向自動検出 - バウンディングボックスから最長軸を自動検出、モデルごとにorientation設定（autoAlign, rotationY, invertDirection）、長手方向を進行方向に自動配置 |
 | 2025-10-26 | 2.0 | シミュレーション開始制御機能 - "Free mode Start" ボタンの追加、初期ステータス "Stopped"、ボタンクリックまで物理シミュレーション停止、3D描画と物理演算の分離、accumulatorリセットによる時間溜まり防止 |
+| 2025-10-26 | 2.1 | Bloomエフェクト実装 - UnrealBloomPassによる太陽の発光エフェクト、EffectComposerでポストプロセッシング、emissiveIntensity 2.5の強い自己発光、threshold 0.85で太陽のみ発光 |
+| 2025-10-26 | 2.2 | タッチコントロール実装（スマホ対応） - 矢印ボタン（右下配置、40px×40px）とRボタン（右端中央、45px×45px円形）、レスポンシブデザイン（768px以下で表示）、タッチ/マウスイベント両対応、カメラボタンと統一デザイン |
 
 ---
 
