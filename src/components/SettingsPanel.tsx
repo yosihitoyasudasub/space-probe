@@ -22,7 +22,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
     setStarMass,
     gravityGridEnabled = false,
     setGravityGridEnabled = () => {},
-    gridEnabled = true,
+    gridEnabled = false,
     setGridEnabled = () => {},
 }) => {
     return (

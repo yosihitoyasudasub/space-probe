@@ -20,12 +20,14 @@ interface Props {
     starMass?: number;
     cameraView?: CameraView;
     gravityGridEnabled?: boolean;
+    setGravityGridEnabled?: (v: boolean) => void;
     gridEnabled?: boolean;
+    setGridEnabled?: (v: boolean) => void;
     selectedModel?: string;
     isSimulationStarted?: boolean;
 }
 
-const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravityG = 1.0, starMass = 4000, cameraView = 'free', gravityGridEnabled = false, gridEnabled = true, selectedModel = 'space_fighter', isSimulationStarted = false }) => {
+const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravityG = 1.0, starMass = 4000, cameraView = 'free', gravityGridEnabled = false, setGravityGridEnabled, gridEnabled = false, setGridEnabled, selectedModel = 'space_fighter', isSimulationStarted = false }) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const rafRef = useRef<number | null>(null);
     const cameraViewRef = useRef<CameraView>(cameraView);
@@ -102,8 +104,16 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
         try {
             dispose();
         } catch (e) {}
-        threeObj = (initThreeJS as any)(canvas, { probeSpeedMult, G: gravityG, starMass, gravityGridEnabled });
-        ({ scene, camera, renderer, composer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid } = threeObj);
+        // Reset grid states to hidden
+        if (setGravityGridEnabled) setGravityGridEnabled(false);
+        if (setGridEnabled) setGridEnabled(false);
+        // Initialize with grids hidden
+        threeObj = (initThreeJS as any)(canvas, { probeSpeedMult, G: gravityG, starMass, gravityGridEnabled: false, gridEnabled: false, probeModelPath, orientation });
+        ({ scene, camera, renderer, composer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid, updateGrid, switchProbeModel } = threeObj);
+        // Update refs after restart
+        gravityGridRef.current = { updateGravityGrid };
+        gridRef.current = { updateGrid };
+        switchProbeModelRef.current = { switchProbeModel };
         // Restart animation loop
         lastTime = performance.now() / 1000;
         accumulator = 0;

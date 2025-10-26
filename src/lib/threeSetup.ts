@@ -290,7 +290,7 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
 
     // Simple grid for reference (large enough to show outer planets)
     const grid = new THREE.GridHelper(7000, 1000, 0x444444, 0x222222);
-    grid.visible = options?.gridEnabled ?? true;
+    grid.visible = options?.gridEnabled ?? false;
     scene.add(grid);
 
     // ====================================================================

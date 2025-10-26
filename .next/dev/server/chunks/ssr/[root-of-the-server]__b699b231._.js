@@ -441,7 +441,7 @@ function initThreeJS(canvas, options) {
     scene.add(directional);
     // Simple grid for reference (large enough to show outer planets)
     const grid = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["GridHelper"](7000, 1000, 0x444444, 0x222222);
-    grid.visible = options?.gridEnabled ?? true;
+    grid.visible = options?.gridEnabled ?? false;
     scene.add(grid);
     // ====================================================================
     // Gravity Well Grid (curved based on gravitational potential)
@@ -1384,7 +1384,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$app$2f$page$2e$tsx__$
 ;
 ;
 ;
-const GameCanvas = ({ hudSetters, probeSpeedMult = 1.05, gravityG = 1.0, starMass = 4000, cameraView = 'free', gravityGridEnabled = false, gridEnabled = true, selectedModel = 'space_fighter', isSimulationStarted = false })=>{
+const GameCanvas = ({ hudSetters, probeSpeedMult = 1.05, gravityG = 1.0, starMass = 4000, cameraView = 'free', gravityGridEnabled = false, setGravityGridEnabled, gridEnabled = false, setGridEnabled, selectedModel = 'space_fighter', isSimulationStarted = false })=>{
     const canvasRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRef"])(null);
     const rafRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRef"])(null);
     const cameraViewRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRef"])(cameraView);
@@ -1482,13 +1482,30 @@ const GameCanvas = ({ hudSetters, probeSpeedMult = 1.05, gravityG = 1.0, starMas
             try {
                 dispose();
             } catch (e) {}
+            // Reset grid states to hidden
+            if (setGravityGridEnabled) setGravityGridEnabled(false);
+            if (setGridEnabled) setGridEnabled(false);
+            // Initialize with grids hidden
             threeObj = __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$threeSetup$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["initThreeJS"](canvas, {
                 probeSpeedMult,
                 G: gravityG,
                 starMass,
-                gravityGridEnabled
+                gravityGridEnabled: false,
+                gridEnabled: false,
+                probeModelPath,
+                orientation
             });
-            ({ scene, camera, renderer, composer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid } = threeObj);
+            ({ scene, camera, renderer, composer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid, updateGrid, switchProbeModel } = threeObj);
+            // Update refs after restart
+            gravityGridRef.current = {
+                updateGravityGrid
+            };
+            gridRef.current = {
+                updateGrid
+            };
+            switchProbeModelRef.current = {
+                switchProbeModel
+            };
             // Restart animation loop
             lastTime = performance.now() / 1000;
             accumulator = 0;
@@ -1732,7 +1749,7 @@ const GameCanvas = ({ hudSetters, probeSpeedMult = 1.05, gravityG = 1.0, starMas
         }
     }, void 0, false, {
         fileName: "[project]/src/components/GameCanvas.tsx",
-        lineNumber: 341,
+        lineNumber: 351,
         columnNumber: 12
     }, ("TURBOPACK compile-time value", void 0));
 };
@@ -2189,7 +2206,7 @@ __turbopack_context__.s([
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react-jsx-dev-runtime.js [app-ssr] (ecmascript)");
 ;
-const SettingsPanel = ({ probeSpeedMult, setProbeSpeedMult, gravityG, setGravityG, starMass, setStarMass, gravityGridEnabled = false, setGravityGridEnabled = ()=>{}, gridEnabled = true, setGridEnabled = ()=>{} })=>{
+const SettingsPanel = ({ probeSpeedMult, setProbeSpeedMult, gravityG, setGravityG, starMass, setStarMass, gravityGridEnabled = false, setGravityGridEnabled = ()=>{}, gridEnabled = false, setGridEnabled = ()=>{} })=>{
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "settings-panel",
         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3074,7 +3091,7 @@ const Page = ()=>{
     const [starMass, setStarMass] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$threeSetup$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["PHYSICS_SCALE"].SUN_MASS);
     const [cameraView, setCameraView] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])('free');
     const [gravityGridEnabled, setGravityGridEnabled] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
-    const [gridEnabled, setGridEnabled] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(true);
+    const [gridEnabled, setGridEnabled] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
     const [selectedModel, setSelectedModel] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])('space_fighter');
     // 履歴データ付きセッター
     const setVelocityWithHistory = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useCallback"])((value)=>{
@@ -3128,7 +3145,9 @@ const Page = ()=>{
                 starMass: starMass,
                 cameraView: cameraView,
                 gravityGridEnabled: gravityGridEnabled,
+                setGravityGridEnabled: setGravityGridEnabled,
                 gridEnabled: gridEnabled,
+                setGridEnabled: setGridEnabled,
                 selectedModel: selectedModel,
                 isSimulationStarted: isSimulationStarted
             }, void 0, false, {

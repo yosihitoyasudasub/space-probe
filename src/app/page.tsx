@@ -52,7 +52,7 @@ const Page = () => {
     const [starMass, setStarMass] = useState<number>(PHYSICS_SCALE.SUN_MASS);
     const [cameraView, setCameraView] = useState<CameraView>('free');
     const [gravityGridEnabled, setGravityGridEnabled] = useState<boolean>(false);
-    const [gridEnabled, setGridEnabled] = useState<boolean>(true);
+    const [gridEnabled, setGridEnabled] = useState<boolean>(false);
     const [selectedModel, setSelectedModel] = useState<string>('space_fighter');
 
     // 履歴データ付きセッター
@@ -88,7 +88,7 @@ const Page = () => {
 
     return (
         <div>
-            <GameCanvas hudSetters={hudSetters} probeSpeedMult={probeSpeedMult} gravityG={gravityG} starMass={starMass} cameraView={cameraView} gravityGridEnabled={gravityGridEnabled} gridEnabled={gridEnabled} selectedModel={selectedModel} isSimulationStarted={isSimulationStarted} />
+            <GameCanvas hudSetters={hudSetters} probeSpeedMult={probeSpeedMult} gravityG={gravityG} starMass={starMass} cameraView={cameraView} gravityGridEnabled={gravityGridEnabled} setGravityGridEnabled={setGravityGridEnabled} gridEnabled={gridEnabled} setGridEnabled={setGridEnabled} selectedModel={selectedModel} isSimulationStarted={isSimulationStarted} />
             <HUD
                 status={status}
                 velocity={velocity}
