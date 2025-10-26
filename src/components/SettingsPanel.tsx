@@ -7,6 +7,10 @@ interface SettingsPanelProps {
     setGravityG: (v: number) => void;
     starMass: number;
     setStarMass: (v: number) => void;
+    gravityGridEnabled?: boolean;
+    setGravityGridEnabled?: (v: boolean) => void;
+    gridEnabled?: boolean;
+    setGridEnabled?: (v: boolean) => void;
 }
 
 const SettingsPanel: React.FC<SettingsPanelProps> = ({
@@ -16,10 +20,13 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
     setGravityG,
     starMass,
     setStarMass,
+    gravityGridEnabled = false,
+    setGravityGridEnabled = () => {},
+    gridEnabled = true,
+    setGridEnabled = () => {},
 }) => {
     return (
         <div className="settings-panel">
-            <h3>シミュレーション設定</h3>
             <div className="settings-content">
                 <div className="setting-item">
                     <label>Probe speed multiplier: {probeSpeedMult.toFixed(2)}</label>
@@ -53,6 +60,26 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         value={starMass}
                         onChange={(e) => setStarMass(Number(e.target.value))}
                     />
+                </div>
+                <div className="setting-item">
+                    <label className="gravity-grid-checkbox">
+                        <input
+                            type="checkbox"
+                            checked={gravityGridEnabled}
+                            onChange={(e) => setGravityGridEnabled(e.target.checked)}
+                        />
+                        <span>Show gravity well grid</span>
+                    </label>
+                </div>
+                <div className="setting-item">
+                    <label className="gravity-grid-checkbox">
+                        <input
+                            type="checkbox"
+                            checked={gridEnabled}
+                            onChange={(e) => setGridEnabled(e.target.checked)}
+                        />
+                        <span>Show flat grid</span>
+                    </label>
                 </div>
             </div>
         </div>

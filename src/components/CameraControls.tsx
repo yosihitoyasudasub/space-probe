@@ -12,23 +12,23 @@ const CameraControls: React.FC<CameraControlsProps> = ({ cameraView, setCameraVi
             <button
                 className={`camera-btn ${cameraView === 'free' ? 'active' : ''}`}
                 onClick={() => setCameraView('free')}
-                title="自由視点（マウス操作）"
+                title="Free Camera View"
             >
-                自由視点
+                Free
             </button>
             <button
                 className={`camera-btn ${cameraView === 'top' ? 'active' : ''}`}
                 onClick={() => setCameraView('top')}
-                title="真上視点（太陽中心）"
+                title="Top View"
             >
-                真上視点
+                Top
             </button>
             <button
                 className={`camera-btn ${cameraView === 'probe' ? 'active' : ''}`}
                 onClick={() => setCameraView('probe')}
-                title="探査機追従視点"
+                title="Follow Probe View"
             >
-                探査機追従
+                Follow
             </button>
         </div>
     );

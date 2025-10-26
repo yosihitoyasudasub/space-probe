@@ -309,14 +309,55 @@ const DEFAULT_G = PHYSICS_SCALE.G;
  * @param modelPath Path to the GLB file (relative to public folder)
  * @param onLoad Callback when model is loaded successfully
  * @param onError Callback when loading fails
- */ function loadGLBProbe(modelPath, onLoad, onError) {
+ */ function loadGLBProbe(modelPath, onLoad, onError, orientation) {
     const loader = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$examples$2f$jsm$2f$loaders$2f$GLTFLoader$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["GLTFLoader"]();
     loader.load(modelPath, (gltf)=>{
         const model = gltf.scene;
-        // Adjust model orientation and scale as needed
-        // (These values may need adjustment based on your specific GLB file)
-        model.scale.set(0.05, 0.05, 0.05);
-        model.rotation.y = Math.PI; // Rotate 180 degrees if needed
+        // Calculate bounding box to get model dimensions
+        const box = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Box3"]().setFromObject(model);
+        const size = box.getSize(new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Vector3"]());
+        const maxDim = Math.max(size.x, size.y, size.z);
+        // Auto-normalize: scale to target size
+        const targetSize = 15; // Target size in scene units (3x larger for better visibility)
+        const normalizedScale = targetSize / maxDim;
+        model.scale.setScalar(normalizedScale);
+        console.log(`Model dimensions: ${size.x.toFixed(2)} x ${size.y.toFixed(2)} x ${size.z.toFixed(2)}`);
+        console.log(`Auto-scaling to ${targetSize} units (scale: ${normalizedScale.toFixed(4)})`);
+        // Center model at origin (optional, helps with consistent positioning)
+        box.setFromObject(model); // Recalculate after scaling
+        const center = box.getCenter(new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Vector3"]());
+        model.position.sub(center);
+        // Determine longest dimension (axis) for auto-alignment
+        let longestAxis = 'z'; // default
+        if (size.x > size.y && size.x > size.z) {
+            longestAxis = 'x';
+        } else if (size.y > size.x && size.y > size.z) {
+            longestAxis = 'y';
+        }
+        console.log(`Longest axis: ${longestAxis} (${longestAxis === 'x' ? size.x.toFixed(2) : longestAxis === 'y' ? size.y.toFixed(2) : size.z.toFixed(2)} units)`);
+        // Apply manual rotation if specified
+        if (orientation?.rotationY !== undefined) {
+            model.rotation.y = orientation.rotationY;
+            console.log(`Applied manual rotation Y: ${orientation.rotationY.toFixed(2)} radians`);
+        }
+        // Auto-align longest dimension with forward direction (Z-axis)
+        if (orientation?.autoAlign) {
+            if (longestAxis === 'x') {
+                // Rotate 90 degrees to align X with Z
+                model.rotation.y = Math.PI / 2;
+                console.log('Auto-aligned: Rotated X-axis to face forward');
+            } else if (longestAxis === 'y') {
+                // Rotate 90 degrees around X to align Y with Z
+                model.rotation.x = Math.PI / 2;
+                console.log('Auto-aligned: Rotated Y-axis to face forward');
+            }
+        // If longestAxis === 'z', no additional rotation needed
+        } else {
+            // Fallback to default 180 degree rotation if not auto-aligning
+            model.rotation.y = Math.PI;
+        }
+        // Store orientation config on model for use in velocity tracking
+        model.orientationConfig = orientation;
         // Brighten all materials in the model
         model.traverse((child)=>{
             if (child.isMesh && child.material) {
@@ -326,9 +367,27 @@ const DEFAULT_G = PHYSICS_SCALE.G;
                     material
                 ];
                 materials.forEach((mat)=>{
-                    // Increase color brightness
+                    // Check if material color is dark or light
+                    let isDark = false;
+                    const hsl = {
+                        h: 0,
+                        s: 0,
+                        l: 0
+                    };
                     if (mat.color) {
-                        mat.color.multiplyScalar(1.1); // Make 2.5x brighter
+                        mat.color.getHSL(hsl);
+                        isDark = hsl.l < 0.5; // Lightness < 0.5 = dark color
+                        // Increase color brightness
+                        mat.color.multiplyScalar(1.1);
+                    }
+                    // Add emissive color only for dark models for consistent brightness
+                    if (mat.emissive !== undefined && isDark) {
+                        // Set emissive to a fraction of the base color for self-illumination
+                        const emissiveColor = mat.color ? mat.color.clone().multiplyScalar(0.5) : new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Color"](0x333333);
+                        mat.emissive = emissiveColor;
+                        console.log(`Applied emissive to dark material (L=${hsl.l.toFixed(2)})`);
+                    } else if (mat.emissive !== undefined && !isDark) {
+                        console.log(`Skipped emissive for bright material (L=${hsl.l.toFixed(2)})`);
                     }
                     // Adjust other properties for better visibility
                     if (mat.metalness !== undefined) {
@@ -368,6 +427,7 @@ function initThreeJS(canvas, options) {
     scene.add(directional);
     // Simple grid for reference (large enough to show outer planets)
     const grid = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["GridHelper"](7000, 1000, 0x444444, 0x222222);
+    grid.visible = options?.gridEnabled ?? true;
     scene.add(grid);
     // ====================================================================
     // Gravity Well Grid (curved based on gravitational potential)
@@ -527,26 +587,39 @@ function initThreeJS(canvas, options) {
     let probe = createVoyagerProbe();
     const probeR = 100; // 1.0 AU (same as Earth orbit)
     probe.position.set(0, 0, probeR);
-    scene.add(probe);
+    // Store orientation config on built-in Voyager probe
+    probe.orientationConfig = options?.orientation;
     // Attempt to load GLB model from public/models/ directory
-    // If loading fails, fallback to the Voyager probe created above
-    loadGLBProbe('/models/space_fighter.glb', (loadedModel)=>{
-        // Success: replace the probe with the loaded GLB model
-        console.log('GLB model loaded, replacing probe');
-        // Copy position from current probe to loaded model
-        loadedModel.position.copy(probe.position);
-        // Remove old probe from scene
-        scene.remove(probe);
-        // Add loaded model to scene
-        scene.add(loadedModel);
-        // Update probe reference to point to loaded model
-        probe = loadedModel;
-        console.log('Probe replaced with GLB model successfully');
-    }, (error)=>{
-        // Error: keep using the Voyager probe as fallback
-        console.log('Failed to load GLB model, using Voyager probe as fallback');
-        console.error('GLB loading error:', error);
-    });
+    // If loading fails or probeModelPath is null, use the Voyager probe
+    const modelPath = options?.probeModelPath;
+    if (modelPath) {
+        // Hide Voyager while loading GLB model
+        probe.visible = false;
+    }
+    scene.add(probe);
+    if (modelPath) {
+        loadGLBProbe(modelPath, (loadedModel)=>{
+            // Success: replace the probe with the loaded GLB model
+            console.log('GLB model loaded, replacing probe');
+            // Copy position from current probe to loaded model
+            loadedModel.position.copy(probe.position);
+            // Remove old probe from scene
+            scene.remove(probe);
+            // Add loaded model to scene
+            scene.add(loadedModel);
+            // Update probe reference to point to loaded model
+            probe = loadedModel;
+            console.log('Probe replaced with GLB model successfully');
+        }, (error)=>{
+            // Error: keep using the Voyager probe as fallback
+            console.log('Failed to load GLB model, using Voyager probe as fallback');
+            console.error('GLB loading error:', error);
+            // Show Voyager probe on loading failure
+            probe.visible = true;
+        }, options?.orientation);
+    } else {
+        console.log('Using built-in Voyager probe (no GLB model specified)');
+    }
     const gVal = options?.G ?? DEFAULT_G;
     const probeMult = options?.probeSpeedMult ?? 1.05; // Realistic escape velocity (5% above circular)
     const vCircular = Math.sqrt(gVal * starMass / probeR);
@@ -680,9 +753,18 @@ function initThreeJS(canvas, options) {
     // Velocity Vector Visualization
     // ====================================================================
     // Display probe's velocity as an arrow (direction and magnitude)
-    const velocityArrow = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["ArrowHelper"](new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Vector3"](1, 0, 0), probe.position, 10, 0xff0000, 3, 2 // head width
+    // Temporarily disabled
+    /*
+    const velocityArrow = new THREE.ArrowHelper(
+        new THREE.Vector3(1, 0, 0), // initial direction
+        probe.position,              // origin
+        10,                          // length
+        0xff0000,                    // color (red)
+        3,                           // head length
+        2                            // head width
     );
     scene.add(velocityArrow);
+    */ /*
     function updateVelocityArrow() {
         const speed = state.velocity.length();
         if (speed > 0.001) {
@@ -691,28 +773,30 @@ function initThreeJS(canvas, options) {
             // Scale arrow length with speed (but cap at reasonable size)
             const arrowLength = Math.min(speed * 2, 50);
             velocityArrow.setLength(arrowLength, 3, 2);
+
             // Color based on speed (blue -> green -> yellow -> red)
             const speedRatio = Math.min(speed / 50, 1); // normalize to 0-1
             if (speedRatio < 0.33) {
                 // Blue to green
                 const t = speedRatio / 0.33;
-                velocityArrow.setColor(new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Color"](0, t, 1 - t));
+                velocityArrow.setColor(new THREE.Color(0, t, 1 - t));
             } else if (speedRatio < 0.66) {
                 // Green to yellow
                 const t = (speedRatio - 0.33) / 0.33;
-                velocityArrow.setColor(new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Color"](t, 1, 0));
+                velocityArrow.setColor(new THREE.Color(t, 1, 0));
             } else {
                 // Yellow to red
                 const t = (speedRatio - 0.66) / 0.34;
-                velocityArrow.setColor(new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Color"](1, 1 - t, 0));
+                velocityArrow.setColor(new THREE.Color(1, 1 - t, 0));
             }
+
             velocityArrow.position.copy(state.position);
             velocityArrow.visible = true;
         } else {
             velocityArrow.visible = false;
         }
     }
-    // ====================================================================
+    */ // ====================================================================
     // Swing-by Influence Zones Visualization
     // ====================================================================
     // Display encounter radius around each planet as a torus (donut ring)
@@ -1010,11 +1094,17 @@ function initThreeJS(canvas, options) {
                 const speed = state.velocity.length();
                 if (speed > 0.1) {
                     // Calculate target direction from velocity vector
-                    const direction = state.velocity.clone().normalize();
+                    let direction = state.velocity.clone().normalize();
+                    // Check if model has orientation config with invertDirection flag
+                    const orientationConfig = probe.orientationConfig;
+                    const shouldInvert = orientationConfig?.invertDirection ?? true; // default to true for backward compatibility
+                    // Invert direction if configured (for models that face backwards)
+                    if (shouldInvert) {
+                        direction.negate();
+                    }
                     // Create a matrix that looks in the velocity direction
-                    // Note: direction is negated because the 3D model's front faces the opposite way
                     const targetMatrix = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Matrix4"]();
-                    targetMatrix.lookAt(new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Vector3"](0, 0, 0), direction.negate(), new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Vector3"](0, 1, 0) // up vector
+                    targetMatrix.lookAt(new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Vector3"](0, 0, 0), direction, new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Vector3"](0, 1, 0) // up vector
                     );
                     // Extract target quaternion from matrix
                     const targetQuaternion = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Quaternion"]();
@@ -1040,7 +1130,7 @@ function initThreeJS(canvas, options) {
             }
         }
         // Update velocity arrow visualization
-        updateVelocityArrow();
+        // updateVelocityArrow(); // Temporarily disabled
         // Update predicted trajectory (Phase 2)
         updatePredictedTrajectory();
         // Update gravity well grid if enabled
@@ -1178,10 +1268,13 @@ function initThreeJS(canvas, options) {
     // Toggle gravity grid visibility
     function updateGravityGrid(enabled) {
         gravityWellMesh.visible = enabled;
-        grid.visible = !enabled;
         if (enabled) {
             updateGravityWellGrid();
         }
+    }
+    // Toggle flat grid visibility
+    function updateGrid(enabled) {
+        grid.visible = enabled;
     }
     function dispose() {
         window.removeEventListener('resize', onResize);
@@ -1195,6 +1288,43 @@ function initThreeJS(canvas, options) {
             }
         });
     }
+    // Switch probe model without resetting state
+    function switchProbeModel(newModelPath, orientation) {
+        // Save current state
+        const currentPosition = probe.position.clone();
+        const currentRotation = probe.quaternion.clone();
+        // Create new probe model
+        let newProbe;
+        if (newModelPath) {
+            // Load GLB model
+            loadGLBProbe(newModelPath, (loadedModel)=>{
+                // Apply saved state to new model
+                loadedModel.position.copy(currentPosition);
+                loadedModel.quaternion.copy(currentRotation);
+                // Remove old probe
+                scene.remove(probe);
+                // Add new probe
+                scene.add(loadedModel);
+                probe = loadedModel;
+                console.log('Probe model switched successfully');
+            }, (error)=>{
+                console.error('Failed to switch probe model:', error);
+            }, orientation);
+        } else {
+            // Use built-in Voyager
+            newProbe = createVoyagerProbe();
+            newProbe.position.copy(currentPosition);
+            newProbe.quaternion.copy(currentRotation);
+            // Store orientation config on Voyager model too
+            newProbe.orientationConfig = orientation;
+            // Remove old probe
+            scene.remove(probe);
+            // Add new probe
+            scene.add(newProbe);
+            probe = newProbe;
+            console.log('Switched to built-in Voyager probe');
+        }
+    }
     return {
         scene,
         camera,
@@ -1205,7 +1335,9 @@ function initThreeJS(canvas, options) {
         controls,
         addTrailPoint,
         stepSimulation,
-        updateGravityGrid
+        updateGravityGrid,
+        updateGrid,
+        switchProbeModel
     };
 }
 function applyDeltaVToProbe(_dv) {
@@ -1228,11 +1360,13 @@ __turbopack_context__.s([
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react-jsx-dev-runtime.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$threeSetup$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/threeSetup.ts [app-ssr] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$app$2f$page$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/app/page.tsx [app-ssr] (ecmascript)");
 "use client";
 ;
 ;
 ;
-const GameCanvas = ({ hudSetters, probeSpeedMult = 1.05, gravityG = 1.0, starMass = 4000, cameraView = 'free', gravityGridEnabled = false })=>{
+;
+const GameCanvas = ({ hudSetters, probeSpeedMult = 1.05, gravityG = 1.0, starMass = 4000, cameraView = 'free', gravityGridEnabled = false, gridEnabled = true, selectedModel = 'space_fighter' })=>{
     const canvasRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRef"])(null);
     const rafRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRef"])(null);
     const cameraViewRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRef"])(cameraView);
@@ -1251,6 +1385,28 @@ const GameCanvas = ({ hudSetters, probeSpeedMult = 1.05, gravityG = 1.0, starMas
     }, [
         gravityGridEnabled
     ]);
+    // Update flat grid when gridEnabled changes
+    const gridRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRef"])(null);
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
+        if (gridRef.current && gridRef.current.updateGrid) {
+            gridRef.current.updateGrid(gridEnabled);
+        }
+    }, [
+        gridEnabled
+    ]);
+    // Store switchProbeModel function
+    const switchProbeModelRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRef"])(null);
+    // Handle probe model switching
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
+        if (switchProbeModelRef.current && switchProbeModelRef.current.switchProbeModel) {
+            const modelData = __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$app$2f$page$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["PROBE_MODELS"].find((m)=>m.value === selectedModel);
+            const probeModelPath = modelData?.path ?? null;
+            const orientation = modelData?.orientation;
+            switchProbeModelRef.current.switchProbeModel(probeModelPath, orientation);
+        }
+    }, [
+        selectedModel
+    ]);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -1260,16 +1416,29 @@ const GameCanvas = ({ hudSetters, probeSpeedMult = 1.05, gravityG = 1.0, starMas
         const trailRef = {
             current: undefined
         };
+        // Get model path from selected model
+        const modelData = __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$app$2f$page$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["PROBE_MODELS"].find((m)=>m.value === selectedModel);
+        const probeModelPath = modelData?.path ?? null;
+        const orientation = modelData?.orientation;
         // pass simulation tuning options to initThreeJS
         let threeObj = __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$threeSetup$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["initThreeJS"](canvas, {
             probeSpeedMult,
             G: gravityG,
             starMass,
-            gravityGridEnabled
+            gravityGridEnabled,
+            gridEnabled,
+            probeModelPath,
+            orientation
         });
-        let { scene, camera, renderer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid } = threeObj;
+        let { scene, camera, renderer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid, updateGrid, switchProbeModel } = threeObj;
         gravityGridRef.current = {
             updateGravityGrid
+        };
+        gridRef.current = {
+            updateGrid
+        };
+        switchProbeModelRef.current = {
+            switchProbeModel
         };
         // input state
         const inputState = {
@@ -1430,7 +1599,7 @@ const GameCanvas = ({ hudSetters, probeSpeedMult = 1.05, gravityG = 1.0, starMas
                         if (speed > 0.1) {
                             // Position camera behind the probe based on velocity direction
                             const velNorm = vel.clone().normalize();
-                            const camOffset = velNorm.multiplyScalar(-150); // 150 units behind
+                            const camOffset = velNorm.multiplyScalar(-70); // 70 units behind
                             const camPos = probePos.clone().add(camOffset);
                             camPos.y += 80; // 80 units above
                             camera.position.copy(camPos);
@@ -1523,7 +1692,7 @@ const GameCanvas = ({ hudSetters, probeSpeedMult = 1.05, gravityG = 1.0, starMas
         }
     }, void 0, false, {
         fileName: "[project]/src/components/GameCanvas.tsx",
-        lineNumber: 286,
+        lineNumber: 317,
         columnNumber: 12
     }, ("TURBOPACK compile-time value", void 0));
 };
@@ -1919,68 +2088,51 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist
 const ControlsHelp = ()=>{
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "controls-help",
-        children: [
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
-                children: "操作方法"
-            }, void 0, false, {
-                fileName: "[project]/src/components/ControlsHelp.tsx",
-                lineNumber: 6,
-                columnNumber: 13
-            }, ("TURBOPACK compile-time value", void 0)),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "help-content",
-                children: [
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        children: "← : 進行方向の左に推進"
-                    }, void 0, false, {
-                        fileName: "[project]/src/components/ControlsHelp.tsx",
-                        lineNumber: 8,
-                        columnNumber: 17
-                    }, ("TURBOPACK compile-time value", void 0)),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        children: "→ : 進行方向の右に推進"
-                    }, void 0, false, {
-                        fileName: "[project]/src/components/ControlsHelp.tsx",
-                        lineNumber: 9,
-                        columnNumber: 17
-                    }, ("TURBOPACK compile-time value", void 0)),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        children: "↑ : 進行方向に加速"
-                    }, void 0, false, {
-                        fileName: "[project]/src/components/ControlsHelp.tsx",
-                        lineNumber: 10,
-                        columnNumber: 17
-                    }, ("TURBOPACK compile-time value", void 0)),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        children: "↓ : 進行方向に減速（ブレーキ）"
-                    }, void 0, false, {
-                        fileName: "[project]/src/components/ControlsHelp.tsx",
-                        lineNumber: 11,
-                        columnNumber: 17
-                    }, ("TURBOPACK compile-time value", void 0)),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        children: "R : リスタート"
-                    }, void 0, false, {
-                        fileName: "[project]/src/components/ControlsHelp.tsx",
-                        lineNumber: 12,
-                        columnNumber: 17
-                    }, ("TURBOPACK compile-time value", void 0)),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        className: "help-note",
-                        children: "※矢印キーは常に探査機の速度方向を基準にします"
-                    }, void 0, false, {
-                        fileName: "[project]/src/components/ControlsHelp.tsx",
-                        lineNumber: 13,
-                        columnNumber: 17
-                    }, ("TURBOPACK compile-time value", void 0))
-                ]
-            }, void 0, true, {
-                fileName: "[project]/src/components/ControlsHelp.tsx",
-                lineNumber: 7,
-                columnNumber: 13
-            }, ("TURBOPACK compile-time value", void 0))
-        ]
-    }, void 0, true, {
+        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+            className: "help-content",
+            children: [
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                    children: "← : Left thrust"
+                }, void 0, false, {
+                    fileName: "[project]/src/components/ControlsHelp.tsx",
+                    lineNumber: 7,
+                    columnNumber: 17
+                }, ("TURBOPACK compile-time value", void 0)),
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                    children: "→ : Right thrust"
+                }, void 0, false, {
+                    fileName: "[project]/src/components/ControlsHelp.tsx",
+                    lineNumber: 8,
+                    columnNumber: 17
+                }, ("TURBOPACK compile-time value", void 0)),
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                    children: "↑ : Speed up"
+                }, void 0, false, {
+                    fileName: "[project]/src/components/ControlsHelp.tsx",
+                    lineNumber: 9,
+                    columnNumber: 17
+                }, ("TURBOPACK compile-time value", void 0)),
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                    children: "↓ : Slow down"
+                }, void 0, false, {
+                    fileName: "[project]/src/components/ControlsHelp.tsx",
+                    lineNumber: 10,
+                    columnNumber: 17
+                }, ("TURBOPACK compile-time value", void 0)),
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                    children: "R : Restart"
+                }, void 0, false, {
+                    fileName: "[project]/src/components/ControlsHelp.tsx",
+                    lineNumber: 11,
+                    columnNumber: 17
+                }, ("TURBOPACK compile-time value", void 0))
+            ]
+        }, void 0, true, {
+            fileName: "[project]/src/components/ControlsHelp.tsx",
+            lineNumber: 6,
+            columnNumber: 13
+        }, ("TURBOPACK compile-time value", void 0))
+    }, void 0, false, {
         fileName: "[project]/src/components/ControlsHelp.tsx",
         lineNumber: 5,
         columnNumber: 9
@@ -1997,123 +2149,178 @@ __turbopack_context__.s([
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react-jsx-dev-runtime.js [app-ssr] (ecmascript)");
 ;
-const SettingsPanel = ({ probeSpeedMult, setProbeSpeedMult, gravityG, setGravityG, starMass, setStarMass })=>{
+const SettingsPanel = ({ probeSpeedMult, setProbeSpeedMult, gravityG, setGravityG, starMass, setStarMass, gravityGridEnabled = false, setGravityGridEnabled = ()=>{}, gridEnabled = true, setGridEnabled = ()=>{} })=>{
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "settings-panel",
-        children: [
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
-                children: "シミュレーション設定"
-            }, void 0, false, {
-                fileName: "[project]/src/components/SettingsPanel.tsx",
-                lineNumber: 22,
-                columnNumber: 13
-            }, ("TURBOPACK compile-time value", void 0)),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "settings-content",
-                children: [
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "setting-item",
+        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+            className: "settings-content",
+            children: [
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    className: "setting-item",
+                    children: [
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                            children: [
+                                "Probe speed multiplier: ",
+                                probeSpeedMult.toFixed(2)
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/src/components/SettingsPanel.tsx",
+                            lineNumber: 32,
+                            columnNumber: 21
+                        }, ("TURBOPACK compile-time value", void 0)),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                            type: "range",
+                            min: "0.95",
+                            max: "1.50",
+                            step: "0.01",
+                            value: probeSpeedMult,
+                            onChange: (e)=>setProbeSpeedMult(Number(e.target.value))
+                        }, void 0, false, {
+                            fileName: "[project]/src/components/SettingsPanel.tsx",
+                            lineNumber: 33,
+                            columnNumber: 21
+                        }, ("TURBOPACK compile-time value", void 0))
+                    ]
+                }, void 0, true, {
+                    fileName: "[project]/src/components/SettingsPanel.tsx",
+                    lineNumber: 31,
+                    columnNumber: 17
+                }, ("TURBOPACK compile-time value", void 0)),
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    className: "setting-item",
+                    children: [
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                            children: [
+                                "Gravity G: ",
+                                gravityG.toFixed(3)
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/src/components/SettingsPanel.tsx",
+                            lineNumber: 43,
+                            columnNumber: 21
+                        }, ("TURBOPACK compile-time value", void 0)),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                            type: "range",
+                            min: "0.01",
+                            max: "1.0",
+                            step: "0.01",
+                            value: gravityG,
+                            onChange: (e)=>setGravityG(Number(e.target.value))
+                        }, void 0, false, {
+                            fileName: "[project]/src/components/SettingsPanel.tsx",
+                            lineNumber: 44,
+                            columnNumber: 21
+                        }, ("TURBOPACK compile-time value", void 0))
+                    ]
+                }, void 0, true, {
+                    fileName: "[project]/src/components/SettingsPanel.tsx",
+                    lineNumber: 42,
+                    columnNumber: 17
+                }, ("TURBOPACK compile-time value", void 0)),
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    className: "setting-item",
+                    children: [
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                            children: [
+                                "Star mass: ",
+                                Math.round(starMass).toLocaleString()
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/src/components/SettingsPanel.tsx",
+                            lineNumber: 54,
+                            columnNumber: 21
+                        }, ("TURBOPACK compile-time value", void 0)),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                            type: "range",
+                            min: "50000",
+                            max: "500000",
+                            step: "5000",
+                            value: starMass,
+                            onChange: (e)=>setStarMass(Number(e.target.value))
+                        }, void 0, false, {
+                            fileName: "[project]/src/components/SettingsPanel.tsx",
+                            lineNumber: 55,
+                            columnNumber: 21
+                        }, ("TURBOPACK compile-time value", void 0))
+                    ]
+                }, void 0, true, {
+                    fileName: "[project]/src/components/SettingsPanel.tsx",
+                    lineNumber: 53,
+                    columnNumber: 17
+                }, ("TURBOPACK compile-time value", void 0)),
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    className: "setting-item",
+                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                        className: "gravity-grid-checkbox",
                         children: [
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                children: [
-                                    "Probe speed multiplier: ",
-                                    probeSpeedMult.toFixed(2)
-                                ]
-                            }, void 0, true, {
-                                fileName: "[project]/src/components/SettingsPanel.tsx",
-                                lineNumber: 25,
-                                columnNumber: 21
-                            }, ("TURBOPACK compile-time value", void 0)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                type: "range",
-                                min: "0.95",
-                                max: "1.50",
-                                step: "0.01",
-                                value: probeSpeedMult,
-                                onChange: (e)=>setProbeSpeedMult(Number(e.target.value))
+                                type: "checkbox",
+                                checked: gravityGridEnabled,
+                                onChange: (e)=>setGravityGridEnabled(e.target.checked)
                             }, void 0, false, {
                                 fileName: "[project]/src/components/SettingsPanel.tsx",
-                                lineNumber: 26,
-                                columnNumber: 21
+                                lineNumber: 66,
+                                columnNumber: 25
+                            }, ("TURBOPACK compile-time value", void 0)),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                children: "Show gravity well grid"
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/SettingsPanel.tsx",
+                                lineNumber: 71,
+                                columnNumber: 25
                             }, ("TURBOPACK compile-time value", void 0))
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/SettingsPanel.tsx",
-                        lineNumber: 24,
-                        columnNumber: 17
-                    }, ("TURBOPACK compile-time value", void 0)),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "setting-item",
-                        children: [
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                children: [
-                                    "Gravity G: ",
-                                    gravityG.toFixed(3)
-                                ]
-                            }, void 0, true, {
-                                fileName: "[project]/src/components/SettingsPanel.tsx",
-                                lineNumber: 36,
-                                columnNumber: 21
-                            }, ("TURBOPACK compile-time value", void 0)),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                type: "range",
-                                min: "0.01",
-                                max: "1.0",
-                                step: "0.01",
-                                value: gravityG,
-                                onChange: (e)=>setGravityG(Number(e.target.value))
-                            }, void 0, false, {
-                                fileName: "[project]/src/components/SettingsPanel.tsx",
-                                lineNumber: 37,
-                                columnNumber: 21
-                            }, ("TURBOPACK compile-time value", void 0))
-                        ]
-                    }, void 0, true, {
-                        fileName: "[project]/src/components/SettingsPanel.tsx",
-                        lineNumber: 35,
-                        columnNumber: 17
-                    }, ("TURBOPACK compile-time value", void 0)),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "setting-item",
-                        children: [
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                children: [
-                                    "Star mass: ",
-                                    Math.round(starMass).toLocaleString()
-                                ]
-                            }, void 0, true, {
-                                fileName: "[project]/src/components/SettingsPanel.tsx",
-                                lineNumber: 47,
-                                columnNumber: 21
-                            }, ("TURBOPACK compile-time value", void 0)),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                type: "range",
-                                min: "50000",
-                                max: "500000",
-                                step: "5000",
-                                value: starMass,
-                                onChange: (e)=>setStarMass(Number(e.target.value))
-                            }, void 0, false, {
-                                fileName: "[project]/src/components/SettingsPanel.tsx",
-                                lineNumber: 48,
-                                columnNumber: 21
-                            }, ("TURBOPACK compile-time value", void 0))
-                        ]
-                    }, void 0, true, {
-                        fileName: "[project]/src/components/SettingsPanel.tsx",
-                        lineNumber: 46,
-                        columnNumber: 17
+                        lineNumber: 65,
+                        columnNumber: 21
                     }, ("TURBOPACK compile-time value", void 0))
-                ]
-            }, void 0, true, {
-                fileName: "[project]/src/components/SettingsPanel.tsx",
-                lineNumber: 23,
-                columnNumber: 13
-            }, ("TURBOPACK compile-time value", void 0))
-        ]
-    }, void 0, true, {
+                }, void 0, false, {
+                    fileName: "[project]/src/components/SettingsPanel.tsx",
+                    lineNumber: 64,
+                    columnNumber: 17
+                }, ("TURBOPACK compile-time value", void 0)),
+                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    className: "setting-item",
+                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                        className: "gravity-grid-checkbox",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                type: "checkbox",
+                                checked: gridEnabled,
+                                onChange: (e)=>setGridEnabled(e.target.checked)
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/SettingsPanel.tsx",
+                                lineNumber: 76,
+                                columnNumber: 25
+                            }, ("TURBOPACK compile-time value", void 0)),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                children: "Show flat grid"
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/SettingsPanel.tsx",
+                                lineNumber: 81,
+                                columnNumber: 25
+                            }, ("TURBOPACK compile-time value", void 0))
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/src/components/SettingsPanel.tsx",
+                        lineNumber: 75,
+                        columnNumber: 21
+                    }, ("TURBOPACK compile-time value", void 0))
+                }, void 0, false, {
+                    fileName: "[project]/src/components/SettingsPanel.tsx",
+                    lineNumber: 74,
+                    columnNumber: 17
+                }, ("TURBOPACK compile-time value", void 0))
+            ]
+        }, void 0, true, {
+            fileName: "[project]/src/components/SettingsPanel.tsx",
+            lineNumber: 30,
+            columnNumber: 13
+        }, ("TURBOPACK compile-time value", void 0))
+    }, void 0, false, {
         fileName: "[project]/src/components/SettingsPanel.tsx",
-        lineNumber: 21,
+        lineNumber: 29,
         columnNumber: 9
     }, ("TURBOPACK compile-time value", void 0));
 };
@@ -2128,6 +2335,7 @@ __turbopack_context__.s([
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react-jsx-dev-runtime.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react.js [app-ssr] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$app$2f$page$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/app/page.tsx [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$MiniChart$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/MiniChart.tsx [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$MissionProgress$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/MissionProgress.tsx [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ControlsHelp$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/ControlsHelp.tsx [app-ssr] (ecmascript)");
@@ -2138,7 +2346,8 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$Setting
 ;
 ;
 ;
-const HUD = ({ status = 'Idle', velocity = 0, distance = 0, fuel = 100, slingshots = 0, velocityHistory = [], distanceHistory = [], probeSpeedMult = 1.05, setProbeSpeedMult = ()=>{}, gravityG = 0.133, setGravityG = ()=>{}, starMass = 333000, setStarMass = ()=>{}, gravityGridEnabled = false, setGravityGridEnabled = ()=>{} })=>{
+;
+const HUD = ({ status = 'Idle', velocity = 0, distance = 0, fuel = 100, slingshots = 0, velocityHistory = [], distanceHistory = [], probeSpeedMult = 1.05, setProbeSpeedMult = ()=>{}, gravityG = 0.133, setGravityG = ()=>{}, starMass = 333000, setStarMass = ()=>{}, gravityGridEnabled = false, setGravityGridEnabled = ()=>{}, gridEnabled = true, setGridEnabled = ()=>{}, selectedModel = 'space_fighter', setSelectedModel = ()=>{} })=>{
     const [showCharts, setShowCharts] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
     const [showMissions, setShowMissions] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
     const [showHelp, setShowHelp] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
@@ -2180,227 +2389,200 @@ const HUD = ({ status = 'Idle', velocity = 0, distance = 0, fuel = 100, slingsho
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 id: "ui",
                 className: "hud-container hud-compact",
-                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "hud-compact-line",
-                    children: [
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "hud-compact-line",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                className: "stat-item",
+                                children: [
+                                    "STS:",
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                        className: `stat-value status-${status.toLowerCase().replace(' ', '-')}`,
+                                        children: status
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/HUD.tsx",
+                                        lineNumber: 99,
+                                        columnNumber: 25
+                                    }, ("TURBOPACK compile-time value", void 0))
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/components/HUD.tsx",
+                                lineNumber: 97,
+                                columnNumber: 21
+                            }, ("TURBOPACK compile-time value", void 0)),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                className: "stat-separator",
+                                children: "|"
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/HUD.tsx",
+                                lineNumber: 103,
+                                columnNumber: 21
+                            }, ("TURBOPACK compile-time value", void 0)),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                className: "stat-item",
+                                children: [
+                                    "V:",
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                        className: "stat-value",
+                                        children: velocity.toFixed(1)
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/HUD.tsx",
+                                        lineNumber: 105,
+                                        columnNumber: 27
+                                    }, ("TURBOPACK compile-time value", void 0)),
+                                    "km/s"
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/components/HUD.tsx",
+                                lineNumber: 104,
+                                columnNumber: 21
+                            }, ("TURBOPACK compile-time value", void 0)),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                className: "stat-separator",
+                                children: "|"
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/HUD.tsx",
+                                lineNumber: 107,
+                                columnNumber: 21
+                            }, ("TURBOPACK compile-time value", void 0)),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                className: "stat-item",
+                                children: [
+                                    "D:",
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                        className: "stat-value",
+                                        children: distance.toFixed(0)
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/HUD.tsx",
+                                        lineNumber: 109,
+                                        columnNumber: 27
+                                    }, ("TURBOPACK compile-time value", void 0)),
+                                    "AU"
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/components/HUD.tsx",
+                                lineNumber: 108,
+                                columnNumber: 21
+                            }, ("TURBOPACK compile-time value", void 0)),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                className: "stat-separator",
+                                children: "|"
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/HUD.tsx",
+                                lineNumber: 111,
+                                columnNumber: 21
+                            }, ("TURBOPACK compile-time value", void 0)),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                className: "stat-item",
+                                children: [
+                                    "Fuel:",
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                        className: `stat-value ${fuel < 20 ? 'low-fuel' : ''}`,
+                                        children: fuel.toFixed(1)
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/HUD.tsx",
+                                        lineNumber: 114,
+                                        columnNumber: 25
+                                    }, ("TURBOPACK compile-time value", void 0)),
+                                    "%"
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/components/HUD.tsx",
+                                lineNumber: 112,
+                                columnNumber: 21
+                            }, ("TURBOPACK compile-time value", void 0))
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/src/components/HUD.tsx",
+                        lineNumber: 96,
+                        columnNumber: 17
+                    }, ("TURBOPACK compile-time value", void 0)),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "hud-compact-line",
+                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                             className: "hud-toggle-buttons",
                             children: [
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                     className: `toggle-btn ${showCharts ? 'active' : ''}`,
                                     onClick: handleChartsToggle,
-                                    title: "グラフ表示の切り替え",
-                                    children: "グラフ"
+                                    title: "Toggle charts",
+                                    children: "Charts"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/HUD.tsx",
-                                    lineNumber: 89,
+                                    lineNumber: 123,
                                     columnNumber: 25
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                     className: `toggle-btn ${showMissions ? 'active' : ''}`,
                                     onClick: handleMissionsToggle,
-                                    title: "ミッション進捗の切り替え",
-                                    children: "ミッション"
+                                    title: "Toggle mission progress",
+                                    children: "Missions"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/HUD.tsx",
-                                    lineNumber: 96,
+                                    lineNumber: 130,
                                     columnNumber: 25
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                     className: `toggle-btn ${showHelp ? 'active' : ''}`,
                                     onClick: handleHelpToggle,
-                                    title: "操作方法の表示",
-                                    children: "操作方法"
+                                    title: "Show controls",
+                                    children: "Controls"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/HUD.tsx",
-                                    lineNumber: 103,
+                                    lineNumber: 137,
                                     columnNumber: 25
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                     className: `toggle-btn ${showSettings ? 'active' : ''}`,
                                     onClick: handleSettingsToggle,
-                                    title: "シミュレーション設定",
-                                    children: "設定"
-                                }, void 0, false, {
-                                    fileName: "[project]/src/components/HUD.tsx",
-                                    lineNumber: 110,
-                                    columnNumber: 25
-                                }, ("TURBOPACK compile-time value", void 0))
-                            ]
-                        }, void 0, true, {
-                            fileName: "[project]/src/components/HUD.tsx",
-                            lineNumber: 88,
-                            columnNumber: 21
-                        }, ("TURBOPACK compile-time value", void 0)),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                            className: "gravity-grid-checkbox",
-                            title: "重力井戸グリッド表示",
-                            children: [
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                    type: "checkbox",
-                                    checked: gravityGridEnabled,
-                                    onChange: (e)=>setGravityGridEnabled(e.target.checked)
-                                }, void 0, false, {
-                                    fileName: "[project]/src/components/HUD.tsx",
-                                    lineNumber: 119,
-                                    columnNumber: 25
-                                }, ("TURBOPACK compile-time value", void 0)),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                    children: "重力井戸"
-                                }, void 0, false, {
-                                    fileName: "[project]/src/components/HUD.tsx",
-                                    lineNumber: 124,
-                                    columnNumber: 25
-                                }, ("TURBOPACK compile-time value", void 0))
-                            ]
-                        }, void 0, true, {
-                            fileName: "[project]/src/components/HUD.tsx",
-                            lineNumber: 118,
-                            columnNumber: 21
-                        }, ("TURBOPACK compile-time value", void 0)),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                            className: "stat-separator",
-                            children: "|"
-                        }, void 0, false, {
-                            fileName: "[project]/src/components/HUD.tsx",
-                            lineNumber: 126,
-                            columnNumber: 21
-                        }, ("TURBOPACK compile-time value", void 0)),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                            className: "stat-item",
-                            children: [
-                                "状態:",
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                    className: `stat-value status-${status.toLowerCase().replace(' ', '-')}`,
-                                    children: status
-                                }, void 0, false, {
-                                    fileName: "[project]/src/components/HUD.tsx",
-                                    lineNumber: 129,
-                                    columnNumber: 25
-                                }, ("TURBOPACK compile-time value", void 0))
-                            ]
-                        }, void 0, true, {
-                            fileName: "[project]/src/components/HUD.tsx",
-                            lineNumber: 127,
-                            columnNumber: 21
-                        }, ("TURBOPACK compile-time value", void 0)),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                            className: "stat-separator",
-                            children: ","
-                        }, void 0, false, {
-                            fileName: "[project]/src/components/HUD.tsx",
-                            lineNumber: 133,
-                            columnNumber: 21
-                        }, ("TURBOPACK compile-time value", void 0)),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                            className: "stat-item",
-                            children: [
-                                "速度:",
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                    className: "stat-value",
-                                    children: velocity.toFixed(1)
-                                }, void 0, false, {
-                                    fileName: "[project]/src/components/HUD.tsx",
-                                    lineNumber: 135,
-                                    columnNumber: 28
-                                }, ("TURBOPACK compile-time value", void 0)),
-                                "km/s"
-                            ]
-                        }, void 0, true, {
-                            fileName: "[project]/src/components/HUD.tsx",
-                            lineNumber: 134,
-                            columnNumber: 21
-                        }, ("TURBOPACK compile-time value", void 0)),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                            className: "stat-separator",
-                            children: ","
-                        }, void 0, false, {
-                            fileName: "[project]/src/components/HUD.tsx",
-                            lineNumber: 137,
-                            columnNumber: 21
-                        }, ("TURBOPACK compile-time value", void 0)),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                            className: "stat-item",
-                            children: [
-                                "距離:",
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                    className: "stat-value",
-                                    children: distance.toFixed(2)
-                                }, void 0, false, {
-                                    fileName: "[project]/src/components/HUD.tsx",
-                                    lineNumber: 139,
-                                    columnNumber: 28
-                                }, ("TURBOPACK compile-time value", void 0)),
-                                "AU"
-                            ]
-                        }, void 0, true, {
-                            fileName: "[project]/src/components/HUD.tsx",
-                            lineNumber: 138,
-                            columnNumber: 21
-                        }, ("TURBOPACK compile-time value", void 0)),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                            className: "stat-separator",
-                            children: ","
-                        }, void 0, false, {
-                            fileName: "[project]/src/components/HUD.tsx",
-                            lineNumber: 141,
-                            columnNumber: 21
-                        }, ("TURBOPACK compile-time value", void 0)),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                            className: "stat-item",
-                            children: [
-                                "燃料:",
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                    className: `stat-value ${fuel < 20 ? 'low-fuel' : ''}`,
-                                    children: fuel.toFixed(1)
+                                    title: "Simulation settings",
+                                    children: "Settings"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/HUD.tsx",
                                     lineNumber: 144,
                                     columnNumber: 25
                                 }, ("TURBOPACK compile-time value", void 0)),
-                                "%"
-                            ]
-                        }, void 0, true, {
-                            fileName: "[project]/src/components/HUD.tsx",
-                            lineNumber: 142,
-                            columnNumber: 21
-                        }, ("TURBOPACK compile-time value", void 0)),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                            className: "stat-separator",
-                            children: ","
-                        }, void 0, false, {
-                            fileName: "[project]/src/components/HUD.tsx",
-                            lineNumber: 148,
-                            columnNumber: 21
-                        }, ("TURBOPACK compile-time value", void 0)),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                            className: "stat-item",
-                            children: [
-                                "スイングバイ:",
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                    className: "stat-value",
-                                    children: slingshots
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                    className: "model-selector",
+                                    title: "Select probe model",
+                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
+                                        value: selectedModel,
+                                        onChange: (e)=>setSelectedModel(e.target.value),
+                                        className: "model-dropdown",
+                                        children: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$app$2f$page$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["PROBE_MODELS"].map((model)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
+                                                value: model.value,
+                                                children: model.label
+                                            }, model.value, false, {
+                                                fileName: "[project]/src/components/HUD.tsx",
+                                                lineNumber: 158,
+                                                columnNumber: 37
+                                            }, ("TURBOPACK compile-time value", void 0)))
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/HUD.tsx",
+                                        lineNumber: 152,
+                                        columnNumber: 29
+                                    }, ("TURBOPACK compile-time value", void 0))
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/HUD.tsx",
-                                    lineNumber: 150,
-                                    columnNumber: 32
-                                }, ("TURBOPACK compile-time value", void 0)),
-                                "回"
+                                    lineNumber: 151,
+                                    columnNumber: 25
+                                }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/HUD.tsx",
-                            lineNumber: 149,
+                            lineNumber: 122,
                             columnNumber: 21
                         }, ("TURBOPACK compile-time value", void 0))
-                    ]
-                }, void 0, true, {
-                    fileName: "[project]/src/components/HUD.tsx",
-                    lineNumber: 87,
-                    columnNumber: 17
-                }, ("TURBOPACK compile-time value", void 0))
-            }, void 0, false, {
+                    }, void 0, false, {
+                        fileName: "[project]/src/components/HUD.tsx",
+                        lineNumber: 121,
+                        columnNumber: 17
+                    }, ("TURBOPACK compile-time value", void 0))
+                ]
+            }, void 0, true, {
                 fileName: "[project]/src/components/HUD.tsx",
-                lineNumber: 86,
+                lineNumber: 94,
                 columnNumber: 13
             }, ("TURBOPACK compile-time value", void 0)),
             showCharts && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2409,27 +2591,55 @@ const HUD = ({ status = 'Idle', velocity = 0, distance = 0, fuel = 100, slingsho
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$MiniChart$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
                         data: velocityHistory,
                         color: "#00ff88",
-                        label: "速度",
+                        label: "Velocity",
                         unit: "km/s"
                     }, void 0, false, {
                         fileName: "[project]/src/components/HUD.tsx",
-                        lineNumber: 157,
+                        lineNumber: 170,
                         columnNumber: 21
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$MiniChart$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
                         data: distanceHistory,
                         color: "#00aaff",
-                        label: "距離",
+                        label: "Distance",
                         unit: "AU"
                     }, void 0, false, {
                         fileName: "[project]/src/components/HUD.tsx",
-                        lineNumber: 163,
+                        lineNumber: 176,
+                        columnNumber: 21
+                    }, ("TURBOPACK compile-time value", void 0)),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "chart-slingshots",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                className: "chart-label",
+                                children: "Swing-by count:"
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/HUD.tsx",
+                                lineNumber: 183,
+                                columnNumber: 25
+                            }, ("TURBOPACK compile-time value", void 0)),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                className: "chart-current",
+                                style: {
+                                    color: '#0f0'
+                                },
+                                children: slingshots
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/HUD.tsx",
+                                lineNumber: 184,
+                                columnNumber: 25
+                            }, ("TURBOPACK compile-time value", void 0))
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/src/components/HUD.tsx",
+                        lineNumber: 182,
                         columnNumber: 21
                     }, ("TURBOPACK compile-time value", void 0))
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/HUD.tsx",
-                lineNumber: 156,
+                lineNumber: 169,
                 columnNumber: 17
             }, ("TURBOPACK compile-time value", void 0)),
             showMissions && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2441,24 +2651,24 @@ const HUD = ({ status = 'Idle', velocity = 0, distance = 0, fuel = 100, slingsho
                     fuel: fuel
                 }, void 0, false, {
                     fileName: "[project]/src/components/HUD.tsx",
-                    lineNumber: 174,
+                    lineNumber: 191,
                     columnNumber: 21
                 }, ("TURBOPACK compile-time value", void 0))
             }, void 0, false, {
                 fileName: "[project]/src/components/HUD.tsx",
-                lineNumber: 173,
+                lineNumber: 190,
                 columnNumber: 17
             }, ("TURBOPACK compile-time value", void 0)),
             showHelp && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "hud-help-panel",
                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ControlsHelp$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {}, void 0, false, {
                     fileName: "[project]/src/components/HUD.tsx",
-                    lineNumber: 185,
+                    lineNumber: 202,
                     columnNumber: 21
                 }, ("TURBOPACK compile-time value", void 0))
             }, void 0, false, {
                 fileName: "[project]/src/components/HUD.tsx",
-                lineNumber: 184,
+                lineNumber: 201,
                 columnNumber: 17
             }, ("TURBOPACK compile-time value", void 0)),
             showSettings && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2469,15 +2679,19 @@ const HUD = ({ status = 'Idle', velocity = 0, distance = 0, fuel = 100, slingsho
                     gravityG: gravityG,
                     setGravityG: setGravityG,
                     starMass: starMass,
-                    setStarMass: setStarMass
+                    setStarMass: setStarMass,
+                    gravityGridEnabled: gravityGridEnabled,
+                    setGravityGridEnabled: setGravityGridEnabled,
+                    gridEnabled: gridEnabled,
+                    setGridEnabled: setGridEnabled
                 }, void 0, false, {
                     fileName: "[project]/src/components/HUD.tsx",
-                    lineNumber: 191,
+                    lineNumber: 208,
                     columnNumber: 21
                 }, ("TURBOPACK compile-time value", void 0))
             }, void 0, false, {
                 fileName: "[project]/src/components/HUD.tsx",
-                lineNumber: 190,
+                lineNumber: 207,
                 columnNumber: 17
             }, ("TURBOPACK compile-time value", void 0))
         ]
@@ -2501,8 +2715,8 @@ const CameraControls = ({ cameraView, setCameraView })=>{
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                 className: `camera-btn ${cameraView === 'free' ? 'active' : ''}`,
                 onClick: ()=>setCameraView('free'),
-                title: "自由視点（マウス操作）",
-                children: "自由視点"
+                title: "Free Camera View",
+                children: "Free"
             }, void 0, false, {
                 fileName: "[project]/src/components/CameraControls.tsx",
                 lineNumber: 12,
@@ -2511,8 +2725,8 @@ const CameraControls = ({ cameraView, setCameraView })=>{
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                 className: `camera-btn ${cameraView === 'top' ? 'active' : ''}`,
                 onClick: ()=>setCameraView('top'),
-                title: "真上視点（太陽中心）",
-                children: "真上視点"
+                title: "Top View",
+                children: "Top"
             }, void 0, false, {
                 fileName: "[project]/src/components/CameraControls.tsx",
                 lineNumber: 19,
@@ -2521,8 +2735,8 @@ const CameraControls = ({ cameraView, setCameraView })=>{
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                 className: `camera-btn ${cameraView === 'probe' ? 'active' : ''}`,
                 onClick: ()=>setCameraView('probe'),
-                title: "探査機追従視点",
-                children: "探査機追従"
+                title: "Follow Probe View",
+                children: "Follow"
             }, void 0, false, {
                 fileName: "[project]/src/components/CameraControls.tsx",
                 lineNumber: 26,
@@ -2541,6 +2755,8 @@ const __TURBOPACK__default__export__ = CameraControls;
 "use strict";
 
 __turbopack_context__.s([
+    "PROBE_MODELS",
+    ()=>PROBE_MODELS,
     "default",
     ()=>__TURBOPACK__default__export__
 ]);
@@ -2557,6 +2773,98 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$threeSetup$2e$
 ;
 ;
 ;
+const PROBE_MODELS = [
+    {
+        value: 'voyager',
+        label: 'Voyager (Built-in)',
+        path: null,
+        orientation: {
+            autoAlign: true,
+            invertDirection: true
+        }
+    },
+    {
+        value: 'space_fighter',
+        label: 'Space Fighter',
+        path: '/models/space_fighter.glb',
+        orientation: {
+            autoAlign: true,
+            invertDirection: true
+        }
+    },
+    {
+        value: 'space_shuttle',
+        label: 'Space Shuttle',
+        path: '/models/space_shuttle.glb',
+        orientation: {
+            autoAlign: true,
+            invertDirection: true
+        }
+    },
+    {
+        value: 'space_shuttle_2',
+        label: 'Space Shuttle 2',
+        path: '/models/space_shuttle_2.glb',
+        orientation: {
+            autoAlign: true,
+            invertDirection: true
+        }
+    },
+    {
+        value: 'space_ship',
+        label: 'Space Ship',
+        path: '/models/space_ship.glb',
+        orientation: {
+            autoAlign: true,
+            invertDirection: true
+        }
+    },
+    {
+        value: 'space_ship_2',
+        label: 'Space Ship 2',
+        path: '/models/space_ship_2.glb',
+        orientation: {
+            autoAlign: true,
+            invertDirection: true
+        }
+    },
+    {
+        value: 'space_fighter_3',
+        label: 'Space Fighter 3',
+        path: '/models/space_fighter_3.glb',
+        orientation: {
+            autoAlign: true,
+            invertDirection: true
+        }
+    },
+    {
+        value: 'lego_scooter',
+        label: 'LEGO Space Scooter',
+        path: '/models/lego_885_-_space_scooter.glb',
+        orientation: {
+            autoAlign: true,
+            invertDirection: true
+        }
+    },
+    {
+        value: 'sputnik',
+        label: 'Retro Sputnik',
+        path: '/models/space_retro_sputnik.glb',
+        orientation: {
+            autoAlign: true,
+            invertDirection: true
+        }
+    },
+    {
+        value: 'station_2001',
+        label: 'Space Station (2001)',
+        path: '/models/space_station_v_2001_a_space_odyssey.glb',
+        orientation: {
+            autoAlign: true,
+            invertDirection: true
+        }
+    }
+];
 const Page = ()=>{
     const [status, setStatus] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])('Idle');
     const [velocity, setVelocity] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(0);
@@ -2573,6 +2881,8 @@ const Page = ()=>{
     const [starMass, setStarMass] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$threeSetup$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["PHYSICS_SCALE"].SUN_MASS);
     const [cameraView, setCameraView] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])('free');
     const [gravityGridEnabled, setGravityGridEnabled] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
+    const [gridEnabled, setGridEnabled] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(true);
+    const [selectedModel, setSelectedModel] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])('space_fighter');
     // 履歴データ付きセッター
     const setVelocityWithHistory = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useCallback"])((value)=>{
         setVelocity(value);
@@ -2624,10 +2934,12 @@ const Page = ()=>{
                 gravityG: gravityG,
                 starMass: starMass,
                 cameraView: cameraView,
-                gravityGridEnabled: gravityGridEnabled
+                gravityGridEnabled: gravityGridEnabled,
+                gridEnabled: gridEnabled,
+                selectedModel: selectedModel
             }, void 0, false, {
                 fileName: "[project]/src/app/page.tsx",
-                lineNumber: 67,
+                lineNumber: 87,
                 columnNumber: 13
             }, ("TURBOPACK compile-time value", void 0)),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$HUD$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
@@ -2645,10 +2957,14 @@ const Page = ()=>{
                 starMass: starMass,
                 setStarMass: setStarMass,
                 gravityGridEnabled: gravityGridEnabled,
-                setGravityGridEnabled: setGravityGridEnabled
+                setGravityGridEnabled: setGravityGridEnabled,
+                gridEnabled: gridEnabled,
+                setGridEnabled: setGridEnabled,
+                selectedModel: selectedModel,
+                setSelectedModel: setSelectedModel
             }, void 0, false, {
                 fileName: "[project]/src/app/page.tsx",
-                lineNumber: 68,
+                lineNumber: 88,
                 columnNumber: 13
             }, ("TURBOPACK compile-time value", void 0)),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$CameraControls$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
@@ -2656,13 +2972,13 @@ const Page = ()=>{
                 setCameraView: setCameraView
             }, void 0, false, {
                 fileName: "[project]/src/app/page.tsx",
-                lineNumber: 85,
+                lineNumber: 109,
                 columnNumber: 13
             }, ("TURBOPACK compile-time value", void 0))
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/page.tsx",
-        lineNumber: 66,
+        lineNumber: 86,
         columnNumber: 9
     }, ("TURBOPACK compile-time value", void 0));
 };

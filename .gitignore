@@ -1,5 +1,7 @@
 # Markdown documentation files
-*.md
+CODING.md
+DEBUG.md
+REFACTOR_SUMMARY.md
 
 # Node modules
 node_modules/

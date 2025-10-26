@@ -438,8 +438,8 @@ scene.add(probe);
 - 読み込み失敗時：Voyagerプローブ（3.7.1）にフォールバック
 
 **実装箇所:**
-- `src/lib/threeSetup.ts:136-189` - `loadGLBProbe()` 関数
-- `src/lib/threeSetup.ts:263-290` - 初期化時のGLBロード処理
+- `src/lib/threeSetup.ts:136-224` - `loadGLBProbe()` 関数
+- `src/lib/threeSetup.ts:314-361` - 初期化時のGLBロード処理とロード中の表示制御
 
 **モデルファイルの配置:**
 ```
@@ -468,8 +468,24 @@ function loadGLBProbe(
             // マテリアルの明るさ調整
             model.traverse((child) => {
                 if (child.isMesh && child.material) {
-                    // 色を1.1倍明るく
-                    child.material.color.multiplyScalar(1.1);
+                    const materials = Array.isArray(child.material)
+                        ? child.material : [child.material];
+
+                    materials.forEach((mat) => {
+                        // 明度判定
+                        let isDark = false;
+                        const hsl = { h: 0, s: 0, l: 0 };
+                        if (mat.color) {
+                            mat.color.getHSL(hsl);
+                            isDark = hsl.l < 0.5;
+                            mat.color.multiplyScalar(1.1);
+                        }
+
+                        // 暗いモデルのみ自己発光を追加
+                        if (mat.emissive !== undefined && isDark) {
+                            mat.emissive = mat.color.clone().multiplyScalar(0.5);
+                        }
+                    });
                 }
             });
 
@@ -482,16 +498,29 @@ function loadGLBProbe(
 ```
 
 **初期化フロー:**
-1. `createVoyagerProbe()`でVoyagerプローブを作成（即座に表示）
-2. `loadGLBProbe()`でGLBモデルを非同期読み込み開始
-3. 読み込み成功時：
+1. `createVoyagerProbe()`でVoyagerプローブを作成
+2. GLBモデルのロード時：Voyagerを非表示（`probe.visible = false`）
+3. `loadGLBProbe()`でGLBモデルを非同期読み込み開始
+4. 読み込み成功時：
    - シーンからVoyagerプローブを削除
    - GLBモデルを同じ位置に配置
    - `probe`参照を更新
-4. 読み込み失敗時：Voyagerプローブをそのまま使用
+5. 読み込み失敗時：
+   - Voyagerを表示（`probe.visible = true`）
+   - Voyagerプローブをフォールバックとして使用
+
+**ロード中の表示制御:**
+- GLBモデル選択時：ロード完了までVoyagerは非表示（チラつき防止）
+- Voyager選択時：最初から表示
+- ロード失敗時：Voyagerが自動的に表示される
 
 **マテリアル調整:**
 - **色の明るさ**: 1.1倍に調整（暗いモデルの視認性向上）
+- **自己発光（Emissive）**: 明度判定により暗いモデルのみに適用
+  - HSL色空間でLightness < 0.5の場合、自己発光を追加
+  - 発光色：ベースカラーの50%（0.5倍）
+  - 明るいモデルは自己発光なし（元の見た目を維持）
+  - コンソールログで各マテリアルの明度と適用状況を出力
 - **メタルネス**: 1.2倍に増加（金属的な反射を強調）
 - **ラフネス**: 0.7倍に減少（表面を滑らかに）
 
@@ -511,6 +540,7 @@ model.rotation.y = Math.PI;          // 180度回転（向き調整）
 - **カスタマイズ性**: Blender等で作成した任意の3Dモデルを使用可能
 - **フォールバック安全性**: ロード失敗時も動作継続
 - **非同期処理**: ロード中もゲームは動作
+- **スムーズな切り替え**: ロード中はVoyagerを非表示にすることでチラつきを防止
 
 **制約事項:**
 - GLB/GLTF形式のみ対応
@@ -592,10 +622,149 @@ const rotationSpeed = 1.0;   // 即座に回転（補間なし）
 4. 現在の向きから目標向きへ徐々に回転
 5. 滑らかに進行方向を向く
 
-**視覚的効果:**
-- **没入感の向上**: 探査機が「飛んでいる」感覚
-- **直感的理解**: どの方向に進んでいるか一目でわかる
-- **滑らかな動き**: 急激な回転がなく自然
+#### 3.7.4 動的モデル切り替え（状態保持）
+
+**概要:**
+シミュレーション実行中に探査機の3Dモデルをリアルタイムで切り替えできる機能。重要な点として、モデル切り替え時に探査機の物理状態（位置、速度、燃料など）を保持します。
+
+**目的:**
+- シミュレーション中断なしでモデルを変更
+- 探査機の位置、速度、回転を保持
+- スムーズなビジュアル切り替え
+
+**実装方式:**
+- 現在の探査機の状態を保存
+- 新しいモデルをロード/作成
+- 保存した状態を新しいモデルに適用
+- シーン内で探査機を置き換え
+
+**実装箇所:**
+- `src/lib/threeSetup.ts:1081-1127` - `switchProbeModel()` 関数
+- `src/components/GameCanvas.tsx:53-63` - モデル変更検知とswitchProbeModel呼び出し
+- `src/components/GameCanvas.tsx:313` - useEffect依存配列からselectedModelを除外
+
+**コード構造:**
+```typescript
+// src/lib/threeSetup.ts
+function switchProbeModel(newModelPath: string | null) {
+    // 1. 現在の状態を保存
+    const currentPosition = probe.position.clone();
+    const currentRotation = probe.quaternion.clone();
+
+    if (newModelPath) {
+        // 2. GLBモデルをロード
+        loadGLBProbe(
+            newModelPath,
+            (loadedModel) => {
+                // 3. 保存した状態を新しいモデルに適用
+                loadedModel.position.copy(currentPosition);
+                loadedModel.quaternion.copy(currentRotation);
+
+                // 4. 古い探査機を削除
+                scene.remove(probe);
+
+                // 5. 新しい探査機を追加
+                scene.add(loadedModel);
+                probe = loadedModel;
+            },
+            (error) => {
+                console.error('Failed to switch probe model:', error);
+            }
+        );
+    } else {
+        // Voyagerモデルを使用
+        const newProbe = createVoyagerProbe();
+        newProbe.position.copy(currentPosition);
+        newProbe.quaternion.copy(currentRotation);
+
+        scene.remove(probe);
+        scene.add(newProbe);
+        probe = newProbe;
+    }
+}
+```
+
+**React側の実装:**
+```typescript
+// src/components/GameCanvas.tsx
+// モデル変更を検知
+useEffect(() => {
+    if (switchProbeModelRef.current && switchProbeModelRef.current.switchProbeModel) {
+        const modelData = PROBE_MODELS.find(m => m.value === selectedModel);
+        const probeModelPath = modelData?.path ?? null;
+        switchProbeModelRef.current.switchProbeModel(probeModelPath);
+    }
+}, [selectedModel]);
+
+// useEffectの依存配列からselectedModelを除外
+// これによりモデル変更時にシーン全体が再初期化されない
+}, [hudSetters, probeSpeedMult, gravityG, starMass]); // selectedModelを除外
+```
+
+**保持される状態:**
+| 項目 | 保持状態 | 備考 |
+|------|---------|------|
+| **位置** | ✓ 保持 | `position.clone()`で保存 |
+| **回転** | ✓ 保持 | `quaternion.clone()`で保存 |
+| **速度** | ✓ 保持 | 物理エンジンのbodies配列に保存済み |
+| **燃料** | ✓ 保持 | state.fuelに保存済み |
+| **スリングショット回数** | ✓ 保持 | state.slingshotsに保存済み |
+| **軌跡** | ✓ 保持 | trailPoints配列に保存済み |
+| **距離** | ✓ 保持 | state.distanceに保存済み |
+
+**動作フロー:**
+1. ユーザーがドロップダウンから新しいモデルを選択
+2. `selectedModel`状態が更新
+3. useEffectが`selectedModel`の変更を検知
+4. `switchProbeModel()`が呼び出される
+5. 現在の探査機の位置と回転を保存
+6. 新しいモデルをロード（非同期）
+7. ロード完了後、保存した状態を新しいモデルに適用
+8. シーン内で探査機を置き換え
+9. シミュレーション継続（速度、燃料などはそのまま）
+
+**利点:**
+- **継続性**: シミュレーションを中断せずにビジュアルを変更
+- **実験性**: 異なるモデルでの見た目を比較可能
+- **ユーザー体験**: ゲームプレイを妨げない柔軟性
+- **状態保持**: 物理演算の結果が失われない
+
+**以前の実装との違い:**
+| 項目 | 以前 | 現在 |
+|------|-----|-----|
+| **モデル変更時** | シーン全体を再初期化 | モデルのみを置き換え |
+| **位置** | 初期位置にリセット | 現在位置を保持 |
+| **速度** | 初期速度にリセット | 現在速度を保持 |
+| **燃料** | 100%にリセット | 現在値を保持 |
+| **軌跡** | クリア | 保持 |
+| **useEffect依存配列** | selectedModelを含む | selectedModelを除外 |
+
+**技術的詳細:**
+
+**1. 状態のクローン:**
+```typescript
+const currentPosition = probe.position.clone();
+const currentRotation = probe.quaternion.clone();
+```
+- `clone()`を使用して値をコピー（参照ではなく）
+- これにより、元のオブジェクトが削除されても状態を保持
+
+**2. 非同期ロードの処理:**
+- GLBモデルは非同期でロードされる
+- コールバック内で状態を適用することで、ロード完了を待つ
+- Voyagerモデルは同期的に作成されるため即座に適用
+
+**3. シーンの整合性:**
+- 古い探査機をシーンから削除: `scene.remove(probe)`
+- 新しい探査機を追加: `scene.add(newProbe)`
+- probe参照を更新: `probe = newProbe`
+
+**制約事項:**
+- GLBモデルのロード中は一時的に探査機が見えなくなる可能性
+- モデルによってスケールが異なるため、見た目のサイズが変わる場合がある
+- 物理シミュレーションは継続するため、モデルロード中も探査機は移動し続ける
+
+---
 
 **最適化:**
 - 速度が低い時は回転処理をスキップ（CPU負荷軽減）
@@ -742,15 +911,183 @@ if (modelPath) {
 - サイバーパンク風のデザインで統一感
 
 **注意事項:**
-- モデル切り替え時はシーン全体が再初期化されるため、燃料・スリングショット回数などの状態がリセットされる
-- 各GLBモデルのスケール・回転は手動調整が必要（現在は一律0.05倍スケール）
 - モデルファイルは`public/models/`に配置する必要がある
+- 各モデルの向き設定は`PROBE_MODELS`配列のorientation項目で個別調整
 
-**今後の改善案:**
-- モデル切り替え時に状態を保持する機能
-- モデルごとに最適なスケール・回転を事前設定
-- サムネイル画像の表示
-- モデルのプリロード（初回表示の高速化）
+**改善済み:**
+- ✓ モデル切り替え時に状態を保持する機能（3.7.4で実装）
+- ✓ モデルごとに最適な回転を事前設定（3.7.5で実装）
+- ✓ 長手方向の自動検出と進行方向への自動配置（3.7.5で実装）
+
+#### 3.7.5 モデル個別回転設定と長手方向自動検出
+
+**概要:**
+各3Dモデルの形状に応じて、長手方向を自動的に検出し、進行方向に合わせて適切に回転させる機能。モデルごとに個別の回転設定を持ち、柔軟な方向制御を実現します。
+
+**目的:**
+- モデルの先頭（前方）を進行方向に向ける
+- モデルの長手方向（最長軸）を自動検出
+- モデルごとに異なる回転設定を適用
+- 将来的なルール追加に対応した拡張性
+
+**実装方式:**
+1. バウンディングボックスから各軸（X, Y, Z）の長さを計算
+2. 最長軸を検出
+3. 最長軸が進行方向（Z軸）と一致するよう回転
+4. モデルごとの`invertDirection`設定で方向を反転
+
+**実装箇所:**
+- `src/app/page.tsx:16-31` - PROBE_MODELSにorientation設定を追加
+- `src/lib/threeSetup.ts:136-200` - loadGLBProbe関数での長手方向検出と自動回転
+- `src/lib/threeSetup.ts:916-923` - 速度追従時のinvertDirection対応
+- `src/components/GameCanvas.tsx:75, 61` - orientation情報の伝達
+
+**orientation設定の構造:**
+```typescript
+// src/app/page.tsx
+export const PROBE_MODELS = [
+    {
+        value: 'space_fighter',
+        label: 'Space Fighter',
+        path: '/models/space_fighter.glb',
+        orientation: {
+            autoAlign: true,        // 長手方向を自動検出して進行方向に合わせる
+            rotationY: undefined,   // 手動Y軸回転（ラジアン、オプション）
+            invertDirection: true   // 方向を反転（後ろ向きモデル用）
+        }
+    },
+    // ...
+];
+```
+
+**設定パラメータ:**
+| パラメータ | 型 | デフォルト | 説明 |
+|-----------|-----|----------|------|
+| **autoAlign** | boolean | false | 長手方向を自動検出してZ軸に合わせる |
+| **rotationY** | number | undefined | 手動Y軸回転（ラジアン、autoAlignの前に適用） |
+| **invertDirection** | boolean | true | 速度追従時に方向を反転するか |
+
+**長手方向の自動検出アルゴリズム:**
+```typescript
+// src/lib/threeSetup.ts:167-174
+// Calculate bounding box
+const box = new THREE.Box3().setFromObject(model);
+const size = box.getSize(new THREE.Vector3());
+
+// Determine longest axis
+let longestAxis = 'z'; // default
+if (size.x > size.y && size.x > size.z) {
+    longestAxis = 'x';
+} else if (size.y > size.x && size.y > size.z) {
+    longestAxis = 'y';
+}
+```
+
+**自動回転の適用:**
+```typescript
+// src/lib/threeSetup.ts:183-193
+if (orientation?.autoAlign) {
+    if (longestAxis === 'x') {
+        // Rotate 90 degrees to align X with Z
+        model.rotation.y = Math.PI / 2;
+    } else if (longestAxis === 'y') {
+        // Rotate 90 degrees around X to align Y with Z
+        model.rotation.x = Math.PI / 2;
+    }
+    // If longestAxis === 'z', no additional rotation needed
+}
+```
+
+**回転パターン:**
+| 最長軸 | 回転処理 | 結果 |
+|--------|---------|------|
+| **X軸** | Y軸周りに90度回転 | X軸がZ軸に一致 |
+| **Y軸** | X軸周りに90度回転 | Y軸がZ軸に一致 |
+| **Z軸** | 回転なし | そのまま |
+
+**invertDirection機能:**
+```typescript
+// src/lib/threeSetup.ts:916-923
+const orientationConfig = (probe as any).orientationConfig;
+const shouldInvert = orientationConfig?.invertDirection ?? true;
+
+if (shouldInvert) {
+    direction.negate(); // 方向を反転
+}
+```
+
+- モデルが後ろ向きにロードされる場合は`invertDirection: true`
+- モデルが前向きにロードされる場合は`invertDirection: false`
+
+**デバッグ情報:**
+コンソールログに以下の情報が出力されます：
+```
+Model dimensions: 12.50 x 5.30 x 8.20
+Auto-scaling to 15 units (scale: 1.2000)
+Longest axis: x (12.50 units)
+Auto-aligned: Rotated X-axis to face forward
+```
+
+**現在の設定例:**
+```typescript
+// ほとんどのモデルは後部が先頭を向いているため invertDirection: true
+{ value: 'space_fighter', orientation: { autoAlign: true, invertDirection: true } },
+{ value: 'space_shuttle', orientation: { autoAlign: true, invertDirection: true } },
+{ value: 'voyager', orientation: { autoAlign: true, invertDirection: true } },
+```
+
+**利点:**
+- **自動化**: 手動で各モデルの回転角度を調整する必要がない
+- **柔軟性**: モデルごとに個別設定が可能
+- **拡張性**: 将来的に新しいルール（rotationX, rotationZなど）を追加可能
+- **デバッグ容易**: コンソールログで各モデルの検出結果を確認可能
+
+**将来の拡張可能性:**
+```typescript
+orientation: {
+    autoAlign: true,
+    rotationX: Math.PI / 4,  // X軸回転を追加
+    rotationZ: Math.PI / 2,  // Z軸回転を追加
+    scaleBySpeed: true,      // 速度に応じてスケール変更
+    pitchWithVelocity: true, // ピッチ角を速度に応じて調整
+}
+```
+
+**技術的詳細:**
+
+**1. モデル情報の保存:**
+```typescript
+// src/lib/threeSetup.ts:200
+(model as any).orientationConfig = orientation;
+```
+- ロード時のorientation設定をモデルオブジェクトに保存
+- 速度追従時に参照される
+
+**2. 状態の引き継ぎ:**
+```typescript
+// src/lib/threeSetup.ts:1124
+function switchProbeModel(newModelPath: string | null, orientation?: {...}) {
+    // orientationを新しいモデルに渡す
+    loadGLBProbe(modelPath, onLoad, onError, orientation);
+}
+```
+
+**3. 統合:**
+- initThreeJS: 初期ロード時にorientationを適用
+- switchProbeModel: モデル切り替え時にorientationを適用
+- 速度追従ロジック: invertDirectionを考慮して方向を計算
+
+**制約事項:**
+- バウンディングボックスベースなので、複雑な形状では最適でない場合がある
+- 回転は各軸90度単位のみ（中間角度は手動設定が必要）
+- Y軸とX軸の同時回転は現在未対応
+
+**調整方法:**
+特定のモデルの向きが正しくない場合：
+1. ブラウザのコンソールログで`Longest axis`を確認
+2. `invertDirection`を反転（true ↔ false）
+3. 必要に応じて`rotationY`を手動設定
+4. ブラウザをリロードして確認
 
 ### 3.8 軌道可視化
 
@@ -1215,6 +1552,122 @@ scene.add(gravityWellMesh);
 | **更新** | 静的 | 動的（毎フレーム更新） |
 | **CPU負荷** | なし | 中 |
 | **用途** | 基準面、スケール感 | 重力の視覚化 |
+
+---
+
+### 3.12 平面グリッド表示制御
+
+平面グリッド（通常のGridHelper）の表示/非表示を独立して制御できる機能。重力井戸グリッドとは独立して、基準面としての平面グリッドを任意に切り替え可能。
+
+#### 3.12.1 概要
+
+**目的:**
+- 基準面として機能する平面グリッドの表示を制御
+- 重力井戸グリッドと独立して表示/非表示を切り替え
+- ユーザーの視覚的好みに応じてUIをカスタマイズ
+
+**実装方式:**
+- Settingsパネル内にチェックボックスを配置
+- 状態管理によりリアルタイムで表示切り替え
+- Three.jsの`visible`プロパティで制御
+
+#### 3.12.2 仕様
+
+**グリッド仕様:**
+- **タイプ**: `THREE.GridHelper`
+- **サイズ**: 7000 × 7000 シーン単位
+- **分割数**: 1000
+- **色**: 0x444444（メイン線）、0x222222（サブ線）
+- **配置**: XZ平面（Y=0）
+
+**デフォルト状態:**
+- 初期表示: ON（`gridEnabled = true`）
+- ゲーム開始時から表示
+
+#### 3.12.3 UI制御
+
+**チェックボックス配置:**
+- Settingsパネル内（Settings ボタンクリックで表示）
+- "Show gravity well grid" の下に配置
+- ラベル: "Show flat grid"
+
+**実装箇所:**
+- `src/components/SettingsPanel.tsx:74-83` - チェックボックスUI
+- `src/components/HUD.tsx:24-25, 46-47, 217-218` - Props伝達
+- `src/app/page.tsx:52, 105-106` - 状態管理
+
+**表示形式:**
+```
+Settings パネル内:
+  □ Show gravity well grid
+  ☑ Show flat grid
+```
+
+#### 3.12.4 実装詳細
+
+**状態管理:**
+```typescript
+// src/app/page.tsx:52
+const [gridEnabled, setGridEnabled] = useState<boolean>(true);
+```
+
+**Three.js側の制御:**
+```typescript
+// src/lib/threeSetup.ts:242-243
+const grid = new THREE.GridHelper(7000, 1000, 0x444444, 0x222222);
+grid.visible = options?.gridEnabled ?? true;
+scene.add(grid);
+
+// src/lib/threeSetup.ts:1057-1059
+function updateGrid(enabled: boolean) {
+    grid.visible = enabled;
+}
+```
+
+**リアルタイム更新:**
+```typescript
+// src/components/GameCanvas.tsx:45-51
+const gridRef = useRef<any>(null);
+useEffect(() => {
+    if (gridRef.current && gridRef.current.updateGrid) {
+        gridRef.current.updateGrid(gridEnabled);
+    }
+}, [gridEnabled]);
+```
+
+#### 3.12.5 重力井戸グリッドとの関係
+
+**独立制御:**
+- 平面グリッドと重力井戸グリッドは完全に独立
+- 両方同時に表示可能
+- 片方のみ、または両方非表示も可能
+
+**表示パターン:**
+| 平面グリッド | 重力井戸グリッド | 視覚効果 |
+|------------|----------------|---------|
+| ON | OFF | シンプルな基準面のみ |
+| OFF | ON | 重力の歪みのみ可視化 |
+| ON | ON | 基準面と重力歪みを重畳表示 |
+| OFF | OFF | グリッドなし（星空のみ） |
+
+**以前の実装との違い:**
+- 以前: 重力井戸グリッドONで平面グリッド自動非表示
+- 現在: 完全に独立した制御が可能
+
+#### 3.12.6 利点
+
+**視覚的柔軟性:**
+- ユーザーの好みに応じてカスタマイズ
+- 重力視覚化と基準面を同時表示可能
+
+**教育的価値:**
+- 平面グリッドで距離感を把握
+- 重力井戸グリッドで物理現象を理解
+- 両方の組み合わせで総合的な理解
+
+**パフォーマンス:**
+- 平面グリッドは静的なので負荷が低い
+- 非表示にすることで描画負荷をわずかに削減
 
 ---
 
@@ -2416,6 +2869,12 @@ SOFTWARE.
 | 2025-10-24 | 1.1 | UIの大幅改善 - インタラクティブHUD、グラフ、ミッション進捗、カメラコントロール分離 |
 | 2025-10-25 | 1.2 | 視覚化の改善 - 背景星のサイズ変更(2→10)、グリッド分割数変更(140→1000)、重力井戸グリッド可視化機能追加 |
 | 2025-10-25 | 1.3 | 探査機の3Dデザイン - ボイジャー型探査機の実装、8パーツ構成、メタリック質感、スケール3倍 |
+| 2025-10-26 | 1.4 | UI配置の最適化 - Swing-by回数をChartsパネル内に移動、重力井戸チェックボックスをSettingsパネル内に移動、Followカメラ視点距離の調整(-150→-70で探査機により近接) |
+| 2025-10-26 | 1.5 | マテリアル明度判定による自己発光制御 - HSL色空間で明度判定（L<0.5）、暗いモデルのみ自己発光追加（ベースカラーの50%）、明るいモデルは元の見た目維持 |
+| 2025-10-26 | 1.6 | 平面グリッド表示制御機能 - Settingsパネル内に平面グリッド表示チェックボックス追加、重力井戸グリッドと独立制御可能、両方同時表示・個別表示・完全非表示に対応 |
+| 2025-10-26 | 1.7 | GLBモデルロード中の表示制御 - ロード中はVoyagerを非表示にしてチラつきを防止、ロード失敗時は自動的にVoyagerを表示、スムーズなモデル切り替えを実現 |
+| 2025-10-26 | 1.8 | 動的モデル切り替え機能（状態保持） - シミュレーション中にモデル切り替え可能、位置・速度・燃料・軌跡など全状態を保持、シーン再初期化なしでモデルのみ置き換え |
+| 2025-10-26 | 1.9 | モデル個別回転設定と長手方向自動検出 - バウンディングボックスから最長軸を自動検出、モデルごとにorientation設定（autoAlign, rotationY, invertDirection）、長手方向を進行方向に自動配置 |
 
 ---
 

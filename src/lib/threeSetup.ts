@@ -136,7 +136,8 @@ function createVoyagerProbe(): THREE.Group {
 function loadGLBProbe(
     modelPath: string,
     onLoad: (model: THREE.Group) => void,
-    onError: (error: any) => void
+    onError: (error: any) => void,
+    orientation?: { autoAlign?: boolean; rotationY?: number; invertDirection?: boolean }
 ): void {
     const loader = new GLTFLoader();
 
@@ -145,10 +146,58 @@ function loadGLBProbe(
         (gltf) => {
             const model = gltf.scene;
 
-            // Adjust model orientation and scale as needed
-            // (These values may need adjustment based on your specific GLB file)
-            model.scale.set(0.05, 0.05, 0.05);
-            model.rotation.y = Math.PI; // Rotate 180 degrees if needed
+            // Calculate bounding box to get model dimensions
+            const box = new THREE.Box3().setFromObject(model);
+            const size = box.getSize(new THREE.Vector3());
+            const maxDim = Math.max(size.x, size.y, size.z);
+
+            // Auto-normalize: scale to target size
+            const targetSize = 15; // Target size in scene units (3x larger for better visibility)
+            const normalizedScale = targetSize / maxDim;
+            model.scale.setScalar(normalizedScale);
+
+            console.log(`Model dimensions: ${size.x.toFixed(2)} x ${size.y.toFixed(2)} x ${size.z.toFixed(2)}`);
+            console.log(`Auto-scaling to ${targetSize} units (scale: ${normalizedScale.toFixed(4)})`);
+
+            // Center model at origin (optional, helps with consistent positioning)
+            box.setFromObject(model); // Recalculate after scaling
+            const center = box.getCenter(new THREE.Vector3());
+            model.position.sub(center);
+
+            // Determine longest dimension (axis) for auto-alignment
+            let longestAxis = 'z'; // default
+            if (size.x > size.y && size.x > size.z) {
+                longestAxis = 'x';
+            } else if (size.y > size.x && size.y > size.z) {
+                longestAxis = 'y';
+            }
+            console.log(`Longest axis: ${longestAxis} (${longestAxis === 'x' ? size.x.toFixed(2) : longestAxis === 'y' ? size.y.toFixed(2) : size.z.toFixed(2)} units)`);
+
+            // Apply manual rotation if specified
+            if (orientation?.rotationY !== undefined) {
+                model.rotation.y = orientation.rotationY;
+                console.log(`Applied manual rotation Y: ${orientation.rotationY.toFixed(2)} radians`);
+            }
+
+            // Auto-align longest dimension with forward direction (Z-axis)
+            if (orientation?.autoAlign) {
+                if (longestAxis === 'x') {
+                    // Rotate 90 degrees to align X with Z
+                    model.rotation.y = Math.PI / 2;
+                    console.log('Auto-aligned: Rotated X-axis to face forward');
+                } else if (longestAxis === 'y') {
+                    // Rotate 90 degrees around X to align Y with Z
+                    model.rotation.x = Math.PI / 2;
+                    console.log('Auto-aligned: Rotated Y-axis to face forward');
+                }
+                // If longestAxis === 'z', no additional rotation needed
+            } else {
+                // Fallback to default 180 degree rotation if not auto-aligning
+                model.rotation.y = Math.PI;
+            }
+
+            // Store orientation config on model for use in velocity tracking
+            (model as any).orientationConfig = orientation;
 
             // Brighten all materials in the model
             model.traverse((child: any) => {
@@ -159,9 +208,26 @@ function loadGLBProbe(
                     const materials = Array.isArray(material) ? material : [material];
 
                     materials.forEach((mat: any) => {
-                        // Increase color brightness
+                        // Check if material color is dark or light
+                        let isDark = false;
+                        const hsl = { h: 0, s: 0, l: 0 };
+
                         if (mat.color) {
-                            mat.color.multiplyScalar(1.1); // Make 2.5x brighter
+                            mat.color.getHSL(hsl);
+                            isDark = hsl.l < 0.5; // Lightness < 0.5 = dark color
+
+                            // Increase color brightness
+                            mat.color.multiplyScalar(1.1);
+                        }
+
+                        // Add emissive color only for dark models for consistent brightness
+                        if (mat.emissive !== undefined && isDark) {
+                            // Set emissive to a fraction of the base color for self-illumination
+                            const emissiveColor = mat.color ? mat.color.clone().multiplyScalar(0.5) : new THREE.Color(0x333333);
+                            mat.emissive = emissiveColor;
+                            console.log(`Applied emissive to dark material (L=${hsl.l.toFixed(2)})`);
+                        } else if (mat.emissive !== undefined && !isDark) {
+                            console.log(`Skipped emissive for bright material (L=${hsl.l.toFixed(2)})`);
                         }
 
                         // Adjust other properties for better visibility
@@ -190,7 +256,7 @@ function loadGLBProbe(
     );
 }
 
-export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMult?: number; G?: number; starMass?: number; gravityGridEnabled?: boolean; probeModelPath?: string | null }) {
+export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMult?: number; G?: number; starMass?: number; gravityGridEnabled?: boolean; gridEnabled?: boolean; probeModelPath?: string | null; orientation?: { autoAlign?: boolean; rotationY?: number; invertDirection?: boolean } }) {
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 50000);
     camera.position.set(0, 400, 2200);
@@ -207,6 +273,7 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
 
     // Simple grid for reference (large enough to show outer planets)
     const grid = new THREE.GridHelper(7000, 1000, 0x444444, 0x222222);
+    grid.visible = options?.gridEnabled ?? true;
     scene.add(grid);
 
     // ====================================================================
@@ -283,11 +350,19 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
 
     const probeR = 100;  // 1.0 AU (same as Earth orbit)
     probe.position.set(0, 0, probeR);
-    scene.add(probe);
+
+    // Store orientation config on built-in Voyager probe
+    (probe as any).orientationConfig = options?.orientation;
 
     // Attempt to load GLB model from public/models/ directory
     // If loading fails or probeModelPath is null, use the Voyager probe
     const modelPath = options?.probeModelPath;
+    if (modelPath) {
+        // Hide Voyager while loading GLB model
+        probe.visible = false;
+    }
+    scene.add(probe);
+
     if (modelPath) {
         loadGLBProbe(
             modelPath,
@@ -313,7 +388,10 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
                 // Error: keep using the Voyager probe as fallback
                 console.log('Failed to load GLB model, using Voyager probe as fallback');
                 console.error('GLB loading error:', error);
-            }
+                // Show Voyager probe on loading failure
+                probe.visible = true;
+            },
+            options?.orientation
         );
     } else {
         console.log('Using built-in Voyager probe (no GLB model specified)');
@@ -837,14 +915,22 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
                 const speed = state.velocity.length();
                 if (speed > 0.1) { // Only rotate if moving fast enough
                     // Calculate target direction from velocity vector
-                    const direction = state.velocity.clone().normalize();
+                    let direction = state.velocity.clone().normalize();
+
+                    // Check if model has orientation config with invertDirection flag
+                    const orientationConfig = (probe as any).orientationConfig;
+                    const shouldInvert = orientationConfig?.invertDirection ?? true; // default to true for backward compatibility
+
+                    // Invert direction if configured (for models that face backwards)
+                    if (shouldInvert) {
+                        direction.negate();
+                    }
 
                     // Create a matrix that looks in the velocity direction
-                    // Note: direction is negated because the 3D model's front faces the opposite way
                     const targetMatrix = new THREE.Matrix4();
                     targetMatrix.lookAt(
                         new THREE.Vector3(0, 0, 0),  // origin
-                        direction.negate(),           // reversed direction (model's front is opposite)
+                        direction,                    // direction (inverted if configured)
                         new THREE.Vector3(0, 1, 0)   // up vector
                     );
 
@@ -1014,10 +1100,14 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     // Toggle gravity grid visibility
     function updateGravityGrid(enabled: boolean) {
         gravityWellMesh.visible = enabled;
-        grid.visible = !enabled;
         if (enabled) {
             updateGravityWellGrid();
         }
+    }
+
+    // Toggle flat grid visibility
+    function updateGrid(enabled: boolean) {
+        grid.visible = enabled;
     }
 
     function dispose() {
@@ -1033,7 +1123,59 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
         });
     }
 
-    return { scene, camera, renderer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid };
+    // Switch probe model without resetting state
+    function switchProbeModel(newModelPath: string | null, orientation?: { autoAlign?: boolean; rotationY?: number; invertDirection?: boolean }) {
+        // Save current state
+        const currentPosition = probe.position.clone();
+        const currentRotation = probe.quaternion.clone();
+
+        // Create new probe model
+        let newProbe: THREE.Group;
+
+        if (newModelPath) {
+            // Load GLB model
+            loadGLBProbe(
+                newModelPath,
+                (loadedModel) => {
+                    // Apply saved state to new model
+                    loadedModel.position.copy(currentPosition);
+                    loadedModel.quaternion.copy(currentRotation);
+
+                    // Remove old probe
+                    scene.remove(probe);
+
+                    // Add new probe
+                    scene.add(loadedModel);
+                    probe = loadedModel;
+
+                    console.log('Probe model switched successfully');
+                },
+                (error) => {
+                    console.error('Failed to switch probe model:', error);
+                },
+                orientation
+            );
+        } else {
+            // Use built-in Voyager
+            newProbe = createVoyagerProbe();
+            newProbe.position.copy(currentPosition);
+            newProbe.quaternion.copy(currentRotation);
+
+            // Store orientation config on Voyager model too
+            (newProbe as any).orientationConfig = orientation;
+
+            // Remove old probe
+            scene.remove(probe);
+
+            // Add new probe
+            scene.add(newProbe);
+            probe = newProbe;
+
+            console.log('Switched to built-in Voyager probe');
+        }
+    }
+
+    return { scene, camera, renderer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid, updateGrid, switchProbeModel };
 }
 
 // small helper to allow external callers to apply delta-v to the probe

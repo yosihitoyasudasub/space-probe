@@ -20,10 +20,11 @@ interface Props {
     starMass?: number;
     cameraView?: CameraView;
     gravityGridEnabled?: boolean;
+    gridEnabled?: boolean;
     selectedModel?: string;
 }
 
-const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravityG = 1.0, starMass = 4000, cameraView = 'free', gravityGridEnabled = false, selectedModel = 'space_fighter' }) => {
+const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravityG = 1.0, starMass = 4000, cameraView = 'free', gravityGridEnabled = false, gridEnabled = true, selectedModel = 'space_fighter' }) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const rafRef = useRef<number | null>(null);
     const cameraViewRef = useRef<CameraView>(cameraView);
@@ -41,6 +42,27 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
         }
     }, [gravityGridEnabled]);
 
+    // Update flat grid when gridEnabled changes
+    const gridRef = useRef<any>(null);
+    useEffect(() => {
+        if (gridRef.current && gridRef.current.updateGrid) {
+            gridRef.current.updateGrid(gridEnabled);
+        }
+    }, [gridEnabled]);
+
+    // Store switchProbeModel function
+    const switchProbeModelRef = useRef<any>(null);
+
+    // Handle probe model switching
+    useEffect(() => {
+        if (switchProbeModelRef.current && switchProbeModelRef.current.switchProbeModel) {
+            const modelData = PROBE_MODELS.find(m => m.value === selectedModel);
+            const probeModelPath = modelData?.path ?? null;
+            const orientation = (modelData as any)?.orientation;
+            switchProbeModelRef.current.switchProbeModel(probeModelPath, orientation);
+        }
+    }, [selectedModel]);
+
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -50,11 +72,14 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
     // Get model path from selected model
     const modelData = PROBE_MODELS.find(m => m.value === selectedModel);
     const probeModelPath = modelData?.path ?? null;
+    const orientation = (modelData as any)?.orientation;
 
     // pass simulation tuning options to initThreeJS
-    let threeObj: any = (initThreeJS as any)(canvas, { probeSpeedMult, G: gravityG, starMass, gravityGridEnabled, probeModelPath });
-    let { scene, camera, renderer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid } = threeObj;
+    let threeObj: any = (initThreeJS as any)(canvas, { probeSpeedMult, G: gravityG, starMass, gravityGridEnabled, gridEnabled, probeModelPath, orientation });
+    let { scene, camera, renderer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid, updateGrid, switchProbeModel } = threeObj;
     gravityGridRef.current = { updateGravityGrid };
+    gridRef.current = { updateGrid };
+    switchProbeModelRef.current = { switchProbeModel };
 
     // input state
     const inputState = { left: false, right: false, up: false, down: false } as any;
@@ -217,7 +242,7 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
                         if (speed > 0.1) {
                             // Position camera behind the probe based on velocity direction
                             const velNorm = vel.clone().normalize();
-                            const camOffset = velNorm.multiplyScalar(-150); // 150 units behind
+                            const camOffset = velNorm.multiplyScalar(-70); // 70 units behind
                             const camPos = probePos.clone().add(camOffset);
                             camPos.y += 80; // 80 units above
 
@@ -287,7 +312,7 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
             window.removeEventListener('keydown', onKeyDown);
             window.removeEventListener('keyup', onKeyUp);
         };
-    }, [hudSetters, probeSpeedMult, gravityG, starMass, selectedModel]);
+    }, [hudSetters, probeSpeedMult, gravityG, starMass]);
 
     return <canvas ref={canvasRef} style={{ display: 'block', width: '100vw', height: '100vh' }} />;
 };

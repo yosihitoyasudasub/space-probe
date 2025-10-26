@@ -21,6 +21,8 @@ interface HUDProps {
     setStarMass?: (v: number) => void;
     gravityGridEnabled?: boolean;
     setGravityGridEnabled?: (v: boolean) => void;
+    gridEnabled?: boolean;
+    setGridEnabled?: (v: boolean) => void;
     selectedModel?: string;
     setSelectedModel?: (v: string) => void;
 }
@@ -41,6 +43,8 @@ const HUD: React.FC<HUDProps> = ({
     setStarMass = () => {},
     gravityGridEnabled = false,
     setGravityGridEnabled = () => {},
+    gridEnabled = true,
+    setGridEnabled = () => {},
     selectedModel = 'space_fighter',
     setSelectedModel = () => {},
 }) => {
@@ -88,86 +92,76 @@ const HUD: React.FC<HUDProps> = ({
     return (
         <>
             <div id="ui" className="hud-container hud-compact">
+                {/* 上段：統計情報 */}
+                <div className="hud-compact-line">
+                    <span className="stat-item">
+                        STS:
+                        <span className={`stat-value status-${status.toLowerCase().replace(' ', '-')}`}>
+                            {status}
+                        </span>
+                    </span>
+                    <span className="stat-separator">|</span>
+                    <span className="stat-item">
+                        V:<span className="stat-value">{velocity.toFixed(1)}</span>km/s
+                    </span>
+                    <span className="stat-separator">|</span>
+                    <span className="stat-item">
+                        D:<span className="stat-value">{distance.toFixed(0)}</span>AU
+                    </span>
+                    <span className="stat-separator">|</span>
+                    <span className="stat-item">
+                        Fuel:
+                        <span className={`stat-value ${fuel < 20 ? 'low-fuel' : ''}`}>
+                            {fuel.toFixed(1)}
+                        </span>%
+                    </span>
+                </div>
+
+                {/* 下段：ボタン類 */}
                 <div className="hud-compact-line">
                     <div className="hud-toggle-buttons">
                         <button
                             className={`toggle-btn ${showCharts ? 'active' : ''}`}
                             onClick={handleChartsToggle}
-                            title="グラフ表示の切り替え"
+                            title="Toggle charts"
                         >
-                            グラフ
+                            Charts
                         </button>
                         <button
                             className={`toggle-btn ${showMissions ? 'active' : ''}`}
                             onClick={handleMissionsToggle}
-                            title="ミッション進捗の切り替え"
+                            title="Toggle mission progress"
                         >
-                            ミッション
+                            Missions
                         </button>
                         <button
                             className={`toggle-btn ${showHelp ? 'active' : ''}`}
                             onClick={handleHelpToggle}
-                            title="操作方法の表示"
+                            title="Show controls"
                         >
-                            操作方法
+                            Controls
                         </button>
                         <button
                             className={`toggle-btn ${showSettings ? 'active' : ''}`}
                             onClick={handleSettingsToggle}
-                            title="シミュレーション設定"
+                            title="Simulation settings"
                         >
-                            設定
+                            Settings
                         </button>
+                        <label className="model-selector" title="Select probe model">
+                            <select
+                                value={selectedModel}
+                                onChange={(e) => setSelectedModel(e.target.value)}
+                                className="model-dropdown"
+                            >
+                                {PROBE_MODELS.map((model) => (
+                                    <option key={model.value} value={model.value}>
+                                        {model.label}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
                     </div>
-                    <label className="gravity-grid-checkbox" title="重力井戸グリッド表示">
-                        <input
-                            type="checkbox"
-                            checked={gravityGridEnabled}
-                            onChange={(e) => setGravityGridEnabled(e.target.checked)}
-                        />
-                        <span>重力井戸</span>
-                    </label>
-                    <span className="stat-separator">|</span>
-                    <label className="model-selector" title="探査機モデル選択">
-                        <span>モデル:</span>
-                        <select
-                            value={selectedModel}
-                            onChange={(e) => setSelectedModel(e.target.value)}
-                            className="model-dropdown"
-                        >
-                            {PROBE_MODELS.map((model) => (
-                                <option key={model.value} value={model.value}>
-                                    {model.label}
-                                </option>
-                            ))}
-                        </select>
-                    </label>
-                    <span className="stat-separator">|</span>
-                    <span className="stat-item">
-                        状態:
-                        <span className={`stat-value status-${status.toLowerCase().replace(' ', '-')}`}>
-                            {status}
-                        </span>
-                    </span>
-                    <span className="stat-separator">,</span>
-                    <span className="stat-item">
-                        速度:<span className="stat-value">{velocity.toFixed(1)}</span>km/s
-                    </span>
-                    <span className="stat-separator">,</span>
-                    <span className="stat-item">
-                        距離:<span className="stat-value">{distance.toFixed(2)}</span>AU
-                    </span>
-                    <span className="stat-separator">,</span>
-                    <span className="stat-item">
-                        燃料:
-                        <span className={`stat-value ${fuel < 20 ? 'low-fuel' : ''}`}>
-                            {fuel.toFixed(1)}
-                        </span>%
-                    </span>
-                    <span className="stat-separator">,</span>
-                    <span className="stat-item">
-                        スイングバイ:<span className="stat-value">{slingshots}</span>回
-                    </span>
                 </div>
             </div>
 
@@ -176,15 +170,19 @@ const HUD: React.FC<HUDProps> = ({
                     <MiniChart
                         data={velocityHistory}
                         color="#00ff88"
-                        label="速度"
+                        label="Velocity"
                         unit="km/s"
                     />
                     <MiniChart
                         data={distanceHistory}
                         color="#00aaff"
-                        label="距離"
+                        label="Distance"
                         unit="AU"
                     />
+                    <div className="chart-slingshots">
+                        <span className="chart-label">Swing-by count:</span>
+                        <span className="chart-current" style={{ color: '#0f0' }}>{slingshots}</span>
+                    </div>
                 </div>
             )}
 
@@ -214,6 +212,10 @@ const HUD: React.FC<HUDProps> = ({
                         setGravityG={setGravityG}
                         starMass={starMass}
                         setStarMass={setStarMass}
+                        gravityGridEnabled={gravityGridEnabled}
+                        setGravityGridEnabled={setGravityGridEnabled}
+                        gridEnabled={gridEnabled}
+                        setGridEnabled={setGridEnabled}
                     />
                 </div>
             )}

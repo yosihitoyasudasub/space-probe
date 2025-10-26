@@ -13,22 +13,21 @@ export interface DataPoint {
 }
 
 // Available 3D models in public/models/
+// orientation: Controls how the model is oriented
+//   - autoAlign: automatically align longest dimension with velocity vector
+//   - rotationY: manual Y-axis rotation (radians) - applied before auto-alignment
+//   - invertDirection: invert the direction after alignment (for models facing backwards)
 export const PROBE_MODELS = [
-    { value: 'voyager', label: 'Voyager (Built-in)', path: null }, // null = use built-in Voyager
-    { value: 'space_fighter', label: 'Space Fighter', path: '/models/space_fighter.glb' },
-    { value: 'voyager_satellite', label: 'Voyager Satellite', path: '/models/voyager_space_satellite__draft.glb' },
-    { value: 'lucy_probe', label: 'Lucy NASA Probe', path: '/models/lucy__nasa_space_probe__free_download.glb' },
-    { value: 'space_shuttle', label: 'Space Shuttle', path: '/models/space_shuttle.glb' },
-    { value: 'space_shuttle_2', label: 'Space Shuttle 2', path: '/models/space_shuttle_2.glb' },
-    { value: 'space_ship', label: 'Space Ship', path: '/models/space_ship.glb' },
-    { value: 'space_ship_2', label: 'Space Ship 2', path: '/models/space_ship_2.glb' },
-    { value: 'space_fighter_3', label: 'Space Fighter 3', path: '/models/space_fighter_3.glb' },
-    { value: 'lego_scooter', label: 'LEGO Space Scooter', path: '/models/lego_885_-_space_scooter.glb' },
-    { value: 'sputnik', label: 'Retro Sputnik', path: '/models/space_retro_sputnik.glb' },
-    { value: 'unipersonal', label: 'Unipersonal Vessel', path: '/models/unipersonal_space_vessel.glb' },
-    { value: 'yamato_2205', label: 'Yamato 2205', path: '/models/space_battleship_yamato_2205.glb' },
-    { value: 'yamato_refit', label: 'Yamato Refit', path: '/models/space_battleship_yamato_refit.glb' },
-    { value: 'station_2001', label: 'Space Station (2001)', path: '/models/space_station_v_2001_a_space_odyssey.glb' },
+    { value: 'voyager', label: 'Voyager (Built-in)', path: null, orientation: { autoAlign: true, invertDirection: true } },
+    { value: 'space_fighter', label: 'Space Fighter', path: '/models/space_fighter.glb', orientation: { autoAlign: true, invertDirection: true } },
+    { value: 'space_shuttle', label: 'Space Shuttle', path: '/models/space_shuttle.glb', orientation: { autoAlign: true, invertDirection: true } },
+    { value: 'space_shuttle_2', label: 'Space Shuttle 2', path: '/models/space_shuttle_2.glb', orientation: { autoAlign: true, invertDirection: true } },
+    { value: 'space_ship', label: 'Space Ship', path: '/models/space_ship.glb', orientation: { autoAlign: true, invertDirection: true } },
+    { value: 'space_ship_2', label: 'Space Ship 2', path: '/models/space_ship_2.glb', orientation: { autoAlign: true, invertDirection: true } },
+    { value: 'space_fighter_3', label: 'Space Fighter 3', path: '/models/space_fighter_3.glb', orientation: { autoAlign: true, invertDirection: true } },
+    { value: 'lego_scooter', label: 'LEGO Space Scooter', path: '/models/lego_885_-_space_scooter.glb', orientation: { autoAlign: true, invertDirection: true } },
+    { value: 'sputnik', label: 'Retro Sputnik', path: '/models/space_retro_sputnik.glb', orientation: { autoAlign: true, invertDirection: true } },
+    { value: 'station_2001', label: 'Space Station (2001)', path: '/models/space_station_v_2001_a_space_odyssey.glb', orientation: { autoAlign: true, invertDirection: true } },
 ];
 
 const Page = () => {
@@ -49,6 +48,7 @@ const Page = () => {
     const [starMass, setStarMass] = useState<number>(PHYSICS_SCALE.SUN_MASS);
     const [cameraView, setCameraView] = useState<CameraView>('free');
     const [gravityGridEnabled, setGravityGridEnabled] = useState<boolean>(false);
+    const [gridEnabled, setGridEnabled] = useState<boolean>(true);
     const [selectedModel, setSelectedModel] = useState<string>('space_fighter');
 
     // 履歴データ付きセッター
@@ -84,7 +84,7 @@ const Page = () => {
 
     return (
         <div>
-            <GameCanvas hudSetters={hudSetters} probeSpeedMult={probeSpeedMult} gravityG={gravityG} starMass={starMass} cameraView={cameraView} gravityGridEnabled={gravityGridEnabled} selectedModel={selectedModel} />
+            <GameCanvas hudSetters={hudSetters} probeSpeedMult={probeSpeedMult} gravityG={gravityG} starMass={starMass} cameraView={cameraView} gravityGridEnabled={gravityGridEnabled} gridEnabled={gridEnabled} selectedModel={selectedModel} />
             <HUD
                 status={status}
                 velocity={velocity}
@@ -101,6 +101,8 @@ const Page = () => {
                 setStarMass={setStarMass}
                 gravityGridEnabled={gravityGridEnabled}
                 setGravityGridEnabled={setGravityGridEnabled}
+                gridEnabled={gridEnabled}
+                setGridEnabled={setGridEnabled}
                 selectedModel={selectedModel}
                 setSelectedModel={setSelectedModel}
             />

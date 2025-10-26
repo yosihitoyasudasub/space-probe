@@ -1,486 +1,68 @@
-[00:00:01.629] Server  LOG      ✓ Ready in 1166ms
-[00:00:04.717] Server  LOG      ○ Compiling / ...
-[00:00:07.706] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:08.647] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
-[00:00:08.647] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
-[00:00:09.463] Browser LOG     Loading model: Infinity%
-[00:00:09.463] Browser LOG     Loading model: Infinity%
-[00:00:09.463] Browser LOG     Loading model: Infinity%
-[00:00:09.463] Browser LOG     Loading model: Infinity%
-[00:00:09.464] Browser LOG     Loading model: Infinity%
-[00:00:09.464] Browser LOG     Loading model: Infinity%
-[00:00:09.464] Browser LOG     Loading model: Infinity%
-[00:00:09.464] Browser LOG     Loading model: Infinity%
-[00:00:09.464] Browser LOG     Loading model: Infinity%
-[00:00:09.464] Browser LOG     Loading model: Infinity%
-[00:00:09.464] Browser LOG     Loading model: Infinity%
-[00:00:09.464] Browser LOG     Loading model: Infinity%
-[00:00:09.464] Browser LOG     Loading model: Infinity%
-[00:00:09.464] Browser LOG     Loading model: Infinity%
-[00:00:09.464] Browser LOG     Loading model: Infinity%
-[00:00:09.465] Browser LOG     Loading model: Infinity%
-[00:00:09.465] Browser LOG     Loading model: Infinity%
-[00:00:09.465] Browser LOG     Loading model: Infinity%
-[00:00:09.465] Browser LOG     Loading model: Infinity%
-[00:00:09.465] Browser LOG     Loading model: Infinity%
-[00:00:09.465] Browser LOG     Loading model: Infinity%
-[00:00:09.465] Browser LOG     Loading model: Infinity%
-[00:00:09.465] Browser LOG     Loading model: Infinity%
-[00:00:09.465] Browser LOG     Loading model: Infinity%
-[00:00:09.465] Browser LOG     Loading model: Infinity%
-[00:00:09.465] Browser LOG     Loading model: Infinity%
-[00:00:09.465] Browser LOG     Loading model: Infinity%
-[00:00:09.465] Browser LOG     Loading model: Infinity%
-[00:00:09.465] Browser LOG     Loading model: Infinity%
-[00:00:09.465] Browser LOG     Loading model: Infinity%
-[00:00:09.465] Browser LOG     Loading model: Infinity%
-[00:00:09.465] Browser LOG     Loading model: Infinity%
-[00:00:09.465] Browser LOG     Loading model: Infinity%
-[00:00:09.465] Browser LOG     Loading model: Infinity%
-[00:00:09.465] Browser LOG     Loading model: Infinity%
-[00:00:09.465] Browser LOG     Loading model: Infinity%
-[00:00:09.465] Browser LOG     Loading model: Infinity%
-[00:00:09.465] Browser LOG     Loading model: Infinity%
-[00:00:09.465] Browser LOG     Loading model: Infinity%
-[00:00:09.465] Browser LOG     Loading model: Infinity%
-[00:00:09.465] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.466] Browser LOG     Loading model: Infinity%
-[00:00:09.770] Browser LOG     GLB model loaded successfully: /models/space_fighter.glb
-[00:00:09.770] Browser LOG     GLB model loaded, replacing probe
-[00:00:09.770] Browser LOG     Probe replaced with GLB model successfully
-[00:00:10.223] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:10.651] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
-[00:00:10.651] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
-[00:00:10.802] Browser LOG     Loading model: Infinity%
-[00:00:10.803] Browser LOG     Loading model: Infinity%
-[00:00:10.803] Browser LOG     Loading model: Infinity%
-[00:00:10.803] Browser LOG     Loading model: Infinity%
-[00:00:10.803] Browser LOG     Loading model: Infinity%
-[00:00:10.803] Browser LOG     Loading model: Infinity%
-[00:00:10.803] Browser LOG     Loading model: Infinity%
-[00:00:10.803] Browser LOG     Loading model: Infinity%
-[00:00:10.803] Browser LOG     Loading model: Infinity%
-[00:00:10.803] Browser LOG     Loading model: Infinity%
-[00:00:10.803] Browser LOG     Loading model: Infinity%
-[00:00:10.803] Browser LOG     Loading model: Infinity%
-[00:00:10.803] Browser LOG     Loading model: Infinity%
-[00:00:10.803] Browser LOG     Loading model: Infinity%
-[00:00:10.803] Browser LOG     Loading model: Infinity%
-[00:00:11.005] Browser LOG     GLB model loaded successfully: /models/space_fighter.glb
-[00:00:11.005] Browser LOG     GLB model loaded, replacing probe
-[00:00:11.005] Browser LOG     Probe replaced with GLB model successfully
-[00:02:55.915] Server  LOG      ✓ Compiled in 34ms
-[00:02:56.473] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
-[00:02:56.473] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
-[00:02:56.473] Browser LOG     Loading model: Infinity%
-[00:02:56.473] Browser LOG     Loading model: Infinity%
-[00:02:56.473] Browser LOG     Loading model: Infinity%
-[00:02:56.473] Browser LOG     Loading model: Infinity%
-[00:02:56.473] Browser LOG     Loading model: Infinity%
-[00:02:56.473] Browser LOG     Loading model: Infinity%
-[00:02:56.473] Browser LOG     Loading model: Infinity%
-[00:02:56.473] Browser LOG     Loading model: Infinity%
-[00:02:56.473] Browser LOG     Loading model: Infinity%
-[00:02:56.473] Browser LOG     Loading model: Infinity%
-[00:02:56.473] Browser LOG     Loading model: Infinity%
-[00:02:56.473] Browser LOG     Loading model: Infinity%
-[00:02:56.473] Browser LOG     Loading model: Infinity%
-[00:02:56.473] Browser LOG     Loading model: Infinity%
-[00:02:56.473] Browser LOG     Loading model: Infinity%
-[00:02:56.473] Browser LOG     Loading model: Infinity%
-[00:02:56.473] Browser LOG     Loading model: Infinity%
-[00:02:56.473] Browser LOG     Loading model: Infinity%
-[00:02:57.481] Browser LOG     GLB model loaded successfully: /models/space_fighter.glb
-[00:02:57.481] Browser LOG     GLB model loaded, replacing probe
-[00:02:57.481] Browser LOG     Probe replaced with GLB model successfully
-[00:03:11.701] Server  LOG      ✓ Compiled in 98ms
-[00:03:12.480] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
-[00:03:12.481] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
-[00:03:12.481] Browser LOG     Loading model: Infinity%
-[00:03:12.481] Browser LOG     Loading model: Infinity%
-[00:03:12.481] Browser LOG     Loading model: Infinity%
-[00:03:12.481] Browser LOG     Loading model: Infinity%
-[00:03:12.481] Browser LOG     Loading model: Infinity%
-[00:03:12.481] Browser LOG     Loading model: Infinity%
-[00:03:12.481] Browser LOG     Loading model: Infinity%
-[00:03:12.481] Browser LOG     Loading model: Infinity%
-[00:03:12.481] Browser LOG     Loading model: Infinity%
-[00:03:12.481] Browser LOG     Loading model: Infinity%
-[00:03:12.481] Browser LOG     Loading model: Infinity%
-[00:03:12.481] Browser LOG     Loading model: Infinity%
-[00:03:12.481] Browser LOG     Loading model: Infinity%
-[00:03:12.481] Browser LOG     Loading model: Infinity%
-[00:03:12.481] Browser LOG     Loading model: Infinity%
-[00:03:12.481] Browser LOG     Loading model: Infinity%
-[00:03:12.481] Browser LOG     Loading model: Infinity%
-[00:03:12.481] Browser LOG     Loading model: Infinity%
-[00:03:12.481] Browser LOG     Loading model: Infinity%
-[00:03:12.481] Browser LOG     Loading model: Infinity%
-[00:03:12.481] Browser LOG     Loading model: Infinity%
-[00:03:12.481] Browser LOG     Loading model: Infinity%
-[00:03:12.481] Browser LOG     Loading model: Infinity%
-[00:03:12.481] Browser LOG     Loading model: Infinity%
-[00:03:12.481] Browser LOG     Loading model: Infinity%
-[00:03:12.481] Browser LOG     GLB model loaded successfully: /models/space_fighter.glb
-[00:03:12.481] Browser LOG     GLB model loaded, replacing probe
-[00:03:12.481] Browser LOG     Probe replaced with GLB model successfully
-[00:03:33.717] Server  LOG      ✓ Compiled in 48ms
-[00:03:34.487] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
-[00:03:34.488] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
-[00:03:34.488] Browser LOG     Loading model: Infinity%
-[00:03:34.488] Browser LOG     Loading model: Infinity%
-[00:03:34.488] Browser LOG     Loading model: Infinity%
-[00:03:34.488] Browser LOG     Loading model: Infinity%
-[00:03:34.488] Browser LOG     Loading model: Infinity%
-[00:03:34.488] Browser LOG     Loading model: Infinity%
-[00:03:34.488] Browser LOG     Loading model: Infinity%
-[00:03:34.488] Browser LOG     Loading model: Infinity%
-[00:03:34.488] Browser LOG     Loading model: Infinity%
-[00:03:34.488] Browser LOG     Loading model: Infinity%
-[00:03:34.488] Browser LOG     Loading model: Infinity%
-[00:03:34.488] Browser LOG     Loading model: Infinity%
-[00:03:34.488] Browser LOG     Loading model: Infinity%
-[00:03:34.488] Browser LOG     Loading model: Infinity%
-[00:03:34.488] Browser LOG     Loading model: Infinity%
-[00:03:34.488] Browser LOG     Loading model: Infinity%
-[00:03:34.488] Browser LOG     Loading model: Infinity%
-[00:03:34.488] Browser LOG     Loading model: Infinity%
-[00:03:34.489] Browser LOG     Loading model: Infinity%
-[00:03:34.489] Browser LOG     Loading model: Infinity%
-[00:03:34.489] Browser LOG     Loading model: Infinity%
-[00:03:34.489] Browser LOG     Loading model: Infinity%
-[00:03:34.489] Browser LOG     Loading model: Infinity%
-[00:03:34.489] Browser LOG     Loading model: Infinity%
-[00:03:34.489] Browser LOG     Loading model: Infinity%
-[00:03:34.489] Browser LOG     Loading model: Infinity%
-[00:03:34.489] Browser LOG     Loading model: Infinity%
-[00:03:34.489] Browser LOG     Loading model: Infinity%
-[00:03:34.489] Browser LOG     Loading model: Infinity%
-[00:03:34.489] Browser LOG     Loading model: Infinity%
-[00:03:34.489] Browser LOG     Loading model: Infinity%
-[00:03:34.489] Browser LOG     GLB model loaded successfully: /models/space_fighter.glb
-[00:03:34.489] Browser LOG     GLB model loaded, replacing probe
-[00:03:34.489] Browser LOG     Probe replaced with GLB model successfully
-[00:06:27.733] Server  LOG      ✓ Compiled in 143ms
-[00:06:28.474] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
-[00:06:28.474] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
-[00:06:28.474] Browser LOG     Loading model: Infinity%
-[00:06:28.474] Browser LOG     Loading model: Infinity%
-[00:06:28.474] Browser LOG     Loading model: Infinity%
-[00:06:28.474] Browser LOG     Loading model: Infinity%
-[00:06:28.474] Browser LOG     Loading model: Infinity%
-[00:06:28.474] Browser LOG     Loading model: Infinity%
-[00:06:28.474] Browser LOG     Loading model: Infinity%
-[00:06:28.474] Browser LOG     Loading model: Infinity%
-[00:06:28.474] Browser LOG     Loading model: Infinity%
-[00:06:28.474] Browser LOG     Loading model: Infinity%
-[00:06:28.474] Browser LOG     Loading model: Infinity%
-[00:06:28.474] Browser LOG     Loading model: Infinity%
-[00:06:28.474] Browser LOG     Loading model: Infinity%
-[00:06:28.474] Browser LOG     Loading model: Infinity%
-[00:06:28.474] Browser LOG     Loading model: Infinity%
-[00:06:28.474] Browser LOG     Loading model: Infinity%
-[00:06:28.474] Browser LOG     Loading model: Infinity%
-[00:06:28.474] Browser LOG     Loading model: Infinity%
-[00:06:28.474] Browser LOG     Loading model: Infinity%
-[00:06:28.474] Browser LOG     Loading model: Infinity%
-[00:06:28.474] Browser LOG     Loading model: Infinity%
-[00:06:28.474] Browser LOG     Loading model: Infinity%
-[00:06:28.474] Browser LOG     GLB model loaded successfully: /models/space_fighter.glb
-[00:06:28.474] Browser LOG     GLB model loaded, replacing probe
-[00:06:28.474] Browser LOG     Probe replaced with GLB model successfully
-[00:07:55.536] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:07:55.889] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
-[00:07:55.889] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
-[00:07:56.047] Browser LOG     Loading model: Infinity%
-[00:07:56.047] Browser LOG     Loading model: Infinity%
-[00:07:56.047] Browser LOG     Loading model: Infinity%
-[00:07:56.047] Browser LOG     Loading model: Infinity%
-[00:07:56.047] Browser LOG     Loading model: Infinity%
-[00:07:56.047] Browser LOG     Loading model: Infinity%
-[00:07:56.047] Browser LOG     Loading model: Infinity%
-[00:07:56.048] Browser LOG     Loading model: Infinity%
-[00:07:56.048] Browser LOG     Loading model: Infinity%
-[00:07:56.048] Browser LOG     Loading model: Infinity%
-[00:07:56.048] Browser LOG     Loading model: Infinity%
-[00:07:56.336] Browser LOG     GLB model loaded successfully: /models/space_fighter.glb
-[00:07:56.336] Browser LOG     GLB model loaded, replacing probe
-[00:07:56.336] Browser LOG     Probe replaced with GLB model successfully
-[00:13:49.077] Server  LOG      ✓ Compiled in 48ms
-[00:13:50.485] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
-[00:13:50.485] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
-[00:13:50.485] Browser LOG     Loading model: Infinity%
-[00:13:50.485] Browser LOG     Loading model: Infinity%
-[00:13:50.485] Browser LOG     Loading model: Infinity%
-[00:13:50.485] Browser LOG     Loading model: Infinity%
-[00:13:50.485] Browser LOG     Loading model: Infinity%
-[00:13:50.485] Browser LOG     Loading model: Infinity%
-[00:13:50.485] Browser LOG     Loading model: Infinity%
-[00:13:50.485] Browser LOG     Loading model: Infinity%
-[00:13:50.485] Browser LOG     Loading model: Infinity%
-[00:13:50.485] Browser LOG     Loading model: Infinity%
-[00:13:50.485] Browser LOG     Loading model: Infinity%
-[00:13:50.485] Browser LOG     Loading model: Infinity%
-[00:13:50.485] Browser LOG     Loading model: Infinity%
-[00:13:50.485] Browser LOG     Loading model: Infinity%
-[00:13:50.485] Browser LOG     Loading model: Infinity%
-[00:13:50.485] Browser LOG     Loading model: Infinity%
-[00:13:50.485] Browser LOG     Loading model: Infinity%
-[00:13:50.485] Browser LOG     Loading model: Infinity%
-[00:13:50.485] Browser LOG     Loading model: Infinity%
-[00:13:50.485] Browser LOG     GLB model loaded successfully: /models/space_fighter.glb
-[00:13:50.485] Browser LOG     GLB model loaded, replacing probe
-[00:13:50.485] Browser LOG     Probe replaced with GLB model successfully
-[00:14:47.231] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:14:47.583] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
-[00:14:47.583] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
-[00:14:47.738] Browser LOG     Loading model: Infinity%
-[00:14:47.738] Browser LOG     Loading model: Infinity%
-[00:14:47.738] Browser LOG     Loading model: Infinity%
-[00:14:47.738] Browser LOG     Loading model: Infinity%
-[00:14:47.738] Browser LOG     Loading model: Infinity%
-[00:14:47.738] Browser LOG     Loading model: Infinity%
-[00:14:47.738] Browser LOG     Loading model: Infinity%
-[00:14:47.738] Browser LOG     Loading model: Infinity%
-[00:14:47.738] Browser LOG     Loading model: Infinity%
-[00:14:47.738] Browser LOG     Loading model: Infinity%
-[00:14:47.738] Browser LOG     Loading model: Infinity%
-[00:14:47.738] Browser LOG     Loading model: Infinity%
-[00:14:47.738] Browser LOG     Loading model: Infinity%
-[00:14:47.738] Browser LOG     Loading model: Infinity%
-[00:14:47.738] Browser LOG     Loading model: Infinity%
-[00:14:47.738] Browser LOG     Loading model: Infinity%
-[00:14:47.738] Browser LOG     Loading model: Infinity%
-[00:14:47.949] Browser LOG     GLB model loaded successfully: /models/space_fighter.glb
-[00:14:47.949] Browser LOG     GLB model loaded, replacing probe
-[00:14:47.949] Browser LOG     Probe replaced with GLB model successfully
-[00:19:29.428] Server  LOG      ✓ Compiled in 46ms
-[00:19:30.474] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
-[00:19:30.474] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
-[00:19:30.474] Browser LOG     Loading model: Infinity%
-[00:19:30.474] Browser LOG     Loading model: Infinity%
-[00:19:30.474] Browser LOG     Loading model: Infinity%
-[00:19:30.474] Browser LOG     Loading model: Infinity%
-[00:19:30.474] Browser LOG     Loading model: Infinity%
-[00:19:30.474] Browser LOG     Loading model: Infinity%
-[00:19:30.474] Browser LOG     Loading model: Infinity%
-[00:19:30.474] Browser LOG     Loading model: Infinity%
-[00:19:30.474] Browser LOG     Loading model: Infinity%
-[00:19:30.474] Browser LOG     Loading model: Infinity%
-[00:19:30.474] Browser LOG     Loading model: Infinity%
-[00:19:30.474] Browser LOG     Loading model: Infinity%
-[00:19:30.474] Browser LOG     Loading model: Infinity%
-[00:19:30.474] Browser LOG     Loading model: Infinity%
-[00:19:30.474] Browser LOG     Loading model: Infinity%
-[00:19:30.474] Browser LOG     Loading model: Infinity%
-[00:19:30.474] Browser LOG     Loading model: Infinity%
-[00:19:30.474] Browser LOG     Loading model: Infinity%
-[00:19:30.474] Browser LOG     Loading model: Infinity%
-[00:19:30.474] Browser LOG     Loading model: Infinity%
-[00:19:30.474] Browser LOG     Loading model: Infinity%
-[00:19:30.474] Browser LOG     Loading model: Infinity%
-[00:19:30.474] Browser LOG     Loading model: Infinity%
-[00:19:30.474] Browser LOG     GLB model loaded successfully: /models/space_fighter.glb
-[00:19:30.475] Browser LOG     GLB model loaded, replacing probe
-[00:19:30.475] Browser LOG     Probe replaced with GLB model successfully
-[00:20:50.834] Server  LOG      ✓ Compiled in 54ms
-[00:20:52.477] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
-[00:20:52.477] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
-[00:20:52.477] Browser LOG     Loading model: Infinity%
-[00:20:52.477] Browser LOG     Loading model: Infinity%
-[00:20:52.477] Browser LOG     Loading model: Infinity%
-[00:20:52.477] Browser LOG     Loading model: Infinity%
-[00:20:52.477] Browser LOG     Loading model: Infinity%
-[00:20:52.477] Browser LOG     Loading model: Infinity%
-[00:20:52.477] Browser LOG     Loading model: Infinity%
-[00:20:52.477] Browser LOG     Loading model: Infinity%
-[00:20:52.477] Browser LOG     Loading model: Infinity%
-[00:20:52.477] Browser LOG     Loading model: Infinity%
-[00:20:52.477] Browser LOG     Loading model: Infinity%
-[00:20:52.477] Browser LOG     Loading model: Infinity%
-[00:20:52.477] Browser LOG     Loading model: Infinity%
-[00:20:52.477] Browser LOG     Loading model: Infinity%
-[00:20:52.477] Browser LOG     Loading model: Infinity%
-[00:20:52.477] Browser LOG     Loading model: Infinity%
-[00:20:52.477] Browser LOG     Loading model: Infinity%
-[00:20:52.477] Browser LOG     Loading model: Infinity%
-[00:20:52.477] Browser LOG     Loading model: Infinity%
-[00:20:52.477] Browser LOG     Loading model: Infinity%
-[00:20:52.477] Browser LOG     Loading model: Infinity%
-[00:20:52.477] Browser LOG     Loading model: Infinity%
-[00:20:52.477] Browser LOG     Loading model: Infinity%
-[00:20:52.477] Browser LOG     Loading model: Infinity%
-[00:20:52.477] Browser LOG     Loading model: Infinity%
-[00:20:52.477] Browser LOG     Loading model: Infinity%
-[00:20:52.477] Browser LOG     Loading model: Infinity%
-[00:20:52.478] Browser LOG     Loading model: Infinity%
-[00:20:52.478] Browser LOG     Loading model: Infinity%
-[00:20:52.478] Browser LOG     Loading model: Infinity%
-[00:20:52.478] Browser LOG     Loading model: Infinity%
-[00:20:52.478] Browser LOG     Loading model: Infinity%
-[00:20:52.478] Browser LOG     Loading model: Infinity%
-[00:20:52.478] Browser LOG     Loading model: Infinity%
-[00:20:52.478] Browser LOG     Loading model: Infinity%
-[00:20:52.478] Browser LOG     Loading model: Infinity%
-[00:20:52.478] Browser LOG     GLB model loaded successfully: /models/space_fighter.glb
-[00:20:52.478] Browser LOG     GLB model loaded, replacing probe
-[00:20:52.478] Browser LOG     Probe replaced with GLB model successfully
-[00:21:27.795] Server  LOG      ✓ Compiled in 29ms
-[00:21:28.480] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
-[00:21:28.480] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
-[00:21:28.480] Browser LOG     Loading model: Infinity%
-[00:21:28.480] Browser LOG     Loading model: Infinity%
-[00:21:28.480] Browser LOG     Loading model: Infinity%
-[00:21:28.480] Browser LOG     Loading model: Infinity%
-[00:21:28.480] Browser LOG     Loading model: Infinity%
-[00:21:28.480] Browser LOG     Loading model: Infinity%
-[00:21:28.480] Browser LOG     Loading model: Infinity%
-[00:21:28.480] Browser LOG     Loading model: Infinity%
-[00:21:28.480] Browser LOG     Loading model: Infinity%
-[00:21:28.480] Browser LOG     Loading model: Infinity%
-[00:21:28.480] Browser LOG     Loading model: Infinity%
-[00:21:28.480] Browser LOG     Loading model: Infinity%
-[00:21:28.480] Browser LOG     Loading model: Infinity%
-[00:21:28.480] Browser LOG     Loading model: Infinity%
-[00:21:28.480] Browser LOG     Loading model: Infinity%
-[00:21:28.480] Browser LOG     Loading model: Infinity%
-[00:21:28.481] Browser LOG     Loading model: Infinity%
-[00:21:28.481] Browser LOG     Loading model: Infinity%
-[00:21:28.481] Browser LOG     Loading model: Infinity%
-[00:21:28.481] Browser LOG     Loading model: Infinity%
-[00:21:28.481] Browser LOG     Loading model: Infinity%
-[00:21:28.481] Browser LOG     Loading model: Infinity%
-[00:21:28.481] Browser LOG     GLB model loaded successfully: /models/space_fighter.glb
-[00:21:28.481] Browser LOG     GLB model loaded, replacing probe
-[00:21:28.481] Browser LOG     Probe replaced with GLB model successfully
-[00:21:34.102] Server  LOG      ✓ Compiled in 44ms
-[00:21:34.505] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
-[00:21:34.505] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
-[00:21:34.505] Browser LOG     Loading model: Infinity%
-[00:21:34.505] Browser LOG     Loading model: Infinity%
-[00:21:34.505] Browser LOG     Loading model: Infinity%
-[00:21:34.505] Browser LOG     Loading model: Infinity%
-[00:21:34.505] Browser LOG     Loading model: Infinity%
-[00:21:34.505] Browser LOG     Loading model: Infinity%
-[00:21:34.506] Browser LOG     Loading model: Infinity%
-[00:21:34.506] Browser LOG     Loading model: Infinity%
-[00:21:34.506] Browser LOG     Loading model: Infinity%
-[00:21:34.506] Browser LOG     Loading model: Infinity%
-[00:21:34.506] Browser LOG     Loading model: Infinity%
-[00:21:34.506] Browser LOG     Loading model: Infinity%
-[00:21:34.506] Browser LOG     Loading model: Infinity%
-[00:21:34.506] Browser LOG     Loading model: Infinity%
-[00:21:34.506] Browser LOG     Loading model: Infinity%
-[00:21:34.506] Browser LOG     Loading model: Infinity%
-[00:21:34.506] Browser LOG     Loading model: Infinity%
-[00:21:34.506] Browser LOG     Loading model: Infinity%
-[00:21:34.506] Browser LOG     Loading model: Infinity%
-[00:21:34.506] Browser LOG     Loading model: Infinity%
-[00:21:34.506] Browser LOG     Loading model: Infinity%
-[00:21:34.506] Browser LOG     Loading model: Infinity%
-[00:21:34.506] Browser LOG     Loading model: Infinity%
-[00:21:34.506] Browser LOG     Loading model: Infinity%
-[00:21:35.484] Browser LOG     GLB model loaded successfully: /models/space_fighter.glb
-[00:21:35.484] Browser LOG     GLB model loaded, replacing probe
-[00:21:35.484] Browser LOG     Probe replaced with GLB model successfully
-[00:21:42.022] Server  LOG      ✓ Compiled in 40ms
-[00:21:43.473] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
-[00:21:43.473] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
-[00:21:43.473] Browser LOG     Loading model: Infinity%
-[00:21:43.473] Browser LOG     Loading model: Infinity%
-[00:21:43.473] Browser LOG     Loading model: Infinity%
-[00:21:43.473] Browser LOG     Loading model: Infinity%
-[00:21:43.473] Browser LOG     Loading model: Infinity%
-[00:21:43.473] Browser LOG     Loading model: Infinity%
-[00:21:43.473] Browser LOG     Loading model: Infinity%
-[00:21:43.473] Browser LOG     Loading model: Infinity%
-[00:21:43.473] Browser LOG     Loading model: Infinity%
-[00:21:43.473] Browser LOG     Loading model: Infinity%
-[00:21:43.473] Browser LOG     Loading model: Infinity%
-[00:21:43.473] Browser LOG     Loading model: Infinity%
-[00:21:43.473] Browser LOG     Loading model: Infinity%
-[00:21:43.473] Browser LOG     Loading model: Infinity%
-[00:21:43.473] Browser LOG     Loading model: Infinity%
-[00:21:43.473] Browser LOG     GLB model loaded successfully: /models/space_fighter.glb
-[00:21:43.473] Browser LOG     GLB model loaded, replacing probe
-[00:21:43.473] Browser LOG     Probe replaced with GLB model successfully
-[00:21:47.882] Server  LOG      ✓ Compiled in 67ms
-[00:21:48.482] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
-[00:21:48.482] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
-[00:21:48.482] Browser LOG     Loading model: Infinity%
-[00:21:48.482] Browser LOG     Loading model: Infinity%
-[00:21:48.482] Browser LOG     Loading model: Infinity%
-[00:21:48.482] Browser LOG     Loading model: Infinity%
-[00:21:48.482] Browser LOG     Loading model: Infinity%
-[00:21:48.482] Browser LOG     Loading model: Infinity%
-[00:21:48.482] Browser LOG     Loading model: Infinity%
-[00:21:48.482] Browser LOG     Loading model: Infinity%
-[00:21:48.482] Browser LOG     Loading model: Infinity%
-[00:21:48.482] Browser LOG     Loading model: Infinity%
-[00:21:48.482] Browser LOG     Loading model: Infinity%
-[00:21:48.482] Browser LOG     Loading model: Infinity%
-[00:21:48.482] Browser LOG     Loading model: Infinity%
-[00:21:48.482] Browser LOG     Loading model: Infinity%
-[00:21:48.482] Browser LOG     Loading model: Infinity%
-[00:21:48.482] Browser LOG     Loading model: Infinity%
-[00:21:48.482] Browser LOG     Loading model: Infinity%
-[00:21:48.482] Browser LOG     Loading model: Infinity%
-[00:21:48.482] Browser LOG     Loading model: Infinity%
-[00:21:48.482] Browser LOG     Loading model: Infinity%
-[00:21:48.482] Browser LOG     Loading model: Infinity%
-[00:21:48.482] Browser LOG     Loading model: Infinity%
-[00:21:48.482] Browser LOG     GLB model loaded successfully: /models/space_fighter.glb
-[00:21:48.482] Browser LOG     GLB model loaded, replacing probe
-[00:21:48.482] Browser LOG     Probe replaced with GLB model successfully
+[00:00:03.530] Server  LOG      ✓ Ready in 2s
+[00:00:16.705] Server  LOG      ○ Compiling / ...
+[00:00:23.320] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:25.017] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
+[00:00:25.017] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[00:00:25.017] Browser LOG     Loading model: Infinity%
+[00:00:25.017] Browser LOG     Loading model: Infinity%
+[00:00:25.017] Browser LOG     Loading model: Infinity%
+[00:00:25.017] Browser LOG     Loading model: Infinity%
+[00:00:25.017] Browser LOG     Loading model: Infinity%
+[00:00:25.017] Browser LOG     Loading model: Infinity%
+[00:00:25.017] Browser LOG     Loading model: Infinity%
+[00:00:25.018] Browser LOG     Loading model: Infinity%
+[00:00:25.018] Browser LOG     Loading model: Infinity%
+[00:00:25.018] Browser LOG     Loading model: Infinity%
+[00:00:25.018] Browser LOG     Loading model: Infinity%
+[00:00:25.018] Browser LOG     Loading model: Infinity%
+[00:00:25.018] Browser LOG     Loading model: Infinity%
+[00:00:25.018] Browser LOG     Loading model: Infinity%
+[00:00:25.018] Browser LOG     Loading model: Infinity%
+[00:00:25.018] Browser LOG     Loading model: Infinity%
+[00:00:25.018] Browser LOG     Loading model: Infinity%
+[00:00:25.018] Browser LOG     Loading model: Infinity%
+[00:00:25.018] Browser LOG     Model dimensions: 180.09 x 77.74 x 323.10
+[00:00:25.018] Browser LOG     Auto-scaling to 15 units (scale: 0.0464)
+[00:00:25.018] Browser LOG     Longest axis: z (323.10 units)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=1.00)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=1.00)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=1.10)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=1.21)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=1.10)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=1.21)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=1.33)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=1.46)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=1.61)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=1.77)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=1.95)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=2.14)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=2.36)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=2.59)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=2.85)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=3.14)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=3.45)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=3.80)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=4.18)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=4.59)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=5.05)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=5.56)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=6.12)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=6.73)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=7.40)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=8.14)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=8.95)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=9.85)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=10.83)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=11.92)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=13.11)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=14.42)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=15.86)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=17.45)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=19.19)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=21.11)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=23.23)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=25.55)
+[00:00:25.018] Browser LOG     Skipped emissive for bright material (L=28.10)
+[00:00:25.018] Browser LOG     GLB model loaded successfully: /models/space_fighter.glb
+[00:00:25.018] Browser LOG     GLB model loaded, replacing probe
+[00:00:25.018] Browser LOG     Probe replaced with GLB model successfully
