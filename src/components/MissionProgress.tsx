@@ -1,14 +1,6 @@
 import React from 'react';
-
-interface Mission {
-    id: string;
-    title: string;
-    description: string;
-    target: number;
-    current: number;
-    unit: string;
-    completed: boolean;
-}
+import { ALL_MISSIONS } from '../data/missions';
+import { MissionWithProgress, GameStats } from '../types/mission';
 
 interface MissionProgressProps {
     distance: number;
@@ -23,53 +15,34 @@ const MissionProgress: React.FC<MissionProgressProps> = ({
     slingshots,
     fuel,
 }) => {
-    const missions: Mission[] = [
-        {
-            id: 'reach-1au',
-            title: '1 AU到達',
-            description: '地球の公転軌道半径に到達',
-            target: 1,
-            current: distance,
-            unit: 'AU',
-            completed: distance >= 1,
-        },
-        {
-            id: 'reach-5au',
-            title: '5 AU到達',
-            description: '木星軌道付近に到達',
-            target: 5,
-            current: distance,
-            unit: 'AU',
-            completed: distance >= 5,
-        },
-        {
-            id: 'speed-20',
-            title: '高速飛行',
-            description: '20 km/s以上の速度を達成',
-            target: 20,
-            current: velocity,
-            unit: 'km/s',
-            completed: velocity >= 20,
-        },
-        {
-            id: 'slingshot-3',
-            title: 'スイングバイマスター',
-            description: '3回以上のスイングバイ実行',
-            target: 3,
-            current: slingshots,
-            unit: '回',
-            completed: slingshots >= 3,
-        },
-        {
-            id: 'fuel-efficient',
-            title: '燃料節約',
-            description: '燃料50%以上残して5 AU到達',
-            target: 5,
-            current: distance,
-            unit: 'AU',
-            completed: distance >= 5 && fuel >= 50,
-        },
-    ];
+    // Create game stats object
+    const stats: GameStats = {
+        distance,
+        velocity,
+        slingshots,
+        fuel,
+    };
+
+    // Map missions to include current progress and completion status
+    const missions: MissionWithProgress[] = ALL_MISSIONS.map(mission => {
+        // Determine current value based on unit type
+        let current: number;
+        if (mission.unit === 'AU') {
+            current = distance;
+        } else if (mission.unit === 'km/s') {
+            current = velocity;
+        } else if (mission.unit === '回') {
+            current = slingshots;
+        } else {
+            current = 0;
+        }
+
+        return {
+            ...mission,
+            current,
+            completed: mission.checkCompleted(stats),
+        };
+    });
 
     const completedCount = missions.filter(m => m.completed).length;
     const totalMissions = missions.length;

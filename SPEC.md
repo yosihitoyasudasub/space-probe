@@ -1,6 +1,6 @@
 # SPEC.md - 宇宙探査機シミュレーションゲーム 仕様書兼設計書
 
-バージョン: 2.2
+バージョン: 2.3
 最終更新日: 2025-10-26
 プロジェクト: space-probe-game-next
 
@@ -2079,6 +2079,252 @@ inputState.left = false;
 - シアン/グリーンカラー
 - 半透明背景
 - タップ時の発光エフェクト
+
+### 3.16 ミッション定義の分離（アーキテクチャ改善）
+
+ミッション定義をコンポーネントから分離し、データ駆動型アーキテクチャに変更。ミッションの追加・削除・管理を容易にし、拡張性とメンテナンス性を向上。
+
+#### 3.16.1 概要
+
+**目的:**
+- ミッション定義とUI表示の分離
+- ミッション追加・削除の簡易化
+- コードの可読性とメンテナンス性向上
+- 型安全性の強化
+
+**実装方式:**
+- 型定義ファイル（mission.ts）
+- データファイル（missions.ts）
+- ヘルパー関数による簡易生成
+- コンポーネントのリファクタリング
+
+#### 3.16.2 アーキテクチャ構造
+
+**ディレクトリ構成:**
+```
+src/
+├── types/
+│   └── mission.ts           # ミッション型定義
+├── data/
+│   └── missions.ts          # ミッションデータ
+└── components/
+    └── MissionProgress.tsx  # UI表示のみ（リファクタリング済み）
+```
+
+**データフロー:**
+```
+missions.ts (データ定義)
+     ↓
+ALL_MISSIONS (エクスポート)
+     ↓
+MissionProgress.tsx (インポート)
+     ↓
+UI表示 + 進捗計算
+```
+
+#### 3.16.3 型定義
+
+**src/types/mission.ts:**
+
+```typescript
+// ミッションカテゴリ
+export type MissionCategory = 'beginner' | 'intermediate' | 'advanced';
+
+// ゲーム統計情報
+export interface GameStats {
+    distance: number;    // 距離 (AU)
+    velocity: number;    // 速度 (km/s)
+    slingshots: number;  // スイングバイ回数
+    fuel: number;        // 燃料残量 (%)
+}
+
+// ミッション定義
+export interface Mission {
+    id: string;                                      // 一意のID
+    title: string;                                   // タイトル
+    description: string;                             // 説明
+    category: MissionCategory;                       // 難易度
+    target: number;                                  // 目標値
+    unit: string;                                    // 単位
+    checkCompleted: (stats: GameStats) => boolean;   // 完了判定関数
+}
+
+// 進捗付きミッション（UI表示用）
+export interface MissionWithProgress extends Mission {
+    current: number;     // 現在の進捗
+    completed: boolean;  // 完了状態
+}
+```
+
+#### 3.16.4 ヘルパー関数
+
+**ミッション生成ヘルパー:**
+
+```typescript
+// 距離ミッション生成
+function createDistanceMission(
+    id: string,
+    title: string,
+    description: string,
+    target: number,
+    category: MissionCategory = 'beginner'
+): Mission
+
+// 速度ミッション生成
+function createVelocityMission(...)
+
+// スイングバイミッション生成
+function createSlingshotMission(...)
+
+// 燃料効率ミッション生成
+function createFuelEfficiencyMission(
+    id: string,
+    title: string,
+    description: string,
+    distanceTarget: number,
+    fuelTarget: number,
+    category: MissionCategory = 'beginner'
+): Mission
+```
+
+#### 3.16.5 ミッション定義
+
+**カテゴリ別配列:**
+
+```typescript
+// 初級ミッション
+export const BEGINNER_MISSIONS: Mission[] = [
+    createDistanceMission('reach-1au', '1 AU到達', '地球の公転軌道半径に到達', 1, 'beginner'),
+];
+
+// 中級ミッション
+export const INTERMEDIATE_MISSIONS: Mission[] = [
+    createDistanceMission('reach-5au', '5 AU到達', '木星軌道付近に到達', 5, 'intermediate'),
+    createVelocityMission('speed-20', '高速飛行', '20 km/s以上の速度を達成', 20, 'intermediate'),
+    createSlingshotMission('slingshot-3', 'スイングバイマスター', '3回以上のスイングバイ実行', 3, 'intermediate'),
+    createFuelEfficiencyMission('fuel-efficient', '燃料節約', '燃料50%以上残して5 AU到達', 5, 50, 'intermediate'),
+];
+
+// 上級ミッション（将来の拡張用）
+export const ADVANCED_MISSIONS: Mission[] = [];
+
+// 全ミッション統合
+export const ALL_MISSIONS: Mission[] = [
+    ...BEGINNER_MISSIONS,
+    ...INTERMEDIATE_MISSIONS,
+    ...ADVANCED_MISSIONS,
+];
+```
+
+#### 3.16.6 ユーティリティ関数
+
+**ミッション管理関数:**
+
+```typescript
+// カテゴリ別取得
+getMissionsByCategory(category: MissionCategory): Mission[]
+
+// ID指定取得
+getMissionById(id: string): Mission | undefined
+
+// 総ミッション数取得
+getTotalMissionCount(): number
+
+// 完了ミッション数取得
+getCompletedMissionsCount(stats: GameStats): number
+```
+
+#### 3.16.7 コンポーネント実装
+
+**MissionProgress.tsx のリファクタリング:**
+
+**Before（ハードコーディング）:**
+```typescript
+const missions: Mission[] = [
+    { id: 'reach-1au', title: '1 AU到達', ..., completed: distance >= 1 },
+    { id: 'reach-5au', title: '5 AU到達', ..., completed: distance >= 5 },
+    // ... 全ミッションを直接定義（80行以上）
+];
+```
+
+**After（データ分離）:**
+```typescript
+import { ALL_MISSIONS } from '../data/missions';
+
+const stats: GameStats = { distance, velocity, slingshots, fuel };
+
+const missions: MissionWithProgress[] = ALL_MISSIONS.map(mission => ({
+    ...mission,
+    current: getCurrentValue(mission.unit),
+    completed: mission.checkCompleted(stats),
+}));
+```
+
+#### 3.16.8 利点
+
+**開発効率の向上:**
+- ミッション追加: 80行 → 1行（約80倍効率化）
+- ミッション削除: 8行削除 → 1行コメントアウト
+- 並び替え: 配列編集 → 1行コピペ移動
+
+**コード品質向上:**
+- 型安全性の強化
+- DRY原則の徹底（重複コード削除）
+- 関心の分離（データとUIの分離）
+- テスト容易性の向上
+
+**拡張性:**
+- 新しいミッションタイプの追加が容易
+- カテゴリ別表示・フィルタリングが簡単
+- 外部ファイル（JSON）からのインポート可能
+- 動的ミッション生成への対応
+
+**メンテナンス性:**
+- ミッション定義が一箇所に集約
+- 変更時のコンフリクト削減
+- コードレビューが容易
+- ドキュメント化が明確
+
+#### 3.16.9 実装箇所
+
+**新規ファイル:**
+- `src/types/mission.ts` - 型定義
+- `src/data/missions.ts` - ミッションデータとヘルパー
+
+**修正ファイル:**
+- `src/components/MissionProgress.tsx` - リファクタリング
+
+#### 3.16.10 今後の拡張可能性
+
+**実装可能な拡張:**
+
+1. **カテゴリ別タブ表示**
+```typescript
+const beginnerMissions = getMissionsByCategory('beginner');
+```
+
+2. **実績システム**
+```typescript
+// src/data/achievements.ts を同じパターンで作成
+```
+
+3. **ストーリーミッション**
+```typescript
+export const STORY_MISSIONS: Mission[] = [ ... ];
+```
+
+4. **動的ミッション**
+```typescript
+function generateDailyMission(): Mission { ... }
+```
+
+5. **報酬システム連動**
+```typescript
+interface Mission {
+    // ...
+    reward?: { type: 'model' | 'skin', id: string };
+}
+```
 
 ---
 
