@@ -22,17 +22,24 @@ interface Props {
     gravityGridEnabled?: boolean;
     gridEnabled?: boolean;
     selectedModel?: string;
+    isSimulationStarted?: boolean;
 }
 
-const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravityG = 1.0, starMass = 4000, cameraView = 'free', gravityGridEnabled = false, gridEnabled = true, selectedModel = 'space_fighter' }) => {
+const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravityG = 1.0, starMass = 4000, cameraView = 'free', gravityGridEnabled = false, gridEnabled = true, selectedModel = 'space_fighter', isSimulationStarted = false }) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const rafRef = useRef<number | null>(null);
     const cameraViewRef = useRef<CameraView>(cameraView);
+    const isSimulationStartedRef = useRef<boolean>(isSimulationStarted);
 
     // Update cameraViewRef when cameraView changes
     useEffect(() => {
         cameraViewRef.current = cameraView;
     }, [cameraView]);
+
+    // Update isSimulationStartedRef when isSimulationStarted changes
+    useEffect(() => {
+        isSimulationStartedRef.current = isSimulationStarted;
+    }, [isSimulationStarted]);
 
     // Update gravity grid when gravityGridEnabled changes
     const gravityGridRef = useRef<any>(null);
@@ -76,7 +83,7 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
 
     // pass simulation tuning options to initThreeJS
     let threeObj: any = (initThreeJS as any)(canvas, { probeSpeedMult, G: gravityG, starMass, gravityGridEnabled, gridEnabled, probeModelPath, orientation });
-    let { scene, camera, renderer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid, updateGrid, switchProbeModel } = threeObj;
+    let { scene, camera, renderer, composer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid, updateGrid, switchProbeModel } = threeObj;
     gravityGridRef.current = { updateGravityGrid };
     gridRef.current = { updateGrid };
     switchProbeModelRef.current = { switchProbeModel };
@@ -98,7 +105,7 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
                 dispose();
             } catch (e) {}
             threeObj = (initThreeJS as any)(canvas, { probeSpeedMult, G: gravityG, starMass, gravityGridEnabled });
-            ({ scene, camera, renderer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid } = threeObj);
+            ({ scene, camera, renderer, composer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid } = threeObj);
             // Restart animation loop
             lastTime = performance.now() / 1000;
             accumulator = 0;
@@ -130,92 +137,98 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
             if (delta > 0.25) delta = 0.25;
 
             accumulator += delta;
-            while (accumulator >= fixedTimeStep) {
-                try {
-                    // apply input-driven delta-v before stepping
-                    const dvScale = 0.02; // tune this for feel (scene-units/sec)
-                    let dv: [number, number, number] = [0, 0, 0];
+            // Only run physics simulation if simulation has started
+            if (isSimulationStartedRef.current) {
+                while (accumulator >= fixedTimeStep) {
+                    try {
+                        // apply input-driven delta-v before stepping
+                        const dvScale = 0.02; // tune this for feel (scene-units/sec)
+                        let dv: [number, number, number] = [0, 0, 0];
 
-                    // Calculate thrust direction based on current velocity (velocity-relative control)
-                    if (state && state.velocity) {
-                        const vx = state.velocity.x;
-                        const vy = state.velocity.y;
-                        const vz = state.velocity.z;
-                        const speed = Math.sqrt(vx * vx + vy * vy + vz * vz);
+                        // Calculate thrust direction based on current velocity (velocity-relative control)
+                        if (state && state.velocity) {
+                            const vx = state.velocity.x;
+                            const vy = state.velocity.y;
+                            const vz = state.velocity.z;
+                            const speed = Math.sqrt(vx * vx + vy * vy + vz * vz);
 
-                        if (speed > 0.001) {
-                            // Normalize velocity to get forward direction
-                            const fx = vx / speed;
-                            const fy = vy / speed;
-                            const fz = vz / speed;
+                            if (speed > 0.001) {
+                                // Normalize velocity to get forward direction
+                                const fx = vx / speed;
+                                const fy = vy / speed;
+                                const fz = vz / speed;
 
-                            // Calculate right direction (cross product with up vector [0,1,0])
-                            // right = cross(forward, up) = [fz, 0, -fx]
-                            const rx = fz;
-                            const ry = 0;
-                            const rz = -fx;
+                                // Calculate right direction (cross product with up vector [0,1,0])
+                                // right = cross(forward, up) = [fz, 0, -fx]
+                                const rx = fz;
+                                const ry = 0;
+                                const rz = -fx;
 
-                            // Normalize right vector
-                            const rLen = Math.sqrt(rx * rx + rz * rz);
-                            const rnx = rLen > 0.001 ? rx / rLen : 1;
-                            const rnz = rLen > 0.001 ? rz / rLen : 0;
+                                // Normalize right vector
+                                const rLen = Math.sqrt(rx * rx + rz * rz);
+                                const rnx = rLen > 0.001 ? rx / rLen : 1;
+                                const rnz = rLen > 0.001 ? rz / rLen : 0;
 
-                            // Apply thrust based on input
-                            if (inputState.left) {
-                                // Thrust to the left (opposite of right direction)
-                                dv[0] += rnx * dvScale;
-                                dv[2] += rnz * dvScale;
-                            }
-                            if (inputState.right) {
-                                // Thrust to the right
-                                dv[0] -= rnx * dvScale;
-                                dv[2] -= rnz * dvScale;
-                            }
-                            if (inputState.up) {
-                                // Thrust forward (in velocity direction)
-                                dv[0] += fx * dvScale;
-                                dv[2] += fz * dvScale;
-                            }
-                            if (inputState.down) {
-                                // Thrust backward (brake)
-                                dv[0] -= fx * dvScale;
-                                dv[2] -= fz * dvScale;
-                            }
-                        } else {
-                            // Fallback to world-axis control when stationary
-                            if (inputState.left) dv[0] -= dvScale;
-                            if (inputState.right) dv[0] += dvScale;
-                            if (inputState.up) dv[2] -= dvScale;
-                            if (inputState.down) dv[2] += dvScale;
-                        }
-                    }
-
-                    if (dv[0] !== 0 || dv[1] !== 0 || dv[2] !== 0) {
-                        // Calculate fuel consumption based on delta-v magnitude
-                        const dvMagnitude = Math.sqrt(dv[0] * dv[0] + dv[1] * dv[1] + dv[2] * dv[2]);
-                        const fuelConsumed = dvMagnitude * PHYSICS_SCALE.FUEL_CONSUMPTION_RATE;
-
-                        // Check if enough fuel available
-                        if (state.fuel > 0) {
-                            // Consume fuel
-                            state.fuel = Math.max(0, state.fuel - fuelConsumed);
-
-                            // Apply thrust
-                            try {
-                                // call exported helper bound in threeSetup
-                                (window as any).__applyDeltaVToProbe ? (window as any).__applyDeltaVToProbe(dv) : (initThreeJS as any).applyDeltaVToProbe?.(dv);
-                            } catch (e) {
-                                try { (initThreeJS as any).applyDeltaVToProbe?.(dv); } catch (e) {}
+                                // Apply thrust based on input
+                                if (inputState.left) {
+                                    // Thrust to the left (opposite of right direction)
+                                    dv[0] += rnx * dvScale;
+                                    dv[2] += rnz * dvScale;
+                                }
+                                if (inputState.right) {
+                                    // Thrust to the right
+                                    dv[0] -= rnx * dvScale;
+                                    dv[2] -= rnz * dvScale;
+                                }
+                                if (inputState.up) {
+                                    // Thrust forward (in velocity direction)
+                                    dv[0] += fx * dvScale;
+                                    dv[2] += fz * dvScale;
+                                }
+                                if (inputState.down) {
+                                    // Thrust backward (brake)
+                                    dv[0] -= fx * dvScale;
+                                    dv[2] -= fz * dvScale;
+                                }
+                            } else {
+                                // Fallback to world-axis control when stationary
+                                if (inputState.left) dv[0] -= dvScale;
+                                if (inputState.right) dv[0] += dvScale;
+                                if (inputState.up) dv[2] -= dvScale;
+                                if (inputState.down) dv[2] += dvScale;
                             }
                         }
-                        // If fuel depleted, thrust is not applied (status will be set in stepSimulation)
+
+                        if (dv[0] !== 0 || dv[1] !== 0 || dv[2] !== 0) {
+                            // Calculate fuel consumption based on delta-v magnitude
+                            const dvMagnitude = Math.sqrt(dv[0] * dv[0] + dv[1] * dv[1] + dv[2] * dv[2]);
+                            const fuelConsumed = dvMagnitude * PHYSICS_SCALE.FUEL_CONSUMPTION_RATE;
+
+                            // Check if enough fuel available
+                            if (state.fuel > 0) {
+                                // Consume fuel
+                                state.fuel = Math.max(0, state.fuel - fuelConsumed);
+
+                                // Apply thrust
+                                try {
+                                    // call exported helper bound in threeSetup
+                                    (window as any).__applyDeltaVToProbe ? (window as any).__applyDeltaVToProbe(dv) : (initThreeJS as any).applyDeltaVToProbe?.(dv);
+                                } catch (e) {
+                                    try { (initThreeJS as any).applyDeltaVToProbe?.(dv); } catch (e) {}
+                                }
+                            }
+                            // If fuel depleted, thrust is not applied (status will be set in stepSimulation)
+                        }
+                        stepSimulation(fixedTimeStep);
+                    } catch (e) {
+                        // swallow physics errors to keep render loop alive
+                        console.error('physics step error', e);
                     }
-                    stepSimulation(fixedTimeStep);
-                } catch (e) {
-                    // swallow physics errors to keep render loop alive
-                    console.error('physics step error', e);
+                    accumulator -= fixedTimeStep;
                 }
-                accumulator -= fixedTimeStep;
+            } else {
+                // Reset accumulator when simulation is paused to prevent time buildup
+                accumulator = 0;
             }
 
             // synchronize visual probe mesh with simulated state
@@ -300,7 +313,7 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
                     }
                 }
 
-            renderer.render(scene, camera);
+            composer.render();
             rafRef.current = requestAnimationFrame(animate);
         };
 

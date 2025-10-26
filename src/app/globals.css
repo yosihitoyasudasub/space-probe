@@ -651,3 +651,46 @@ body {
     color: #0ff;
     padding: 5px;
 }
+
+/* Start Screen */
+.start-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.start-button {
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(0, 255, 0, 0.2));
+    border: 3px solid #0ff;
+    color: #0ff;
+    padding: 30px 60px;
+    font-size: 32px;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+}
+
+.start-button:hover {
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.4), rgba(0, 255, 0, 0.4));
+    border-color: #0f0;
+    color: #0f0;
+    text-shadow: 0 0 15px rgba(0, 255, 0, 1);
+    box-shadow: 0 0 50px rgba(0, 255, 0, 0.8);
+    transform: scale(1.05);
+}
+
+.start-button:active {
+    transform: scale(0.98);
+}

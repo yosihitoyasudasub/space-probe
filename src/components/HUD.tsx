@@ -25,6 +25,8 @@ interface HUDProps {
     setGridEnabled?: (v: boolean) => void;
     selectedModel?: string;
     setSelectedModel?: (v: string) => void;
+    isSimulationStarted?: boolean;
+    setIsSimulationStarted?: (v: boolean) => void;
 }
 
 const HUD: React.FC<HUDProps> = ({
@@ -47,6 +49,8 @@ const HUD: React.FC<HUDProps> = ({
     setGridEnabled = () => {},
     selectedModel = 'space_fighter',
     setSelectedModel = () => {},
+    isSimulationStarted = false,
+    setIsSimulationStarted = () => {},
 }) => {
     const [showCharts, setShowCharts] = useState(false);
     const [showMissions, setShowMissions] = useState(false);
@@ -91,6 +95,17 @@ const HUD: React.FC<HUDProps> = ({
 
     return (
         <>
+            {/* Free mode Start button - shown only when simulation hasn't started */}
+            {!isSimulationStarted && (
+                <div className="start-screen">
+                    <button
+                        className="start-button"
+                        onClick={() => setIsSimulationStarted(true)}
+                    >
+                        Free mode Start
+                    </button>
+                </div>
+            )}
             <div id="ui" className="hud-container hud-compact">
                 {/* 上段：統計情報 */}
                 <div className="hud-compact-line">

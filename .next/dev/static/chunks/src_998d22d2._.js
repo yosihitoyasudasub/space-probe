@@ -191,7 +191,13 @@ __turbopack_context__.s([
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/three/build/three.module.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$examples$2f$jsm$2f$controls$2f$OrbitControls$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/three/examples/jsm/controls/OrbitControls.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$examples$2f$jsm$2f$loaders$2f$GLTFLoader$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/three/examples/jsm/loaders/GLTFLoader.js [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$examples$2f$jsm$2f$postprocessing$2f$EffectComposer$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/three/examples/jsm/postprocessing/EffectComposer.js [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$examples$2f$jsm$2f$postprocessing$2f$RenderPass$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/three/examples/jsm/postprocessing/RenderPass.js [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$examples$2f$jsm$2f$postprocessing$2f$UnrealBloomPass$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/three/examples/jsm/postprocessing/UnrealBloomPass.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$physics$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/physics.ts [app-client] (ecmascript)");
+;
+;
+;
 ;
 ;
 ;
@@ -417,6 +423,14 @@ function initThreeJS(canvas, options) {
     });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    // Setup post-processing for bloom effect
+    const composer = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$examples$2f$jsm$2f$postprocessing$2f$EffectComposer$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["EffectComposer"](renderer);
+    const renderPass = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$examples$2f$jsm$2f$postprocessing$2f$RenderPass$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["RenderPass"](scene, camera);
+    composer.addPass(renderPass);
+    // Bloom pass for glowing sun
+    const bloomPass = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$examples$2f$jsm$2f$postprocessing$2f$UnrealBloomPass$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["UnrealBloomPass"](new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Vector2"](window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85 // threshold
+    );
+    composer.addPass(bloomPass);
     const ambient = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AmbientLight"](0xffffff, 0.6);
     scene.add(ambient);
     const directional = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DirectionalLight"](0xffffff, 0.8);
@@ -453,7 +467,8 @@ function initThreeJS(canvas, options) {
     const starGeom = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SphereGeometry"](5, 24, 24);
     const starMat = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["MeshStandardMaterial"]({
         color: 0xffee88,
-        emissive: 0x220000
+        emissive: 0xffaa00,
+        emissiveIntensity: 2.5 // Strong emissive intensity for bloom
     });
     const starMesh = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$three$2f$build$2f$three$2e$module$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Mesh"](starGeom, starMat);
     starMesh.position.set(0, 0, 0);
@@ -1044,6 +1059,7 @@ function initThreeJS(canvas, options) {
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        composer.setSize(window.innerWidth, window.innerHeight);
     }
     window.addEventListener('resize', onResize);
     let simTime = 0;
@@ -1275,6 +1291,7 @@ function initThreeJS(canvas, options) {
     }
     function dispose() {
         window.removeEventListener('resize', onResize);
+        composer.dispose();
         renderer.dispose();
         scene.traverse((obj)=>{
             if (obj.geometry) obj.geometry.dispose?.();
@@ -1326,6 +1343,7 @@ function initThreeJS(canvas, options) {
         scene,
         camera,
         renderer,
+        composer,
         dispose,
         state,
         probe,
@@ -1367,11 +1385,12 @@ var _s = __turbopack_context__.k.signature();
 ;
 ;
 ;
-const GameCanvas = ({ hudSetters, probeSpeedMult = 1.05, gravityG = 1.0, starMass = 4000, cameraView = 'free', gravityGridEnabled = false, gridEnabled = true, selectedModel = 'space_fighter' })=>{
+const GameCanvas = ({ hudSetters, probeSpeedMult = 1.05, gravityG = 1.0, starMass = 4000, cameraView = 'free', gravityGridEnabled = false, gridEnabled = true, selectedModel = 'space_fighter', isSimulationStarted = false })=>{
     _s();
     const canvasRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
     const rafRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
     const cameraViewRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(cameraView);
+    const isSimulationStartedRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(isSimulationStarted);
     // Update cameraViewRef when cameraView changes
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "GameCanvas.useEffect": ()=>{
@@ -1379,6 +1398,14 @@ const GameCanvas = ({ hudSetters, probeSpeedMult = 1.05, gravityG = 1.0, starMas
         }
     }["GameCanvas.useEffect"], [
         cameraView
+    ]);
+    // Update isSimulationStartedRef when isSimulationStarted changes
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
+        "GameCanvas.useEffect": ()=>{
+            isSimulationStartedRef.current = isSimulationStarted;
+        }
+    }["GameCanvas.useEffect"], [
+        isSimulationStarted
     ]);
     // Update gravity grid when gravityGridEnabled changes
     const gravityGridRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
@@ -1445,7 +1472,7 @@ const GameCanvas = ({ hudSetters, probeSpeedMult = 1.05, gravityG = 1.0, starMas
                 probeModelPath,
                 orientation
             });
-            let { scene, camera, renderer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid, updateGrid, switchProbeModel } = threeObj;
+            let { scene, camera, renderer, composer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid, updateGrid, switchProbeModel } = threeObj;
             gravityGridRef.current = {
                 updateGravityGrid
             };
@@ -1482,7 +1509,7 @@ const GameCanvas = ({ hudSetters, probeSpeedMult = 1.05, gravityG = 1.0, starMas
                             starMass,
                             gravityGridEnabled
                         });
-                        ({ scene, camera, renderer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid } = threeObj);
+                        ({ scene, camera, renderer, composer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid } = threeObj);
                         // Restart animation loop
                         lastTime = performance.now() / 1000;
                         accumulator = 0;
@@ -1512,90 +1539,96 @@ const GameCanvas = ({ hudSetters, probeSpeedMult = 1.05, gravityG = 1.0, starMas
                     // clamp delta to avoid spiral of death
                     if (delta > 0.25) delta = 0.25;
                     accumulator += delta;
-                    while(accumulator >= fixedTimeStep){
-                        try {
-                            // apply input-driven delta-v before stepping
-                            const dvScale = 0.02; // tune this for feel (scene-units/sec)
-                            let dv = [
-                                0,
-                                0,
-                                0
-                            ];
-                            // Calculate thrust direction based on current velocity (velocity-relative control)
-                            if (state && state.velocity) {
-                                const vx = state.velocity.x;
-                                const vy = state.velocity.y;
-                                const vz = state.velocity.z;
-                                const speed = Math.sqrt(vx * vx + vy * vy + vz * vz);
-                                if (speed > 0.001) {
-                                    // Normalize velocity to get forward direction
-                                    const fx = vx / speed;
-                                    const fy = vy / speed;
-                                    const fz = vz / speed;
-                                    // Calculate right direction (cross product with up vector [0,1,0])
-                                    // right = cross(forward, up) = [fz, 0, -fx]
-                                    const rx = fz;
-                                    const ry = 0;
-                                    const rz = -fx;
-                                    // Normalize right vector
-                                    const rLen = Math.sqrt(rx * rx + rz * rz);
-                                    const rnx = rLen > 0.001 ? rx / rLen : 1;
-                                    const rnz = rLen > 0.001 ? rz / rLen : 0;
-                                    // Apply thrust based on input
-                                    if (inputState.left) {
-                                        // Thrust to the left (opposite of right direction)
-                                        dv[0] += rnx * dvScale;
-                                        dv[2] += rnz * dvScale;
+                    // Only run physics simulation if simulation has started
+                    if (isSimulationStartedRef.current) {
+                        while(accumulator >= fixedTimeStep){
+                            try {
+                                // apply input-driven delta-v before stepping
+                                const dvScale = 0.02; // tune this for feel (scene-units/sec)
+                                let dv = [
+                                    0,
+                                    0,
+                                    0
+                                ];
+                                // Calculate thrust direction based on current velocity (velocity-relative control)
+                                if (state && state.velocity) {
+                                    const vx = state.velocity.x;
+                                    const vy = state.velocity.y;
+                                    const vz = state.velocity.z;
+                                    const speed = Math.sqrt(vx * vx + vy * vy + vz * vz);
+                                    if (speed > 0.001) {
+                                        // Normalize velocity to get forward direction
+                                        const fx = vx / speed;
+                                        const fy = vy / speed;
+                                        const fz = vz / speed;
+                                        // Calculate right direction (cross product with up vector [0,1,0])
+                                        // right = cross(forward, up) = [fz, 0, -fx]
+                                        const rx = fz;
+                                        const ry = 0;
+                                        const rz = -fx;
+                                        // Normalize right vector
+                                        const rLen = Math.sqrt(rx * rx + rz * rz);
+                                        const rnx = rLen > 0.001 ? rx / rLen : 1;
+                                        const rnz = rLen > 0.001 ? rz / rLen : 0;
+                                        // Apply thrust based on input
+                                        if (inputState.left) {
+                                            // Thrust to the left (opposite of right direction)
+                                            dv[0] += rnx * dvScale;
+                                            dv[2] += rnz * dvScale;
+                                        }
+                                        if (inputState.right) {
+                                            // Thrust to the right
+                                            dv[0] -= rnx * dvScale;
+                                            dv[2] -= rnz * dvScale;
+                                        }
+                                        if (inputState.up) {
+                                            // Thrust forward (in velocity direction)
+                                            dv[0] += fx * dvScale;
+                                            dv[2] += fz * dvScale;
+                                        }
+                                        if (inputState.down) {
+                                            // Thrust backward (brake)
+                                            dv[0] -= fx * dvScale;
+                                            dv[2] -= fz * dvScale;
+                                        }
+                                    } else {
+                                        // Fallback to world-axis control when stationary
+                                        if (inputState.left) dv[0] -= dvScale;
+                                        if (inputState.right) dv[0] += dvScale;
+                                        if (inputState.up) dv[2] -= dvScale;
+                                        if (inputState.down) dv[2] += dvScale;
                                     }
-                                    if (inputState.right) {
-                                        // Thrust to the right
-                                        dv[0] -= rnx * dvScale;
-                                        dv[2] -= rnz * dvScale;
-                                    }
-                                    if (inputState.up) {
-                                        // Thrust forward (in velocity direction)
-                                        dv[0] += fx * dvScale;
-                                        dv[2] += fz * dvScale;
-                                    }
-                                    if (inputState.down) {
-                                        // Thrust backward (brake)
-                                        dv[0] -= fx * dvScale;
-                                        dv[2] -= fz * dvScale;
-                                    }
-                                } else {
-                                    // Fallback to world-axis control when stationary
-                                    if (inputState.left) dv[0] -= dvScale;
-                                    if (inputState.right) dv[0] += dvScale;
-                                    if (inputState.up) dv[2] -= dvScale;
-                                    if (inputState.down) dv[2] += dvScale;
                                 }
-                            }
-                            if (dv[0] !== 0 || dv[1] !== 0 || dv[2] !== 0) {
-                                // Calculate fuel consumption based on delta-v magnitude
-                                const dvMagnitude = Math.sqrt(dv[0] * dv[0] + dv[1] * dv[1] + dv[2] * dv[2]);
-                                const fuelConsumed = dvMagnitude * __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$threeSetup$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PHYSICS_SCALE"].FUEL_CONSUMPTION_RATE;
-                                // Check if enough fuel available
-                                if (state.fuel > 0) {
-                                    // Consume fuel
-                                    state.fuel = Math.max(0, state.fuel - fuelConsumed);
-                                    // Apply thrust
-                                    try {
-                                        // call exported helper bound in threeSetup
-                                        window.__applyDeltaVToProbe ? window.__applyDeltaVToProbe(dv) : __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$threeSetup$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["initThreeJS"].applyDeltaVToProbe?.(dv);
-                                    } catch (e) {
+                                if (dv[0] !== 0 || dv[1] !== 0 || dv[2] !== 0) {
+                                    // Calculate fuel consumption based on delta-v magnitude
+                                    const dvMagnitude = Math.sqrt(dv[0] * dv[0] + dv[1] * dv[1] + dv[2] * dv[2]);
+                                    const fuelConsumed = dvMagnitude * __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$threeSetup$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PHYSICS_SCALE"].FUEL_CONSUMPTION_RATE;
+                                    // Check if enough fuel available
+                                    if (state.fuel > 0) {
+                                        // Consume fuel
+                                        state.fuel = Math.max(0, state.fuel - fuelConsumed);
+                                        // Apply thrust
                                         try {
-                                            __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$threeSetup$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["initThreeJS"].applyDeltaVToProbe?.(dv);
-                                        } catch (e) {}
+                                            // call exported helper bound in threeSetup
+                                            window.__applyDeltaVToProbe ? window.__applyDeltaVToProbe(dv) : __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$threeSetup$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["initThreeJS"].applyDeltaVToProbe?.(dv);
+                                        } catch (e) {
+                                            try {
+                                                __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$threeSetup$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["initThreeJS"].applyDeltaVToProbe?.(dv);
+                                            } catch (e) {}
+                                        }
                                     }
+                                // If fuel depleted, thrust is not applied (status will be set in stepSimulation)
                                 }
-                            // If fuel depleted, thrust is not applied (status will be set in stepSimulation)
+                                stepSimulation(fixedTimeStep);
+                            } catch (e) {
+                                // swallow physics errors to keep render loop alive
+                                console.error('physics step error', e);
                             }
-                            stepSimulation(fixedTimeStep);
-                        } catch (e) {
-                            // swallow physics errors to keep render loop alive
-                            console.error('physics step error', e);
+                            accumulator -= fixedTimeStep;
                         }
-                        accumulator -= fixedTimeStep;
+                    } else {
+                        // Reset accumulator when simulation is paused to prevent time buildup
+                        accumulator = 0;
                     }
                     // synchronize visual probe mesh with simulated state
                     try {
@@ -1687,7 +1720,7 @@ const GameCanvas = ({ hudSetters, probeSpeedMult = 1.05, gravityG = 1.0, starMas
                             };
                         }
                     }
-                    renderer.render(scene, camera);
+                    composer.render();
                     rafRef.current = requestAnimationFrame(animate);
                 }
             }["GameCanvas.useEffect.animate"];
@@ -1716,11 +1749,11 @@ const GameCanvas = ({ hudSetters, probeSpeedMult = 1.05, gravityG = 1.0, starMas
         }
     }, void 0, false, {
         fileName: "[project]/src/components/GameCanvas.tsx",
-        lineNumber: 317,
+        lineNumber: 330,
         columnNumber: 12
     }, ("TURBOPACK compile-time value", void 0));
 };
-_s(GameCanvas, "OaxlmypSI6Xnvc9mk4hy2btExmo=");
+_s(GameCanvas, "VM+8bgrg1zgl1/JsP2O1j2GkeUM=");
 _c = GameCanvas;
 const __TURBOPACK__default__export__ = GameCanvas;
 var _c;
@@ -2414,7 +2447,7 @@ var _s = __turbopack_context__.k.signature();
 ;
 ;
 ;
-const HUD = ({ status = 'Idle', velocity = 0, distance = 0, fuel = 100, slingshots = 0, velocityHistory = [], distanceHistory = [], probeSpeedMult = 1.05, setProbeSpeedMult = ()=>{}, gravityG = 0.133, setGravityG = ()=>{}, starMass = 333000, setStarMass = ()=>{}, gravityGridEnabled = false, setGravityGridEnabled = ()=>{}, gridEnabled = true, setGridEnabled = ()=>{}, selectedModel = 'space_fighter', setSelectedModel = ()=>{} })=>{
+const HUD = ({ status = 'Idle', velocity = 0, distance = 0, fuel = 100, slingshots = 0, velocityHistory = [], distanceHistory = [], probeSpeedMult = 1.05, setProbeSpeedMult = ()=>{}, gravityG = 0.133, setGravityG = ()=>{}, starMass = 333000, setStarMass = ()=>{}, gravityGridEnabled = false, setGravityGridEnabled = ()=>{}, gridEnabled = true, setGridEnabled = ()=>{}, selectedModel = 'space_fighter', setSelectedModel = ()=>{}, isSimulationStarted = false, setIsSimulationStarted = ()=>{} })=>{
     _s();
     const [showCharts, setShowCharts] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const [showMissions, setShowMissions] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
@@ -2454,6 +2487,22 @@ const HUD = ({ status = 'Idle', velocity = 0, distance = 0, fuel = 100, slingsho
     };
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
         children: [
+            !isSimulationStarted && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "start-screen",
+                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                    className: "start-button",
+                    onClick: ()=>setIsSimulationStarted(true),
+                    children: "Free mode Start"
+                }, void 0, false, {
+                    fileName: "[project]/src/components/HUD.tsx",
+                    lineNumber: 101,
+                    columnNumber: 21
+                }, ("TURBOPACK compile-time value", void 0))
+            }, void 0, false, {
+                fileName: "[project]/src/components/HUD.tsx",
+                lineNumber: 100,
+                columnNumber: 17
+            }, ("TURBOPACK compile-time value", void 0)),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 id: "ui",
                 className: "hud-container hud-compact",
@@ -2470,13 +2519,13 @@ const HUD = ({ status = 'Idle', velocity = 0, distance = 0, fuel = 100, slingsho
                                         children: status
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/HUD.tsx",
-                                        lineNumber: 99,
+                                        lineNumber: 114,
                                         columnNumber: 25
                                     }, ("TURBOPACK compile-time value", void 0))
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/HUD.tsx",
-                                lineNumber: 97,
+                                lineNumber: 112,
                                 columnNumber: 21
                             }, ("TURBOPACK compile-time value", void 0)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2484,7 +2533,7 @@ const HUD = ({ status = 'Idle', velocity = 0, distance = 0, fuel = 100, slingsho
                                 children: "|"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/HUD.tsx",
-                                lineNumber: 103,
+                                lineNumber: 118,
                                 columnNumber: 21
                             }, ("TURBOPACK compile-time value", void 0)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2496,14 +2545,14 @@ const HUD = ({ status = 'Idle', velocity = 0, distance = 0, fuel = 100, slingsho
                                         children: velocity.toFixed(1)
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/HUD.tsx",
-                                        lineNumber: 105,
+                                        lineNumber: 120,
                                         columnNumber: 27
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     "km/s"
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/HUD.tsx",
-                                lineNumber: 104,
+                                lineNumber: 119,
                                 columnNumber: 21
                             }, ("TURBOPACK compile-time value", void 0)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2511,7 +2560,7 @@ const HUD = ({ status = 'Idle', velocity = 0, distance = 0, fuel = 100, slingsho
                                 children: "|"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/HUD.tsx",
-                                lineNumber: 107,
+                                lineNumber: 122,
                                 columnNumber: 21
                             }, ("TURBOPACK compile-time value", void 0)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2523,14 +2572,14 @@ const HUD = ({ status = 'Idle', velocity = 0, distance = 0, fuel = 100, slingsho
                                         children: distance.toFixed(0)
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/HUD.tsx",
-                                        lineNumber: 109,
+                                        lineNumber: 124,
                                         columnNumber: 27
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     "AU"
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/HUD.tsx",
-                                lineNumber: 108,
+                                lineNumber: 123,
                                 columnNumber: 21
                             }, ("TURBOPACK compile-time value", void 0)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2538,7 +2587,7 @@ const HUD = ({ status = 'Idle', velocity = 0, distance = 0, fuel = 100, slingsho
                                 children: "|"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/HUD.tsx",
-                                lineNumber: 111,
+                                lineNumber: 126,
                                 columnNumber: 21
                             }, ("TURBOPACK compile-time value", void 0)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2550,20 +2599,20 @@ const HUD = ({ status = 'Idle', velocity = 0, distance = 0, fuel = 100, slingsho
                                         children: fuel.toFixed(1)
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/HUD.tsx",
-                                        lineNumber: 114,
+                                        lineNumber: 129,
                                         columnNumber: 25
                                     }, ("TURBOPACK compile-time value", void 0)),
                                     "%"
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/HUD.tsx",
-                                lineNumber: 112,
+                                lineNumber: 127,
                                 columnNumber: 21
                             }, ("TURBOPACK compile-time value", void 0))
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/HUD.tsx",
-                        lineNumber: 96,
+                        lineNumber: 111,
                         columnNumber: 17
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2578,7 +2627,7 @@ const HUD = ({ status = 'Idle', velocity = 0, distance = 0, fuel = 100, slingsho
                                     children: "Charts"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/HUD.tsx",
-                                    lineNumber: 123,
+                                    lineNumber: 138,
                                     columnNumber: 25
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -2588,7 +2637,7 @@ const HUD = ({ status = 'Idle', velocity = 0, distance = 0, fuel = 100, slingsho
                                     children: "Missions"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/HUD.tsx",
-                                    lineNumber: 130,
+                                    lineNumber: 145,
                                     columnNumber: 25
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -2598,7 +2647,7 @@ const HUD = ({ status = 'Idle', velocity = 0, distance = 0, fuel = 100, slingsho
                                     children: "Controls"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/HUD.tsx",
-                                    lineNumber: 137,
+                                    lineNumber: 152,
                                     columnNumber: 25
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -2608,7 +2657,7 @@ const HUD = ({ status = 'Idle', velocity = 0, distance = 0, fuel = 100, slingsho
                                     children: "Settings"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/HUD.tsx",
-                                    lineNumber: 144,
+                                    lineNumber: 159,
                                     columnNumber: 25
                                 }, ("TURBOPACK compile-time value", void 0)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
@@ -2623,34 +2672,34 @@ const HUD = ({ status = 'Idle', velocity = 0, distance = 0, fuel = 100, slingsho
                                                 children: model.label
                                             }, model.value, false, {
                                                 fileName: "[project]/src/components/HUD.tsx",
-                                                lineNumber: 158,
+                                                lineNumber: 173,
                                                 columnNumber: 37
                                             }, ("TURBOPACK compile-time value", void 0)))
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/HUD.tsx",
-                                        lineNumber: 152,
+                                        lineNumber: 167,
                                         columnNumber: 29
                                     }, ("TURBOPACK compile-time value", void 0))
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/HUD.tsx",
-                                    lineNumber: 151,
+                                    lineNumber: 166,
                                     columnNumber: 25
                                 }, ("TURBOPACK compile-time value", void 0))
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/HUD.tsx",
-                            lineNumber: 122,
+                            lineNumber: 137,
                             columnNumber: 21
                         }, ("TURBOPACK compile-time value", void 0))
                     }, void 0, false, {
                         fileName: "[project]/src/components/HUD.tsx",
-                        lineNumber: 121,
+                        lineNumber: 136,
                         columnNumber: 17
                     }, ("TURBOPACK compile-time value", void 0))
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/HUD.tsx",
-                lineNumber: 94,
+                lineNumber: 109,
                 columnNumber: 13
             }, ("TURBOPACK compile-time value", void 0)),
             showCharts && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2663,7 +2712,7 @@ const HUD = ({ status = 'Idle', velocity = 0, distance = 0, fuel = 100, slingsho
                         unit: "km/s"
                     }, void 0, false, {
                         fileName: "[project]/src/components/HUD.tsx",
-                        lineNumber: 170,
+                        lineNumber: 185,
                         columnNumber: 21
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$MiniChart$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -2673,7 +2722,7 @@ const HUD = ({ status = 'Idle', velocity = 0, distance = 0, fuel = 100, slingsho
                         unit: "AU"
                     }, void 0, false, {
                         fileName: "[project]/src/components/HUD.tsx",
-                        lineNumber: 176,
+                        lineNumber: 191,
                         columnNumber: 21
                     }, ("TURBOPACK compile-time value", void 0)),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2684,7 +2733,7 @@ const HUD = ({ status = 'Idle', velocity = 0, distance = 0, fuel = 100, slingsho
                                 children: "Swing-by count:"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/HUD.tsx",
-                                lineNumber: 183,
+                                lineNumber: 198,
                                 columnNumber: 25
                             }, ("TURBOPACK compile-time value", void 0)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2695,19 +2744,19 @@ const HUD = ({ status = 'Idle', velocity = 0, distance = 0, fuel = 100, slingsho
                                 children: slingshots
                             }, void 0, false, {
                                 fileName: "[project]/src/components/HUD.tsx",
-                                lineNumber: 184,
+                                lineNumber: 199,
                                 columnNumber: 25
                             }, ("TURBOPACK compile-time value", void 0))
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/HUD.tsx",
-                        lineNumber: 182,
+                        lineNumber: 197,
                         columnNumber: 21
                     }, ("TURBOPACK compile-time value", void 0))
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/HUD.tsx",
-                lineNumber: 169,
+                lineNumber: 184,
                 columnNumber: 17
             }, ("TURBOPACK compile-time value", void 0)),
             showMissions && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2719,24 +2768,24 @@ const HUD = ({ status = 'Idle', velocity = 0, distance = 0, fuel = 100, slingsho
                     fuel: fuel
                 }, void 0, false, {
                     fileName: "[project]/src/components/HUD.tsx",
-                    lineNumber: 191,
+                    lineNumber: 206,
                     columnNumber: 21
                 }, ("TURBOPACK compile-time value", void 0))
             }, void 0, false, {
                 fileName: "[project]/src/components/HUD.tsx",
-                lineNumber: 190,
+                lineNumber: 205,
                 columnNumber: 17
             }, ("TURBOPACK compile-time value", void 0)),
             showHelp && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "hud-help-panel",
                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ControlsHelp$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {}, void 0, false, {
                     fileName: "[project]/src/components/HUD.tsx",
-                    lineNumber: 202,
+                    lineNumber: 217,
                     columnNumber: 21
                 }, ("TURBOPACK compile-time value", void 0))
             }, void 0, false, {
                 fileName: "[project]/src/components/HUD.tsx",
-                lineNumber: 201,
+                lineNumber: 216,
                 columnNumber: 17
             }, ("TURBOPACK compile-time value", void 0)),
             showSettings && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2754,12 +2803,12 @@ const HUD = ({ status = 'Idle', velocity = 0, distance = 0, fuel = 100, slingsho
                     setGridEnabled: setGridEnabled
                 }, void 0, false, {
                     fileName: "[project]/src/components/HUD.tsx",
-                    lineNumber: 208,
+                    lineNumber: 223,
                     columnNumber: 21
                 }, ("TURBOPACK compile-time value", void 0))
             }, void 0, false, {
                 fileName: "[project]/src/components/HUD.tsx",
-                lineNumber: 207,
+                lineNumber: 222,
                 columnNumber: 17
             }, ("TURBOPACK compile-time value", void 0))
         ]
@@ -2949,11 +2998,13 @@ const PROBE_MODELS = [
 ];
 const Page = ()=>{
     _s();
-    const [status, setStatus] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('Idle');
+    const [status, setStatus] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('Stopped');
     const [velocity, setVelocity] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(0);
     const [distance, setDistance] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(0);
     const [fuel, setFuel] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(100);
     const [slingshots, setSlingshots] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(0);
+    // Simulation control
+    const [isSimulationStarted, setIsSimulationStarted] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     // 履歴データの保存（最大100ポイント）
     const [velocityHistory, setVelocityHistory] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])([]);
     const [distanceHistory, setDistanceHistory] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])([]);
@@ -3029,10 +3080,11 @@ const Page = ()=>{
                 cameraView: cameraView,
                 gravityGridEnabled: gravityGridEnabled,
                 gridEnabled: gridEnabled,
-                selectedModel: selectedModel
+                selectedModel: selectedModel,
+                isSimulationStarted: isSimulationStarted
             }, void 0, false, {
                 fileName: "[project]/src/app/page.tsx",
-                lineNumber: 87,
+                lineNumber: 90,
                 columnNumber: 13
             }, ("TURBOPACK compile-time value", void 0)),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$HUD$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -3054,10 +3106,12 @@ const Page = ()=>{
                 gridEnabled: gridEnabled,
                 setGridEnabled: setGridEnabled,
                 selectedModel: selectedModel,
-                setSelectedModel: setSelectedModel
+                setSelectedModel: setSelectedModel,
+                isSimulationStarted: isSimulationStarted,
+                setIsSimulationStarted: setIsSimulationStarted
             }, void 0, false, {
                 fileName: "[project]/src/app/page.tsx",
-                lineNumber: 88,
+                lineNumber: 91,
                 columnNumber: 13
             }, ("TURBOPACK compile-time value", void 0)),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$CameraControls$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -3065,17 +3119,17 @@ const Page = ()=>{
                 setCameraView: setCameraView
             }, void 0, false, {
                 fileName: "[project]/src/app/page.tsx",
-                lineNumber: 109,
+                lineNumber: 114,
                 columnNumber: 13
             }, ("TURBOPACK compile-time value", void 0))
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/page.tsx",
-        lineNumber: 86,
+        lineNumber: 89,
         columnNumber: 9
     }, ("TURBOPACK compile-time value", void 0));
 };
-_s(Page, "JLX7wynj3j2dGsKboUFBjoBBbMY=");
+_s(Page, "CzJV0ses+IZ6zGcTkkpi4y/JTow=");
 _c = Page;
 const __TURBOPACK__default__export__ = Page;
 var _c;

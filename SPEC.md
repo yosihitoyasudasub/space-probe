@@ -1,7 +1,7 @@
 # SPEC.md - 宇宙探査機シミュレーションゲーム 仕様書兼設計書
 
-バージョン: 1.5
-最終更新日: 2025-10-25
+バージョン: 2.0
+最終更新日: 2025-10-26
 プロジェクト: space-probe-game-next
 
 ---
@@ -1669,6 +1669,155 @@ useEffect(() => {
 - 平面グリッドは静的なので負荷が低い
 - 非表示にすることで描画負荷をわずかに削減
 
+### 3.13 シミュレーション開始制御
+
+ページロード時に物理シミュレーションを自動開始せず、ユーザーが明示的に開始ボタンをクリックするまで待機する機能。
+
+#### 3.13.1 概要
+
+**目的:**
+- ページロード直後に探査機が動き出すことを防止
+- ユーザーが準備できてからシミュレーションを開始
+- 初期状態を確認してから操作を始められる
+
+**実装方式:**
+- 初期画面に "Free mode Start" ボタンを全画面オーバーレイで表示
+- ボタンクリックまで物理演算を一時停止
+- 3Dシーンは描画されるが、物理シミュレーションは動かない
+
+#### 3.13.2 仕様
+
+**初期状態:**
+- ステータス表示: "Stopped"（従来は "Running" で開始）
+- 物理シミュレーション: 停止（探査機は静止）
+- 3D描画: 有効（シーンは表示される）
+- カメラ操作: 無効（開始前は操作不可）
+
+**開始ボタン:**
+- テキスト: "Free mode Start"
+- 配置: 画面中央
+- スタイル: サイバーパンク風（シアン色のボーダー、グラデーション背景）
+- サイズ: 大型（padding: 30px 60px、font-size: 32px）
+
+**ボタンクリック後:**
+- オーバーレイが消える
+- 物理シミュレーション開始
+- ステータスが "Running" に変更
+- カメラ操作が有効になる
+
+#### 3.13.3 UI実装
+
+**スタートスクリーンオーバーレイ:**
+```css
+.start-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+```
+
+**ボタンスタイル:**
+```css
+.start-button {
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(0, 255, 0, 0.2));
+    border: 3px solid #0ff;
+    color: #0ff;
+    padding: 30px 60px;
+    font-size: 32px;
+    /* ホバー・アクティブ時のエフェクト付き */
+}
+```
+
+#### 3.13.4 実装詳細
+
+**状態管理:**
+```typescript
+// src/app/page.tsx:41
+const [isSimulationStarted, setIsSimulationStarted] = useState<boolean>(false);
+
+// src/app/page.tsx:34
+const [status, setStatus] = useState<string>('Stopped');
+```
+
+**HUDコンポーネント:**
+```typescript
+// src/components/HUD.tsx:99-108
+{!isSimulationStarted && (
+    <div className="start-screen">
+        <button
+            className="start-button"
+            onClick={() => setIsSimulationStarted(true)}
+        >
+            Free mode Start
+        </button>
+    </div>
+)}
+```
+
+**物理シミュレーション制御:**
+```typescript
+// src/components/GameCanvas.tsx:32, 40-42
+const isSimulationStartedRef = useRef<boolean>(isSimulationStarted);
+
+useEffect(() => {
+    isSimulationStartedRef.current = isSimulationStarted;
+}, [isSimulationStarted]);
+
+// src/components/GameCanvas.tsx:141-232
+accumulator += delta;
+// Only run physics simulation if simulation has started
+if (isSimulationStartedRef.current) {
+    while (accumulator >= fixedTimeStep) {
+        // ... 物理演算処理 ...
+        stepSimulation(fixedTimeStep);
+    }
+} else {
+    // Reset accumulator when simulation is paused to prevent time buildup
+    accumulator = 0;
+}
+```
+
+#### 3.13.5 技術的詳細
+
+**useRefパターンの使用:**
+- `isSimulationStarted` をuseRefで管理してアニメーションループ内で参照
+- props変更時にuseEffectで同期
+- アニメーションフレームごとに最新の状態を確認
+
+**accumulator のリセット:**
+- シミュレーション停止中は accumulator を 0 にリセット
+- 開始時に時間が溜まっていて急激に進むことを防止
+
+**描画とシミュレーションの分離:**
+- `requestAnimationFrame` は常に実行（描画は継続）
+- `stepSimulation` のみを条件分岐で制御
+- 3Dシーンは表示されるが物理演算のみ停止
+
+#### 3.13.6 利点
+
+**ユーザビリティ:**
+- ユーザーが意図しないタイミングで探査機が動き出さない
+- 初期状態を確認してから開始できる
+- 設定を調整してからスタート可能
+
+**視覚的フィードバック:**
+- ステータス表示 "Stopped" で明確に停止状態を示す
+- 大きなボタンで操作が直感的
+- サイバーパンク風デザインでゲームの雰囲気を強調
+
+**技術的利点:**
+- 物理演算を停止することでCPU負荷を削減
+- 初期化処理と実行を明確に分離
+- デバッグやテストが容易
+
 ---
 
 ## 4. 物理エンジン設計
@@ -2875,6 +3024,7 @@ SOFTWARE.
 | 2025-10-26 | 1.7 | GLBモデルロード中の表示制御 - ロード中はVoyagerを非表示にしてチラつきを防止、ロード失敗時は自動的にVoyagerを表示、スムーズなモデル切り替えを実現 |
 | 2025-10-26 | 1.8 | 動的モデル切り替え機能（状態保持） - シミュレーション中にモデル切り替え可能、位置・速度・燃料・軌跡など全状態を保持、シーン再初期化なしでモデルのみ置き換え |
 | 2025-10-26 | 1.9 | モデル個別回転設定と長手方向自動検出 - バウンディングボックスから最長軸を自動検出、モデルごとにorientation設定（autoAlign, rotationY, invertDirection）、長手方向を進行方向に自動配置 |
+| 2025-10-26 | 2.0 | シミュレーション開始制御機能 - "Free mode Start" ボタンの追加、初期ステータス "Stopped"、ボタンクリックまで物理シミュレーション停止、3D描画と物理演算の分離、accumulatorリセットによる時間溜まり防止 |
 
 ---
 

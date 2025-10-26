@@ -1,6 +1,9 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
 import { Body, cloneBodies, stepBodies } from './physics';
 
 // ====================================================================
@@ -265,6 +268,20 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 
+    // Setup post-processing for bloom effect
+    const composer = new EffectComposer(renderer);
+    const renderPass = new RenderPass(scene, camera);
+    composer.addPass(renderPass);
+
+    // Bloom pass for glowing sun
+    const bloomPass = new UnrealBloomPass(
+        new THREE.Vector2(window.innerWidth, window.innerHeight),
+        1.5,  // strength
+        0.4,  // radius
+        0.85  // threshold
+    );
+    composer.addPass(bloomPass);
+
     const ambient = new THREE.AmbientLight(0xffffff, 0.6);
     scene.add(ambient);
     const directional = new THREE.DirectionalLight(0xffffff, 0.8);
@@ -306,7 +323,11 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     // central star at origin (can be overridden via options)
     const starMass = options?.starMass ?? PHYSICS_SCALE.SUN_MASS;
     const starGeom = new THREE.SphereGeometry(5, 24, 24);
-    const starMat = new THREE.MeshStandardMaterial({ color: 0xffee88, emissive: 0x220000 });
+    const starMat = new THREE.MeshStandardMaterial({
+        color: 0xffee88,
+        emissive: 0xffaa00,  // Bright orange emissive for bloom effect
+        emissiveIntensity: 2.5  // Strong emissive intensity for bloom
+    });
     const starMesh = new THREE.Mesh(starGeom, starMat);
     starMesh.position.set(0, 0, 0);
     scene.add(starMesh);
@@ -865,6 +886,7 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        composer.setSize(window.innerWidth, window.innerHeight);
     }
 
     window.addEventListener('resize', onResize);
@@ -1112,6 +1134,7 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
 
     function dispose() {
         window.removeEventListener('resize', onResize);
+        composer.dispose();
         renderer.dispose();
         scene.traverse((obj: any) => {
             if (obj.geometry) obj.geometry.dispose?.();
@@ -1175,7 +1198,7 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
         }
     }
 
-    return { scene, camera, renderer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid, updateGrid, switchProbeModel };
+    return { scene, camera, renderer, composer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid, updateGrid, switchProbeModel };
 }
 
 // small helper to allow external callers to apply delta-v to the probe

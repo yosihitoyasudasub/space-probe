@@ -31,11 +31,14 @@ export const PROBE_MODELS = [
 ];
 
 const Page = () => {
-    const [status, setStatus] = useState<string>('Idle');
+    const [status, setStatus] = useState<string>('Stopped');
     const [velocity, setVelocity] = useState<number>(0);
     const [distance, setDistance] = useState<number>(0);
     const [fuel, setFuel] = useState<number>(100);
     const [slingshots, setSlingshots] = useState<number>(0);
+
+    // Simulation control
+    const [isSimulationStarted, setIsSimulationStarted] = useState<boolean>(false);
 
     // 履歴データの保存（最大100ポイント）
     const [velocityHistory, setVelocityHistory] = useState<DataPoint[]>([]);
@@ -84,7 +87,7 @@ const Page = () => {
 
     return (
         <div>
-            <GameCanvas hudSetters={hudSetters} probeSpeedMult={probeSpeedMult} gravityG={gravityG} starMass={starMass} cameraView={cameraView} gravityGridEnabled={gravityGridEnabled} gridEnabled={gridEnabled} selectedModel={selectedModel} />
+            <GameCanvas hudSetters={hudSetters} probeSpeedMult={probeSpeedMult} gravityG={gravityG} starMass={starMass} cameraView={cameraView} gravityGridEnabled={gravityGridEnabled} gridEnabled={gridEnabled} selectedModel={selectedModel} isSimulationStarted={isSimulationStarted} />
             <HUD
                 status={status}
                 velocity={velocity}
@@ -105,6 +108,8 @@ const Page = () => {
                 setGridEnabled={setGridEnabled}
                 selectedModel={selectedModel}
                 setSelectedModel={setSelectedModel}
+                isSimulationStarted={isSimulationStarted}
+                setIsSimulationStarted={setIsSimulationStarted}
             />
             <CameraControls cameraView={cameraView} setCameraView={setCameraView} />
         </div>
