@@ -701,18 +701,18 @@ body {
 
 .touch-arrows {
     position: fixed;
-    bottom: 20px;
-    right: 20px;
+    bottom: 2px;
+    right: 2px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 2px;
     pointer-events: auto;
     z-index: 900;
 }
 
 .touch-row {
     display: flex;
-    gap: 4px;
+    gap: 2px;
     justify-content: center;
 }
 
@@ -746,9 +746,9 @@ body {
 
 .touch-restart {
     position: fixed;
-    right: 20px;
-    top: 50%;
-    transform: translateY(-50%);
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
     pointer-events: auto;
     z-index: 900;
 }

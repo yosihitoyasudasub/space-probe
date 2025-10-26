@@ -699,16 +699,16 @@ body {
   pointer-events: auto;
   z-index: 900;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   display: flex;
   position: fixed;
-  bottom: 20px;
-  right: 20px;
+  bottom: 2px;
+  right: 2px;
 }
 
 .touch-row {
   justify-content: center;
-  gap: 4px;
+  gap: 2px;
   display: flex;
 }
 
@@ -745,9 +745,9 @@ body {
   pointer-events: auto;
   z-index: 900;
   position: fixed;
-  top: 50%;
-  right: 20px;
-  transform: translateY(-50%);
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .touch-btn-restart {

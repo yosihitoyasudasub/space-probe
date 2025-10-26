@@ -1,426 +1,316 @@
-[00:00:04.755] Server  LOG      ✓ Ready in 2.9s
-[00:00:10.384] Server  LOG      ○ Compiling / ...
-[00:00:23.845] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:25.496] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
-[00:00:25.497] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
-[00:00:26.214] Browser LOG     Loading model: Infinity%
-[00:00:26.214] Browser LOG     Loading model: Infinity%
-[00:00:26.214] Browser LOG     Loading model: Infinity%
-[00:00:26.215] Browser LOG     Loading model: Infinity%
-[00:00:26.216] Browser LOG     Loading model: Infinity%
-[00:00:26.216] Browser LOG     Loading model: Infinity%
-[00:00:26.216] Browser LOG     Loading model: Infinity%
-[00:00:26.216] Browser LOG     Loading model: Infinity%
-[00:00:26.216] Browser LOG     Loading model: Infinity%
-[00:00:26.216] Browser LOG     Loading model: Infinity%
-[00:00:26.216] Browser LOG     Loading model: Infinity%
-[00:00:27.707] Browser LOG     Model dimensions: 180.09 x 77.74 x 323.10
-[00:00:27.708] Browser LOG     Auto-scaling to 15 units (scale: 0.0464)
-[00:00:27.709] Browser LOG     Longest axis: z (323.10 units)
-[00:00:27.709] Browser LOG     Skipped emissive for bright material (L=1.00)
-[00:00:27.709] Browser LOG     Skipped emissive for bright material (L=1.00)
-[00:00:27.709] Browser LOG     Skipped emissive for bright material (L=1.10)
-[00:00:27.709] Browser LOG     Skipped emissive for bright material (L=1.21)
-[00:00:27.709] Browser LOG     Skipped emissive for bright material (L=1.10)
-[00:00:27.709] Browser LOG     Skipped emissive for bright material (L=1.21)
-[00:00:27.711] Browser LOG     Skipped emissive for bright material (L=1.33)
-[00:00:27.712] Browser LOG     Skipped emissive for bright material (L=1.46)
-[00:00:27.712] Browser LOG     Skipped emissive for bright material (L=1.61)
-[00:00:27.712] Browser LOG     Skipped emissive for bright material (L=1.77)
-[00:00:27.712] Browser LOG     Skipped emissive for bright material (L=1.95)
-[00:00:27.712] Browser LOG     Skipped emissive for bright material (L=2.14)
-[00:00:27.713] Browser LOG     Skipped emissive for bright material (L=2.36)
-[00:00:27.713] Browser LOG     Skipped emissive for bright material (L=2.59)
-[00:00:27.713] Browser LOG     Skipped emissive for bright material (L=2.85)
-[00:00:27.713] Browser LOG     Skipped emissive for bright material (L=3.14)
-[00:00:27.713] Browser LOG     Skipped emissive for bright material (L=3.45)
-[00:00:27.713] Browser LOG     Skipped emissive for bright material (L=3.80)
-[00:00:27.713] Browser LOG     Skipped emissive for bright material (L=4.18)
-[00:00:27.713] Browser LOG     Skipped emissive for bright material (L=4.59)
-[00:00:27.713] Browser LOG     Skipped emissive for bright material (L=5.05)
-[00:00:27.713] Browser LOG     Skipped emissive for bright material (L=5.56)
-[00:00:27.713] Browser LOG     Skipped emissive for bright material (L=6.12)
-[00:00:27.713] Browser LOG     Skipped emissive for bright material (L=6.73)
-[00:00:27.713] Browser LOG     Skipped emissive for bright material (L=7.40)
-[00:00:27.713] Browser LOG     Skipped emissive for bright material (L=8.14)
-[00:00:27.714] Browser LOG     Skipped emissive for bright material (L=8.95)
-[00:00:27.714] Browser LOG     Skipped emissive for bright material (L=9.85)
-[00:00:27.714] Browser LOG     Skipped emissive for bright material (L=10.83)
-[00:00:27.714] Browser LOG     Skipped emissive for bright material (L=11.92)
-[00:00:27.714] Browser LOG     Skipped emissive for bright material (L=13.11)
-[00:00:27.714] Browser LOG     Skipped emissive for bright material (L=14.42)
-[00:00:27.714] Browser LOG     Skipped emissive for bright material (L=15.86)
-[00:00:27.714] Browser LOG     Skipped emissive for bright material (L=17.45)
-[00:00:27.714] Browser LOG     Skipped emissive for bright material (L=19.19)
-[00:00:27.714] Browser LOG     Skipped emissive for bright material (L=21.11)
-[00:00:27.714] Browser LOG     Skipped emissive for bright material (L=23.23)
-[00:00:27.714] Browser LOG     Skipped emissive for bright material (L=25.55)
-[00:00:27.714] Browser LOG     Skipped emissive for bright material (L=28.10)
-[00:00:27.714] Browser LOG     GLB model loaded successfully: /models/space_fighter.glb
-[00:00:27.714] Browser LOG     GLB model loaded, replacing probe
-[00:00:27.717] Browser LOG     Probe replaced with GLB model successfully
-[00:00:41.448] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
-[00:00:41.449] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
-[00:00:41.948] Browser LOG     Loading model: Infinity%
-[00:00:41.950] Browser LOG     Loading model: Infinity%
-[00:00:41.950] Browser LOG     Loading model: Infinity%
-[00:00:41.950] Browser LOG     Loading model: Infinity%
-[00:00:41.950] Browser LOG     Loading model: Infinity%
-[00:00:41.950] Browser LOG     Loading model: Infinity%
-[00:00:41.951] Browser LOG     Loading model: Infinity%
-[00:00:41.951] Browser LOG     Loading model: Infinity%
-[00:00:41.951] Browser LOG     Loading model: Infinity%
-[00:00:41.951] Browser LOG     Loading model: Infinity%
-[00:00:41.951] Browser LOG     Loading model: Infinity%
-[00:00:41.952] Browser LOG     Loading model: Infinity%
-[00:00:42.906] Browser LOG     Model dimensions: 180.09 x 77.74 x 323.10
-[00:00:42.906] Browser LOG     Auto-scaling to 15 units (scale: 0.0464)
-[00:00:42.907] Browser LOG     Longest axis: z (323.10 units)
-[00:00:42.907] Browser LOG     Skipped emissive for bright material (L=1.00)
-[00:00:42.907] Browser LOG     Skipped emissive for bright material (L=1.00)
-[00:00:42.907] Browser LOG     Skipped emissive for bright material (L=1.10)
-[00:00:42.907] Browser LOG     Skipped emissive for bright material (L=1.21)
-[00:00:42.907] Browser LOG     Skipped emissive for bright material (L=1.10)
-[00:00:42.907] Browser LOG     Skipped emissive for bright material (L=1.21)
-[00:00:42.907] Browser LOG     Skipped emissive for bright material (L=1.33)
-[00:00:42.907] Browser LOG     Skipped emissive for bright material (L=1.46)
-[00:00:42.907] Browser LOG     Skipped emissive for bright material (L=1.61)
-[00:00:42.907] Browser LOG     Skipped emissive for bright material (L=1.77)
-[00:00:42.907] Browser LOG     Skipped emissive for bright material (L=1.95)
-[00:00:42.907] Browser LOG     Skipped emissive for bright material (L=2.14)
-[00:00:42.907] Browser LOG     Skipped emissive for bright material (L=2.36)
-[00:00:42.907] Browser LOG     Skipped emissive for bright material (L=2.59)
-[00:00:42.907] Browser LOG     Skipped emissive for bright material (L=2.85)
-[00:00:42.907] Browser LOG     Skipped emissive for bright material (L=3.14)
-[00:00:42.907] Browser LOG     Skipped emissive for bright material (L=3.45)
-[00:00:42.908] Browser LOG     Skipped emissive for bright material (L=3.80)
-[00:00:42.908] Browser LOG     Skipped emissive for bright material (L=4.18)
-[00:00:42.908] Browser LOG     Skipped emissive for bright material (L=4.59)
-[00:00:42.908] Browser LOG     Skipped emissive for bright material (L=5.05)
-[00:00:42.908] Browser LOG     Skipped emissive for bright material (L=5.56)
-[00:00:42.908] Browser LOG     Skipped emissive for bright material (L=6.12)
-[00:00:42.908] Browser LOG     Skipped emissive for bright material (L=6.73)
-[00:00:42.908] Browser LOG     Skipped emissive for bright material (L=7.40)
-[00:00:42.908] Browser LOG     Skipped emissive for bright material (L=8.14)
-[00:00:42.908] Browser LOG     Skipped emissive for bright material (L=8.95)
-[00:00:42.908] Browser LOG     Skipped emissive for bright material (L=9.85)
-[00:00:42.908] Browser LOG     Skipped emissive for bright material (L=10.83)
-[00:00:42.908] Browser LOG     Skipped emissive for bright material (L=11.92)
-[00:00:42.908] Browser LOG     Skipped emissive for bright material (L=13.11)
-[00:00:42.908] Browser LOG     Skipped emissive for bright material (L=14.42)
-[00:00:42.909] Browser LOG     Skipped emissive for bright material (L=15.86)
-[00:00:42.910] Browser LOG     Skipped emissive for bright material (L=17.45)
-[00:00:42.910] Browser LOG     Skipped emissive for bright material (L=19.19)
-[00:00:42.910] Browser LOG     Skipped emissive for bright material (L=21.11)
-[00:00:42.910] Browser LOG     Skipped emissive for bright material (L=23.23)
-[00:00:42.910] Browser LOG     Skipped emissive for bright material (L=25.55)
-[00:00:42.910] Browser LOG     Skipped emissive for bright material (L=28.10)
-[00:00:42.910] Browser LOG     GLB model loaded successfully: /models/space_fighter.glb
-[00:00:42.911] Browser LOG     GLB model loaded, replacing probe
-[00:00:42.911] Browser LOG     Probe replaced with GLB model successfully
-[00:00:48.833] Browser LOG     Loading model: Infinity%
-[00:00:48.834] Browser LOG     Loading model: Infinity%
-[00:00:48.834] Browser LOG     Loading model: Infinity%
-[00:00:48.834] Browser LOG     Loading model: Infinity%
-[00:00:48.834] Browser LOG     Loading model: Infinity%
-[00:00:48.834] Browser LOG     Loading model: Infinity%
-[00:00:48.835] Browser LOG     Loading model: Infinity%
-[00:00:48.835] Browser LOG     Loading model: Infinity%
-[00:00:48.835] Browser LOG     Loading model: Infinity%
-[00:00:48.835] Browser LOG     Loading model: Infinity%
-[00:00:48.835] Browser LOG     Loading model: Infinity%
-[00:00:48.835] Browser LOG     Loading model: Infinity%
-[00:00:48.835] Browser LOG     Loading model: Infinity%
-[00:00:48.835] Browser LOG     Loading model: Infinity%
-[00:00:48.835] Browser LOG     Loading model: Infinity%
-[00:00:48.835] Browser LOG     Loading model: Infinity%
-[00:00:48.835] Browser LOG     Loading model: Infinity%
-[00:00:48.835] Browser LOG     Loading model: Infinity%
-[00:00:48.835] Browser LOG     Loading model: Infinity%
-[00:00:48.836] Browser LOG     Loading model: Infinity%
-[00:00:48.836] Browser LOG     Loading model: Infinity%
-[00:00:48.836] Browser LOG     Loading model: Infinity%
-[00:00:48.836] Browser LOG     Loading model: Infinity%
-[00:00:48.836] Browser LOG     Loading model: Infinity%
-[00:00:48.836] Browser LOG     Loading model: Infinity%
-[00:00:48.836] Browser LOG     Loading model: Infinity%
-[00:00:48.836] Browser LOG     Loading model: Infinity%
-[00:00:48.836] Browser LOG     Loading model: Infinity%
-[00:00:48.836] Browser LOG     Loading model: Infinity%
-[00:00:48.836] Browser LOG     Loading model: Infinity%
-[00:00:48.836] Browser LOG     Loading model: Infinity%
-[00:00:48.836] Browser LOG     Loading model: Infinity%
-[00:00:48.836] Browser LOG     Loading model: Infinity%
-[00:00:48.836] Browser LOG     Loading model: Infinity%
-[00:00:49.180] Browser LOG     Model dimensions: 21.24 x 5.98 x 30.07
-[00:00:49.180] Browser LOG     Auto-scaling to 15 units (scale: 0.4988)
-[00:00:49.180] Browser LOG     Longest axis: z (30.07 units)
-[00:00:49.181] Browser LOG     Skipped emissive for bright material (L=1.00)
-[00:00:49.181] Browser LOG     Skipped emissive for bright material (L=1.10)
-[00:00:49.181] Browser LOG     Skipped emissive for bright material (L=1.21)
-[00:00:49.181] Browser LOG     GLB model loaded successfully: /models/space_fighter_3.glb
-[00:00:49.181] Browser LOG     Probe model switched successfully
-[00:01:35.170] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
-[00:01:35.171] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
-[00:01:35.171] Browser LOG     Loading model: Infinity%
-[00:01:35.171] Browser LOG     Loading model: Infinity%
-[00:01:35.171] Browser LOG     Loading model: Infinity%
-[00:01:35.171] Browser LOG     Loading model: Infinity%
-[00:01:35.171] Browser LOG     Loading model: Infinity%
-[00:01:35.171] Browser LOG     Loading model: Infinity%
-[00:01:35.171] Browser LOG     Loading model: Infinity%
-[00:01:35.171] Browser LOG     Loading model: Infinity%
-[00:01:35.171] Browser LOG     Loading model: Infinity%
-[00:01:35.172] Browser LOG     Loading model: Infinity%
-[00:01:35.172] Browser LOG     Loading model: Infinity%
-[00:01:35.172] Browser LOG     Loading model: Infinity%
-[00:01:35.172] Browser LOG     Loading model: Infinity%
-[00:01:35.172] Browser LOG     Loading model: Infinity%
-[00:01:35.172] Browser LOG     Loading model: Infinity%
-[00:01:35.172] Browser LOG     Loading model: Infinity%
-[00:01:35.172] Browser LOG     Loading model: Infinity%
-[00:01:35.172] Browser LOG     Loading model: Infinity%
-[00:01:35.172] Browser LOG     Loading model: Infinity%
-[00:01:35.172] Browser LOG     Loading model: Infinity%
-[00:01:35.173] Browser LOG     Loading model: Infinity%
-[00:01:35.173] Browser LOG     Loading model: Infinity%
-[00:01:35.173] Browser LOG     Loading model: Infinity%
-[00:01:35.173] Browser LOG     Loading model: Infinity%
-[00:01:35.173] Browser LOG     Loading model: Infinity%
-[00:01:35.173] Browser LOG     Loading model: Infinity%
-[00:01:35.173] Browser LOG     Loading model: Infinity%
-[00:01:36.226] Browser LOG     Model dimensions: 180.09 x 77.74 x 323.10
-[00:01:36.226] Browser LOG     Auto-scaling to 15 units (scale: 0.0464)
-[00:01:36.226] Browser LOG     Longest axis: z (323.10 units)
-[00:01:36.226] Browser LOG     Skipped emissive for bright material (L=1.00)
-[00:01:36.226] Browser LOG     Skipped emissive for bright material (L=1.00)
-[00:01:36.226] Browser LOG     Skipped emissive for bright material (L=1.10)
-[00:01:36.227] Browser LOG     Skipped emissive for bright material (L=1.21)
-[00:01:36.227] Browser LOG     Skipped emissive for bright material (L=1.10)
-[00:01:36.227] Browser LOG     Skipped emissive for bright material (L=1.21)
-[00:01:36.227] Browser LOG     Skipped emissive for bright material (L=1.33)
-[00:01:36.227] Browser LOG     Skipped emissive for bright material (L=1.46)
-[00:01:36.227] Browser LOG     Skipped emissive for bright material (L=1.61)
-[00:01:36.227] Browser LOG     Skipped emissive for bright material (L=1.77)
-[00:01:36.227] Browser LOG     Skipped emissive for bright material (L=1.95)
-[00:01:36.227] Browser LOG     Skipped emissive for bright material (L=2.14)
-[00:01:36.227] Browser LOG     Skipped emissive for bright material (L=2.36)
-[00:01:36.227] Browser LOG     Skipped emissive for bright material (L=2.59)
-[00:01:36.227] Browser LOG     Skipped emissive for bright material (L=2.85)
-[00:01:36.227] Browser LOG     Skipped emissive for bright material (L=3.14)
-[00:01:36.227] Browser LOG     Skipped emissive for bright material (L=3.45)
-[00:01:36.227] Browser LOG     Skipped emissive for bright material (L=3.80)
-[00:01:36.227] Browser LOG     Skipped emissive for bright material (L=4.18)
-[00:01:36.227] Browser LOG     Skipped emissive for bright material (L=4.59)
-[00:01:36.227] Browser LOG     Skipped emissive for bright material (L=5.05)
-[00:01:36.227] Browser LOG     Skipped emissive for bright material (L=5.56)
-[00:01:36.228] Browser LOG     Skipped emissive for bright material (L=6.12)
-[00:01:36.228] Browser LOG     Skipped emissive for bright material (L=6.73)
-[00:01:36.228] Browser LOG     Skipped emissive for bright material (L=7.40)
-[00:01:36.228] Browser LOG     Skipped emissive for bright material (L=8.14)
-[00:01:36.228] Browser LOG     Skipped emissive for bright material (L=8.95)
-[00:01:36.228] Browser LOG     Skipped emissive for bright material (L=9.85)
-[00:01:36.228] Browser LOG     Skipped emissive for bright material (L=10.83)
-[00:01:36.228] Browser LOG     Skipped emissive for bright material (L=11.92)
-[00:01:36.228] Browser LOG     Skipped emissive for bright material (L=13.11)
-[00:01:36.228] Browser LOG     Skipped emissive for bright material (L=14.42)
-[00:01:36.228] Browser LOG     Skipped emissive for bright material (L=15.86)
-[00:01:36.228] Browser LOG     Skipped emissive for bright material (L=17.45)
-[00:01:36.228] Browser LOG     Skipped emissive for bright material (L=19.19)
-[00:01:36.228] Browser LOG     Skipped emissive for bright material (L=21.11)
-[00:01:36.228] Browser LOG     Skipped emissive for bright material (L=23.23)
-[00:01:36.228] Browser LOG     Skipped emissive for bright material (L=25.55)
-[00:01:36.228] Browser LOG     Skipped emissive for bright material (L=28.10)
-[00:01:36.228] Browser LOG     GLB model loaded successfully: /models/space_fighter.glb
-[00:01:36.228] Browser LOG     GLB model loaded, replacing probe
-[00:01:36.228] Browser LOG     Probe replaced with GLB model successfully
-[00:01:47.084] Browser LOG     COM-zero velocity applied, offset: -0.006995 0.000000 -0.007126
-[00:01:47.084] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
-[00:01:47.313] Browser LOG     Loading model: Infinity%
-[00:01:47.313] Browser LOG     Loading model: Infinity%
-[00:01:47.314] Browser LOG     Loading model: Infinity%
-[00:01:47.314] Browser LOG     Loading model: Infinity%
-[00:01:47.318] Browser LOG     Loading model: Infinity%
-[00:01:47.318] Browser LOG     Loading model: Infinity%
-[00:01:47.318] Browser LOG     Loading model: Infinity%
-[00:01:47.318] Browser LOG     Loading model: Infinity%
-[00:01:47.319] Browser LOG     Loading model: Infinity%
-[00:01:47.319] Browser LOG     Loading model: Infinity%
-[00:01:47.880] Browser LOG     Model dimensions: 21.24 x 5.98 x 30.07
-[00:01:47.880] Browser LOG     Auto-scaling to 15 units (scale: 0.4988)
-[00:01:47.880] Browser LOG     Longest axis: z (30.07 units)
-[00:01:47.880] Browser LOG     Skipped emissive for bright material (L=1.00)
-[00:01:47.881] Browser LOG     Skipped emissive for bright material (L=1.10)
-[00:01:47.881] Browser LOG     Skipped emissive for bright material (L=1.21)
-[00:01:47.881] Browser LOG     GLB model loaded successfully: /models/space_fighter_3.glb
-[00:01:47.881] Browser LOG     GLB model loaded, replacing probe
-[00:01:47.881] Browser LOG     Probe replaced with GLB model successfully
-[00:01:52.711] Browser LOG     COM-zero velocity applied, offset: -0.017579 0.000000 -0.017908
-[00:01:52.711] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
-[00:01:52.934] Browser LOG     Loading model: Infinity%
-[00:01:52.935] Browser LOG     Loading model: Infinity%
-[00:01:52.935] Browser LOG     Loading model: Infinity%
-[00:01:52.935] Browser LOG     Loading model: Infinity%
-[00:01:52.935] Browser LOG     Loading model: Infinity%
-[00:01:52.935] Browser LOG     Loading model: Infinity%
-[00:01:53.364] Browser LOG     Model dimensions: 21.24 x 5.98 x 30.07
-[00:01:53.364] Browser LOG     Auto-scaling to 15 units (scale: 0.4988)
-[00:01:53.364] Browser LOG     Longest axis: z (30.07 units)
-[00:01:53.364] Browser LOG     Skipped emissive for bright material (L=1.00)
-[00:01:53.364] Browser LOG     Skipped emissive for bright material (L=1.10)
-[00:01:53.365] Browser LOG     Skipped emissive for bright material (L=1.21)
-[00:01:53.365] Browser LOG     GLB model loaded successfully: /models/space_fighter_3.glb
-[00:01:53.365] Browser LOG     GLB model loaded, replacing probe
-[00:01:53.365] Browser LOG     Probe replaced with GLB model successfully
-[00:01:56.793] Browser LOG     COM-zero velocity applied, offset: -0.014425 0.000000 -0.014695
-[00:01:56.793] Browser LOG     COM-zero position applied: 0.154 0.000 -0.385
-[00:01:56.793] Browser LOG     COM-zero velocity applied, offset: -0.014353 0.000000 -0.014621
-[00:01:56.793] Browser LOG     COM-zero position applied: 0.152 0.000 -0.381
-[00:01:57.164] Browser LOG     Loading model: Infinity%
-[00:01:57.164] Browser LOG     Loading model: Infinity%
-[00:01:57.164] Browser LOG     Loading model: Infinity%
-[00:01:57.164] Browser LOG     Loading model: Infinity%
-[00:01:57.164] Browser LOG     Loading model: Infinity%
-[00:01:57.164] Browser LOG     Loading model: Infinity%
-[00:01:57.164] Browser LOG     Loading model: Infinity%
-[00:01:57.164] Browser LOG     Loading model: Infinity%
-[00:01:57.164] Browser LOG     Loading model: Infinity%
-[00:01:57.164] Browser LOG     Loading model: Infinity%
-[00:01:57.830] Browser LOG     Model dimensions: 21.24 x 5.98 x 30.07
-[00:01:57.830] Browser LOG     Auto-scaling to 15 units (scale: 0.4988)
-[00:01:57.830] Browser LOG     Longest axis: z (30.07 units)
-[00:01:57.830] Browser LOG     Skipped emissive for bright material (L=1.00)
-[00:01:57.830] Browser LOG     Skipped emissive for bright material (L=1.10)
-[00:01:57.831] Browser LOG     Skipped emissive for bright material (L=1.21)
-[00:01:57.831] Browser LOG     GLB model loaded successfully: /models/space_fighter_3.glb
-[00:01:57.831] Browser LOG     GLB model loaded, replacing probe
-[00:01:57.831] Browser LOG     Probe replaced with GLB model successfully
-[00:01:57.831] Browser LOG     Model dimensions: 21.24 x 5.98 x 30.07
-[00:01:57.831] Browser LOG     Auto-scaling to 15 units (scale: 0.4988)
-[00:01:57.832] Browser LOG     Longest axis: z (30.07 units)
-[00:01:57.832] Browser LOG     Skipped emissive for bright material (L=1.00)
-[00:01:57.832] Browser LOG     Skipped emissive for bright material (L=1.10)
-[00:01:57.832] Browser LOG     Skipped emissive for bright material (L=1.21)
-[00:01:57.832] Browser LOG     GLB model loaded successfully: /models/space_fighter_3.glb
-[00:01:57.832] Browser LOG     GLB model loaded, replacing probe
-[00:01:57.832] Browser LOG     Probe replaced with GLB model successfully
-[00:02:01.066] Browser LOG     COM-zero velocity applied, offset: -0.014415 0.000000 -0.014621
-[00:02:01.067] Browser LOG     COM-zero position applied: 0.152 0.000 -0.381
-[00:02:01.243] Browser LOG     Loading model: Infinity%
-[00:02:01.243] Browser LOG     Loading model: Infinity%
-[00:02:01.243] Browser LOG     Loading model: Infinity%
-[00:02:01.243] Browser LOG     Loading model: Infinity%
-[00:02:01.243] Browser LOG     Loading model: Infinity%
-[00:02:01.243] Browser LOG     Loading model: Infinity%
-[00:02:01.243] Browser LOG     Loading model: Infinity%
-[00:02:01.243] Browser LOG     Loading model: Infinity%
-[00:02:01.733] Browser LOG     Model dimensions: 21.24 x 5.98 x 30.07
-[00:02:01.733] Browser LOG     Auto-scaling to 15 units (scale: 0.4988)
-[00:02:01.734] Browser LOG     Longest axis: z (30.07 units)
-[00:02:01.734] Browser LOG     Skipped emissive for bright material (L=1.00)
-[00:02:01.734] Browser LOG     Skipped emissive for bright material (L=1.10)
-[00:02:01.734] Browser LOG     Skipped emissive for bright material (L=1.21)
-[00:02:01.734] Browser LOG     GLB model loaded successfully: /models/space_fighter_3.glb
-[00:02:01.734] Browser LOG     GLB model loaded, replacing probe
-[00:02:01.734] Browser LOG     Probe replaced with GLB model successfully
-[00:02:14.861] Browser LOG     COM-zero velocity applied, offset: -0.014414 0.000000 -0.014621
-[00:02:14.861] Browser LOG     COM-zero position applied: 0.152 0.000 -0.381
-[00:02:14.862] Browser LOG     COM-zero velocity applied, offset: -0.014412 0.000000 -0.014621
-[00:02:14.862] Browser LOG     COM-zero position applied: 0.152 0.000 -0.381
-[00:02:15.215] Browser LOG     Loading model: Infinity%
-[00:02:15.215] Browser LOG     Loading model: Infinity%
-[00:02:15.215] Browser LOG     Loading model: Infinity%
-[00:02:15.216] Browser LOG     Loading model: Infinity%
-[00:02:15.216] Browser LOG     Loading model: Infinity%
-[00:02:15.216] Browser LOG     Loading model: Infinity%
-[00:02:15.216] Browser LOG     Loading model: Infinity%
-[00:02:15.216] Browser LOG     Loading model: Infinity%
-[00:02:15.216] Browser LOG     Loading model: Infinity%
-[00:02:15.216] Browser LOG     Loading model: Infinity%
-[00:02:15.216] Browser LOG     Loading model: Infinity%
-[00:02:15.216] Browser LOG     Loading model: Infinity%
-[00:02:15.217] Browser LOG     Loading model: Infinity%
-[00:02:15.217] Browser LOG     Loading model: Infinity%
-[00:02:15.217] Browser LOG     Loading model: Infinity%
-[00:02:15.217] Browser LOG     Loading model: Infinity%
-[00:02:15.760] Browser LOG     Model dimensions: 21.24 x 5.98 x 30.07
-[00:02:15.760] Browser LOG     Auto-scaling to 15 units (scale: 0.4988)
-[00:02:15.760] Browser LOG     Longest axis: z (30.07 units)
-[00:02:15.760] Browser LOG     Skipped emissive for bright material (L=1.00)
-[00:02:15.760] Browser LOG     Skipped emissive for bright material (L=1.10)
-[00:02:15.760] Browser LOG     Skipped emissive for bright material (L=1.21)
-[00:02:15.761] Browser LOG     GLB model loaded successfully: /models/space_fighter_3.glb
-[00:02:15.761] Browser LOG     GLB model loaded, replacing probe
-[00:02:15.761] Browser LOG     Probe replaced with GLB model successfully
-[00:02:15.761] Browser LOG     Model dimensions: 21.24 x 5.98 x 30.07
-[00:02:15.761] Browser LOG     Auto-scaling to 15 units (scale: 0.4988)
-[00:02:15.761] Browser LOG     Longest axis: z (30.07 units)
-[00:02:15.761] Browser LOG     Skipped emissive for bright material (L=1.00)
-[00:02:15.761] Browser LOG     Skipped emissive for bright material (L=1.10)
-[00:02:15.761] Browser LOG     Skipped emissive for bright material (L=1.21)
-[00:02:15.761] Browser LOG     GLB model loaded successfully: /models/space_fighter_3.glb
-[00:02:15.761] Browser LOG     GLB model loaded, replacing probe
-[00:02:15.761] Browser LOG     Probe replaced with GLB model successfully
-[00:03:12.051] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:03:14.185] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
-[00:03:14.186] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
-[00:03:14.835] Browser LOG     Loading model: Infinity%
-[00:03:14.835] Browser LOG     Loading model: Infinity%
-[00:03:14.835] Browser LOG     Loading model: Infinity%
-[00:03:14.835] Browser LOG     Loading model: Infinity%
-[00:03:14.835] Browser LOG     Loading model: Infinity%
-[00:03:14.836] Browser LOG     Loading model: Infinity%
-[00:03:14.836] Browser LOG     Loading model: Infinity%
-[00:03:14.836] Browser LOG     Loading model: Infinity%
-[00:03:14.836] Browser LOG     Loading model: Infinity%
-[00:03:14.836] Browser LOG     Loading model: Infinity%
-[00:03:14.836] Browser LOG     Loading model: Infinity%
-[00:03:14.836] Browser LOG     Loading model: Infinity%
-[00:03:14.836] Browser LOG     Loading model: Infinity%
-[00:03:14.836] Browser LOG     Loading model: Infinity%
-[00:03:14.836] Browser LOG     Loading model: Infinity%
-[00:03:16.099] Browser LOG     Model dimensions: 180.09 x 77.74 x 323.10
-[00:03:16.099] Browser LOG     Auto-scaling to 15 units (scale: 0.0464)
-[00:03:16.099] Browser LOG     Longest axis: z (323.10 units)
-[00:03:16.100] Browser LOG     Skipped emissive for bright material (L=1.00)
-[00:03:16.100] Browser LOG     Skipped emissive for bright material (L=1.00)
-[00:03:16.100] Browser LOG     Skipped emissive for bright material (L=1.10)
-[00:03:16.100] Browser LOG     Skipped emissive for bright material (L=1.21)
-[00:03:16.100] Browser LOG     Skipped emissive for bright material (L=1.10)
-[00:03:16.100] Browser LOG     Skipped emissive for bright material (L=1.21)
-[00:03:16.100] Browser LOG     Skipped emissive for bright material (L=1.33)
-[00:03:16.100] Browser LOG     Skipped emissive for bright material (L=1.46)
-[00:03:16.100] Browser LOG     Skipped emissive for bright material (L=1.61)
-[00:03:16.100] Browser LOG     Skipped emissive for bright material (L=1.77)
-[00:03:16.100] Browser LOG     Skipped emissive for bright material (L=1.95)
-[00:03:16.100] Browser LOG     Skipped emissive for bright material (L=2.14)
-[00:03:16.100] Browser LOG     Skipped emissive for bright material (L=2.36)
-[00:03:16.100] Browser LOG     Skipped emissive for bright material (L=2.59)
-[00:03:16.100] Browser LOG     Skipped emissive for bright material (L=2.85)
-[00:03:16.100] Browser LOG     Skipped emissive for bright material (L=3.14)
-[00:03:16.100] Browser LOG     Skipped emissive for bright material (L=3.45)
-[00:03:16.100] Browser LOG     Skipped emissive for bright material (L=3.80)
-[00:03:16.100] Browser LOG     Skipped emissive for bright material (L=4.18)
-[00:03:16.100] Browser LOG     Skipped emissive for bright material (L=4.59)
-[00:03:16.100] Browser LOG     Skipped emissive for bright material (L=5.05)
-[00:03:16.100] Browser LOG     Skipped emissive for bright material (L=5.56)
-[00:03:16.100] Browser LOG     Skipped emissive for bright material (L=6.12)
-[00:03:16.100] Browser LOG     Skipped emissive for bright material (L=6.73)
-[00:03:16.100] Browser LOG     Skipped emissive for bright material (L=7.40)
-[00:03:16.100] Browser LOG     Skipped emissive for bright material (L=8.14)
-[00:03:16.100] Browser LOG     Skipped emissive for bright material (L=8.95)
-[00:03:16.100] Browser LOG     Skipped emissive for bright material (L=9.85)
-[00:03:16.100] Browser LOG     Skipped emissive for bright material (L=10.83)
-[00:03:16.100] Browser LOG     Skipped emissive for bright material (L=11.92)
-[00:03:16.100] Browser LOG     Skipped emissive for bright material (L=13.11)
-[00:03:16.100] Browser LOG     Skipped emissive for bright material (L=14.42)
-[00:03:16.101] Browser LOG     Skipped emissive for bright material (L=15.86)
-[00:03:16.101] Browser LOG     Skipped emissive for bright material (L=17.45)
-[00:03:16.101] Browser LOG     Skipped emissive for bright material (L=19.19)
-[00:03:16.101] Browser LOG     Skipped emissive for bright material (L=21.11)
-[00:03:16.101] Browser LOG     Skipped emissive for bright material (L=23.23)
-[00:03:16.101] Browser LOG     Skipped emissive for bright material (L=25.55)
-[00:03:16.101] Browser LOG     Skipped emissive for bright material (L=28.10)
-[00:03:16.101] Browser LOG     GLB model loaded successfully: /models/space_fighter.glb
-[00:03:16.101] Browser LOG     GLB model loaded, replacing probe
-[00:03:16.101] Browser LOG     Probe replaced with GLB model successfully
+[00:00:02.209] Server  LOG      ✓ Ready in 1474ms
+[00:00:11.294] Server  LOG      ○ Compiling / ...
+[00:00:14.758] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:15.581] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
+[00:00:15.581] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[00:00:15.790] Browser LOG     Loading model: Infinity%
+[00:00:15.790] Browser LOG     Loading model: Infinity%
+[00:00:15.790] Browser LOG     Loading model: Infinity%
+[00:00:15.790] Browser LOG     Loading model: Infinity%
+[00:00:15.790] Browser LOG     Loading model: Infinity%
+[00:00:15.790] Browser LOG     Loading model: Infinity%
+[00:00:15.790] Browser LOG     Loading model: Infinity%
+[00:00:15.790] Browser LOG     Loading model: Infinity%
+[00:00:15.790] Browser LOG     Loading model: Infinity%
+[00:00:15.790] Browser LOG     Loading model: Infinity%
+[00:00:15.790] Browser LOG     Loading model: Infinity%
+[00:00:15.790] Browser LOG     Loading model: Infinity%
+[00:00:15.790] Browser LOG     Loading model: Infinity%
+[00:00:15.790] Browser LOG     Loading model: Infinity%
+[00:00:15.790] Browser LOG     Loading model: Infinity%
+[00:00:15.790] Browser LOG     Loading model: Infinity%
+[00:00:15.790] Browser LOG     Loading model: Infinity%
+[00:00:15.790] Browser LOG     Loading model: Infinity%
+[00:00:15.790] Browser LOG     Loading model: Infinity%
+[00:00:15.790] Browser LOG     Loading model: Infinity%
+[00:00:15.790] Browser LOG     Loading model: Infinity%
+[00:00:15.790] Browser LOG     Loading model: Infinity%
+[00:00:15.790] Browser LOG     Loading model: Infinity%
+[00:00:15.790] Browser LOG     Loading model: Infinity%
+[00:00:15.790] Browser LOG     Loading model: Infinity%
+[00:00:15.790] Browser LOG     Loading model: Infinity%
+[00:00:15.790] Browser LOG     Loading model: Infinity%
+[00:00:15.790] Browser LOG     Loading model: Infinity%
+[00:00:15.790] Browser LOG     Loading model: Infinity%
+[00:00:15.790] Browser LOG     Loading model: Infinity%
+[00:00:15.790] Browser LOG     Loading model: Infinity%
+[00:00:15.790] Browser LOG     Loading model: Infinity%
+[00:00:15.790] Browser LOG     Loading model: Infinity%
+[00:00:15.792] Browser LOG     Loading model: Infinity%
+[00:00:15.792] Browser LOG     Loading model: Infinity%
+[00:00:15.793] Browser LOG     Loading model: Infinity%
+[00:00:15.793] Browser LOG     Loading model: Infinity%
+[00:00:15.793] Browser LOG     Loading model: Infinity%
+[00:00:16.135] Browser LOG     Model dimensions: 180.09 x 77.74 x 323.10
+[00:00:16.135] Browser LOG     Auto-scaling to 15 units (scale: 0.0464)
+[00:00:16.135] Browser LOG     Longest axis: z (323.10 units)
+[00:00:16.135] Browser LOG     Skipped emissive for bright material (L=1.00)
+[00:00:16.135] Browser LOG     Skipped emissive for bright material (L=1.00)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=1.10)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=1.21)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=1.10)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=1.21)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=1.33)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=1.46)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=1.61)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=1.77)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=1.95)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=2.14)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=2.36)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=2.59)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=2.85)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=3.14)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=3.45)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=3.80)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=4.18)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=4.59)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=5.05)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=5.56)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=6.12)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=6.73)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=7.40)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=8.14)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=8.95)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=9.85)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=10.83)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=11.92)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=13.11)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=14.42)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=15.86)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=17.45)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=19.19)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=21.11)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=23.23)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=25.55)
+[00:00:16.136] Browser LOG     Skipped emissive for bright material (L=28.10)
+[00:00:16.136] Browser LOG     GLB model loaded successfully: /models/space_fighter.glb
+[00:00:16.136] Browser LOG     GLB model loaded, replacing probe
+[00:00:16.136] Browser LOG     Probe replaced with GLB model successfully
+[00:01:14.516] Browser LOG     Switched to built-in Voyager probe
+[00:01:18.185] Browser LOG     Loading model: Infinity%
+[00:01:18.185] Browser LOG     Model dimensions: 10.14 x 5.98 x 16.29
+[00:01:18.185] Browser LOG     Auto-scaling to 15 units (scale: 0.9208)
+[00:01:18.185] Browser LOG     Longest axis: z (16.29 units)
+[00:01:18.185] Browser LOG     Skipped emissive for bright material (L=1.00)
+[00:01:18.185] Browser LOG     GLB model loaded successfully: /models/space_shuttle.glb
+[00:01:18.185] Browser LOG     Probe model switched successfully
+[00:01:59.221] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:02:00.373] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
+[00:02:00.373] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[00:02:00.882] Browser LOG     Loading model: Infinity%
+[00:02:00.882] Browser LOG     Loading model: Infinity%
+[00:02:00.882] Browser LOG     Loading model: Infinity%
+[00:02:00.882] Browser LOG     Loading model: Infinity%
+[00:02:00.882] Browser LOG     Loading model: Infinity%
+[00:02:00.882] Browser LOG     Loading model: Infinity%
+[00:02:00.882] Browser LOG     Loading model: Infinity%
+[00:02:00.882] Browser LOG     Loading model: Infinity%
+[00:02:00.882] Browser LOG     Loading model: Infinity%
+[00:02:00.882] Browser LOG     Loading model: Infinity%
+[00:02:00.882] Browser LOG     Loading model: Infinity%
+[00:02:00.882] Browser LOG     Loading model: Infinity%
+[00:02:00.882] Browser LOG     Loading model: Infinity%
+[00:02:00.883] Browser LOG     Loading model: Infinity%
+[00:02:00.884] Browser LOG     Loading model: Infinity%
+[00:02:00.884] Browser LOG     Loading model: Infinity%
+[00:02:00.884] Browser LOG     Loading model: Infinity%
+[00:02:00.884] Browser LOG     Loading model: Infinity%
+[00:02:00.884] Browser LOG     Loading model: Infinity%
+[00:02:00.884] Browser LOG     Loading model: Infinity%
+[00:02:00.884] Browser LOG     Loading model: Infinity%
+[00:02:00.884] Browser LOG     Loading model: Infinity%
+[00:02:00.884] Browser LOG     Loading model: Infinity%
+[00:02:00.884] Browser LOG     Loading model: Infinity%
+[00:02:00.884] Browser LOG     Loading model: Infinity%
+[00:02:00.885] Browser LOG     Loading model: Infinity%
+[00:02:00.886] Browser LOG     Loading model: Infinity%
+[00:02:00.886] Browser LOG     Loading model: Infinity%
+[00:02:00.886] Browser LOG     Loading model: Infinity%
+[00:02:00.886] Browser LOG     Loading model: Infinity%
+[00:02:01.625] Browser LOG     Model dimensions: 180.09 x 77.74 x 323.10
+[00:02:01.625] Browser LOG     Auto-scaling to 15 units (scale: 0.0464)
+[00:02:01.625] Browser LOG     Longest axis: z (323.10 units)
+[00:02:01.625] Browser LOG     Skipped emissive for bright material (L=1.00)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=1.00)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=1.10)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=1.21)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=1.10)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=1.21)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=1.33)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=1.46)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=1.61)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=1.77)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=1.95)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=2.14)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=2.36)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=2.59)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=2.85)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=3.14)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=3.45)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=3.80)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=4.18)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=4.59)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=5.05)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=5.56)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=6.12)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=6.73)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=7.40)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=8.14)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=8.95)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=9.85)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=10.83)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=11.92)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=13.11)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=14.42)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=15.86)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=17.45)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=19.19)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=21.11)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=23.23)
+[00:02:01.626] Browser LOG     Skipped emissive for bright material (L=25.55)
+[00:02:01.627] Browser LOG     Skipped emissive for bright material (L=28.10)
+[00:02:01.627] Browser LOG     GLB model loaded successfully: /models/space_fighter.glb
+[00:02:01.627] Browser LOG     GLB model loaded, replacing probe
+[00:02:01.627] Browser LOG     Probe replaced with GLB model successfully
+[00:03:14.341] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:03:15.863] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
+[00:03:15.863] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[00:03:16.208] Browser LOG     Loading model: Infinity%
+[00:03:16.208] Browser LOG     Loading model: Infinity%
+[00:03:16.208] Browser LOG     Loading model: Infinity%
+[00:03:16.208] Browser LOG     Loading model: Infinity%
+[00:03:16.208] Browser LOG     Loading model: Infinity%
+[00:03:16.208] Browser LOG     Loading model: Infinity%
+[00:03:16.208] Browser LOG     Loading model: Infinity%
+[00:03:16.208] Browser LOG     Loading model: Infinity%
+[00:03:16.208] Browser LOG     Loading model: Infinity%
+[00:03:16.208] Browser LOG     Loading model: Infinity%
+[00:03:16.208] Browser LOG     Loading model: Infinity%
+[00:03:16.208] Browser LOG     Loading model: Infinity%
+[00:03:16.208] Browser LOG     Loading model: Infinity%
+[00:03:16.208] Browser LOG     Loading model: Infinity%
+[00:03:16.208] Browser LOG     Loading model: Infinity%
+[00:03:16.208] Browser LOG     Loading model: Infinity%
+[00:03:16.208] Browser LOG     Loading model: Infinity%
+[00:03:16.208] Browser LOG     Loading model: Infinity%
+[00:03:16.208] Browser LOG     Loading model: Infinity%
+[00:03:16.208] Browser LOG     Loading model: Infinity%
+[00:03:16.208] Browser LOG     Loading model: Infinity%
+[00:03:16.208] Browser LOG     Loading model: Infinity%
+[00:03:16.980] Browser LOG     Model dimensions: 180.09 x 77.74 x 323.10
+[00:03:16.980] Browser LOG     Auto-scaling to 15 units (scale: 0.0464)
+[00:03:16.980] Browser LOG     Longest axis: z (323.10 units)
+[00:03:16.980] Browser LOG     Skipped emissive for bright material (L=1.00)
+[00:03:16.980] Browser LOG     Skipped emissive for bright material (L=1.00)
+[00:03:16.980] Browser LOG     Skipped emissive for bright material (L=1.10)
+[00:03:16.980] Browser LOG     Skipped emissive for bright material (L=1.21)
+[00:03:16.980] Browser LOG     Skipped emissive for bright material (L=1.10)
+[00:03:16.980] Browser LOG     Skipped emissive for bright material (L=1.21)
+[00:03:16.981] Browser LOG     Skipped emissive for bright material (L=1.33)
+[00:03:16.981] Browser LOG     Skipped emissive for bright material (L=1.46)
+[00:03:16.981] Browser LOG     Skipped emissive for bright material (L=1.61)
+[00:03:16.981] Browser LOG     Skipped emissive for bright material (L=1.77)
+[00:03:16.981] Browser LOG     Skipped emissive for bright material (L=1.95)
+[00:03:16.981] Browser LOG     Skipped emissive for bright material (L=2.14)
+[00:03:16.981] Browser LOG     Skipped emissive for bright material (L=2.36)
+[00:03:16.981] Browser LOG     Skipped emissive for bright material (L=2.59)
+[00:03:16.981] Browser LOG     Skipped emissive for bright material (L=2.85)
+[00:03:16.981] Browser LOG     Skipped emissive for bright material (L=3.14)
+[00:03:16.981] Browser LOG     Skipped emissive for bright material (L=3.45)
+[00:03:16.981] Browser LOG     Skipped emissive for bright material (L=3.80)
+[00:03:16.981] Browser LOG     Skipped emissive for bright material (L=4.18)
+[00:03:16.981] Browser LOG     Skipped emissive for bright material (L=4.59)
+[00:03:16.981] Browser LOG     Skipped emissive for bright material (L=5.05)
+[00:03:16.981] Browser LOG     Skipped emissive for bright material (L=5.56)
+[00:03:16.982] Browser LOG     Skipped emissive for bright material (L=6.12)
+[00:03:16.982] Browser LOG     Skipped emissive for bright material (L=6.73)
+[00:03:16.982] Browser LOG     Skipped emissive for bright material (L=7.40)
+[00:03:16.982] Browser LOG     Skipped emissive for bright material (L=8.14)
+[00:03:16.982] Browser LOG     Skipped emissive for bright material (L=8.95)
+[00:03:16.982] Browser LOG     Skipped emissive for bright material (L=9.85)
+[00:03:16.982] Browser LOG     Skipped emissive for bright material (L=10.83)
+[00:03:16.982] Browser LOG     Skipped emissive for bright material (L=11.92)
+[00:03:16.982] Browser LOG     Skipped emissive for bright material (L=13.11)
+[00:03:16.982] Browser LOG     Skipped emissive for bright material (L=14.42)
+[00:03:16.982] Browser LOG     Skipped emissive for bright material (L=15.86)
+[00:03:16.982] Browser LOG     Skipped emissive for bright material (L=17.45)
+[00:03:16.982] Browser LOG     Skipped emissive for bright material (L=19.19)
+[00:03:16.982] Browser LOG     Skipped emissive for bright material (L=21.11)
+[00:03:16.982] Browser LOG     Skipped emissive for bright material (L=23.23)
+[00:03:16.982] Browser LOG     Skipped emissive for bright material (L=25.55)
+[00:03:16.982] Browser LOG     Skipped emissive for bright material (L=28.10)
+[00:03:16.982] Browser LOG     GLB model loaded successfully: /models/space_fighter.glb
+[00:03:16.982] Browser LOG     GLB model loaded, replacing probe
+[00:03:16.982] Browser LOG     Probe replaced with GLB model successfully
+[00:03:27.859] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:03:28.853] Browser LOG     COM-zero velocity applied, offset: -0.007019 0.000000 -0.007126
+[00:03:28.853] Browser LOG     COM-zero position applied: 0.229 0.000 -0.573
+[00:03:29.139] Browser LOG     Loading model: Infinity%
+[00:03:29.139] Browser LOG     Loading model: Infinity%
+[00:03:29.139] Browser LOG     Loading model: Infinity%
+[00:03:29.139] Browser LOG     Loading model: Infinity%
+[00:03:29.139] Browser LOG     Loading model: Infinity%
+[00:03:29.139] Browser LOG     Loading model: Infinity%
+[00:03:29.139] Browser LOG     Loading model: Infinity%
+[00:03:29.139] Browser LOG     Loading model: Infinity%
+[00:03:29.139] Browser LOG     Loading model: Infinity%
+[00:03:29.139] Browser LOG     Loading model: Infinity%
+[00:03:29.139] Browser LOG     Loading model: Infinity%
+[00:03:29.139] Browser LOG     Loading model: Infinity%
+[00:03:29.139] Browser LOG     Loading model: Infinity%
+[00:03:29.139] Browser LOG     Loading model: Infinity%
+[00:03:29.139] Browser LOG     Loading model: Infinity%
+[00:03:29.139] Browser LOG     Loading model: Infinity%
+[00:03:29.139] Browser LOG     Loading model: Infinity%
+[00:03:29.730] Browser LOG     Model dimensions: 180.09 x 77.74 x 323.10
+[00:03:29.730] Browser LOG     Auto-scaling to 15 units (scale: 0.0464)
+[00:03:29.730] Browser LOG     Longest axis: z (323.10 units)
+[00:03:29.730] Browser LOG     Skipped emissive for bright material (L=1.00)
+[00:03:29.730] Browser LOG     Skipped emissive for bright material (L=1.00)
+[00:03:29.730] Browser LOG     Skipped emissive for bright material (L=1.10)
+[00:03:29.730] Browser LOG     Skipped emissive for bright material (L=1.21)
+[00:03:29.730] Browser LOG     Skipped emissive for bright material (L=1.10)
+[00:03:29.730] Browser LOG     Skipped emissive for bright material (L=1.21)
+[00:03:29.730] Browser LOG     Skipped emissive for bright material (L=1.33)
+[00:03:29.730] Browser LOG     Skipped emissive for bright material (L=1.46)
+[00:03:29.730] Browser LOG     Skipped emissive for bright material (L=1.61)
+[00:03:29.730] Browser LOG     Skipped emissive for bright material (L=1.77)
+[00:03:29.730] Browser LOG     Skipped emissive for bright material (L=1.95)
+[00:03:29.730] Browser LOG     Skipped emissive for bright material (L=2.14)
+[00:03:29.730] Browser LOG     Skipped emissive for bright material (L=2.36)
+[00:03:29.730] Browser LOG     Skipped emissive for bright material (L=2.59)
+[00:03:29.730] Browser LOG     Skipped emissive for bright material (L=2.85)
+[00:03:29.730] Browser LOG     Skipped emissive for bright material (L=3.14)
+[00:03:29.730] Browser LOG     Skipped emissive for bright material (L=3.45)
+[00:03:29.730] Browser LOG     Skipped emissive for bright material (L=3.80)
+[00:03:29.730] Browser LOG     Skipped emissive for bright material (L=4.18)
+[00:03:29.730] Browser LOG     Skipped emissive for bright material (L=4.59)
+[00:03:29.730] Browser LOG     Skipped emissive for bright material (L=5.05)
+[00:03:29.730] Browser LOG     Skipped emissive for bright material (L=5.56)
+[00:03:29.730] Browser LOG     Skipped emissive for bright material (L=6.12)
+[00:03:29.730] Browser LOG     Skipped emissive for bright material (L=6.73)
+[00:03:29.730] Browser LOG     Skipped emissive for bright material (L=7.40)
+[00:03:29.730] Browser LOG     Skipped emissive for bright material (L=8.14)
+[00:03:29.730] Browser LOG     Skipped emissive for bright material (L=8.95)
+[00:03:29.730] Browser LOG     Skipped emissive for bright material (L=9.85)
+[00:03:29.731] Browser LOG     Skipped emissive for bright material (L=10.83)
+[00:03:29.731] Browser LOG     Skipped emissive for bright material (L=11.92)
+[00:03:29.731] Browser LOG     Skipped emissive for bright material (L=13.11)
+[00:03:29.731] Browser LOG     Skipped emissive for bright material (L=14.42)
+[00:03:29.731] Browser LOG     Skipped emissive for bright material (L=15.86)
+[00:03:29.731] Browser LOG     Skipped emissive for bright material (L=17.45)
+[00:03:29.731] Browser LOG     Skipped emissive for bright material (L=19.19)
+[00:03:29.731] Browser LOG     Skipped emissive for bright material (L=21.11)
+[00:03:29.731] Browser LOG     Skipped emissive for bright material (L=23.23)
+[00:03:29.731] Browser LOG     Skipped emissive for bright material (L=25.55)
+[00:03:29.731] Browser LOG     Skipped emissive for bright material (L=28.10)
+[00:03:29.731] Browser LOG     GLB model loaded successfully: /models/space_fighter.glb
+[00:03:29.731] Browser LOG     GLB model loaded, replacing probe
+[00:03:29.731] Browser LOG     Probe replaced with GLB model successfully
+[00:06:08.759] Server  LOG      ✓ Compiled in 82ms
+[00:06:33.657] Server  LOG      ✓ Compiled in 19ms
+[00:07:32.711] Server  LOG      ✓ Compiled in 27ms
+[00:07:41.061] Server  LOG      ✓ Compiled in 21ms
+[00:07:52.871] Server  LOG      ✓ Compiled in 21ms
+[00:10:18.180] Server  LOG      ✓ Compiled in 25ms
+[00:11:22.369] Server  LOG      ✓ Compiled in 36ms
