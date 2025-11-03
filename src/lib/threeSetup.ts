@@ -4,7 +4,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
-import { Body, cloneBodies, stepBodies } from './physics';
+import { Body, cloneBodies, stepBodies, PHYSICS_CONSTANTS } from './physics';
 
 // ====================================================================
 // Physics Scale Factors and Units
@@ -44,6 +44,182 @@ export const PHYSICS_SCALE = {
 
 // Legacy constant for backward compatibility
 export const DEFAULT_G = PHYSICS_SCALE.G;
+
+// ====================================================================
+// Camera and Rendering Constants
+// ====================================================================
+
+export const CAMERA_CONSTANTS = {
+    // Camera field of view in degrees (not radians)
+    FOV_DEGREES: 60,
+
+    // Near and far clipping planes (scene units)
+    // Objects closer than NEAR or farther than FAR will not be rendered
+    NEAR_PLANE: 0.1,        // 0.1 scene units (very close)
+    FAR_PLANE: 50000,       // 50,000 scene units (500 AU) - enough to see entire solar system
+
+    // Initial camera position (scene units) - viewing from above and behind
+    INITIAL_POSITION: {
+        x: 0,
+        y: 400,     // 4 AU above the orbital plane
+        z: 2200     // 22 AU away from the sun
+    },
+
+    // Maximum pixel ratio for performance (limits high-DPI rendering cost)
+    // Capped at 2 to prevent excessive GPU load on 4K+ displays
+    MAX_PIXEL_RATIO: 2
+} as const;
+
+export const LIGHTING_CONSTANTS = {
+    // Ambient light intensity (0-1 scale, unitless)
+    // Higher values make all objects brighter regardless of direction
+    AMBIENT_INTENSITY: 0.6,
+
+    // Directional light intensity (0-1 scale, unitless)
+    // Simulates sunlight with direction and shadows
+    DIRECTIONAL_INTENSITY: 0.8,
+
+    // Directional light position (scene units)
+    // Light comes from this direction (not a physical location)
+    DIRECTIONAL_POSITION: {
+        x: 5,
+        y: 10,
+        z: 7.5
+    }
+} as const;
+
+export const BLOOM_CONSTANTS = {
+    // UnrealBloomPass parameters for glowing sun effect
+    STRENGTH: 1.5,      // Bloom intensity (0 = no glow, higher = brighter glow)
+    RADIUS: 0.4,        // Bloom spread (0 = tight, 1 = wide)
+    THRESHOLD: 0.85     // Minimum brightness to trigger bloom (0 = all objects glow, 1 = only very bright)
+} as const;
+
+// ====================================================================
+// Grid and Visualization Constants
+// ====================================================================
+
+export const GRID_CONSTANTS = {
+    // Flat reference grid (GridHelper)
+    FLAT_GRID: {
+        SIZE: 7000,             // Grid size (scene units) - 70 AU, covers outer planets
+        DIVISIONS: 1000,        // Number of grid divisions
+        COLOR_CENTER: 0x444444, // Center line color (dark gray)
+        COLOR_GRID: 0x222222    // Grid line color (darker gray)
+    },
+
+    // Gravity well visualization (curved grid based on gravitational potential)
+    GRAVITY_GRID: {
+        SIZE: 7000,             // Grid size (scene units) - same as flat grid
+        DIVISIONS: 200,         // Number of grid divisions (lower for performance)
+        OPACITY: 0.05,          // Grid opacity (very transparent)
+        DEPTH_SCALE: 50         // Visual depth scale factor for gravity well curvature
+    }
+} as const;
+
+export const STAR_FIELD_CONSTANTS = {
+    // Background stars for speed sensation
+    COUNT: 8000,                    // Number of stars (balance between visual richness and performance)
+    MIN_RADIUS: 5000,               // Minimum distance from center (scene units)
+    MAX_RADIUS: 10000,              // Maximum distance from center (scene units)
+    SIZE: 10,                       // Point size for star rendering
+    OPACITY: 0.8                    // Star opacity
+} as const;
+
+export const TRAIL_CONSTANTS = {
+    // Probe trajectory trail visualization
+    MAX_POINTS: 2000,               // Maximum trail points (limits memory usage)
+                                    // At 100ms per point, this is 200 seconds of trail
+    UPDATE_INTERVAL_MS: 100,        // Milliseconds between trail point additions
+    COLOR: 0x00ff88,                // Trail color (cyan-green)
+    CURVE_TENSION: 0.5              // Catmull-Rom curve tension (0 = loose, 1 = tight)
+} as const;
+
+export const VISUALIZATION_CONSTANTS = {
+    // Planetary orbit lines
+    ORBIT_LINE: {
+        SEGMENTS: 128,              // Number of points in orbit circle (balance smoothness vs performance)
+        OPACITY: 0.3,               // Orbit line opacity
+        LINE_WIDTH: 1               // Line width (note: may not work in all browsers)
+    },
+
+    // Swing-by influence zones (torus around planets)
+    INFLUENCE_ZONE: {
+        TUBE_THICKNESS_RATIO: 0.08, // Tube thickness as ratio of radius (8% of encounter radius)
+        RADIAL_SEGMENTS: 8,         // Number of radial segments (lower for performance)
+        TUBULAR_SEGMENTS: 64,       // Number of tubular segments (higher for smoothness)
+        COLOR: 0x00ff00,            // Zone color (green)
+        OPACITY: 0.25               // Zone opacity
+    },
+
+    // Predicted trajectory (dashed line showing future path)
+    PREDICTION: {
+        TIME_SECONDS: 15,           // How far into the future to predict (seconds)
+        STEPS: 150,                 // Number of prediction steps (10 steps per second)
+        UPDATE_INTERVAL_MS: 500,    // Milliseconds between prediction updates
+        DASH_SIZE: 3,               // Dashed line dash length
+        GAP_SIZE: 2,                // Dashed line gap length
+        COLOR: 0xffaa00,            // Prediction line color (orange)
+        OPACITY: 0.6                // Prediction line opacity
+    },
+
+    // Swing-by event markers (temporary red spheres)
+    EVENT_MARKER: {
+        RADIUS: 0.8,                // Marker sphere radius (scene units)
+        SEGMENTS: 8,                // Sphere detail (lower for performance)
+        COLOR: 0xff0000,            // Marker color (red)
+        DURATION_MS: 1200           // How long marker stays visible (milliseconds)
+    }
+} as const;
+
+// ====================================================================
+// Celestial Body Constants
+// ====================================================================
+
+export const CELESTIAL_CONSTANTS = {
+    // Central star (Sun)
+    STAR: {
+        RADIUS: 5,                  // Star visual radius (scene units)
+        COLOR: 0xffee88,            // Star color (yellow-white)
+        EMISSIVE: 0xffaa00,         // Emissive color for bloom (orange)
+        EMISSIVE_INTENSITY: 2.5     // Emissive strength for bloom effect
+    },
+
+    // Probe (spacecraft)
+    PROBE: {
+        INITIAL_RADIUS_AU: 1.0,                         // Initial orbital radius (astronomical units)
+        DEFAULT_SPEED_MULTIPLIER: 1.05,                 // Speed multiplier for escape trajectory (5% above circular orbit)
+        MIN_VELOCITY_FOR_RUNNING: 1e-3,                 // Minimum velocity to show "Running" status (scene units/s)
+        MIN_VELOCITY_FOR_ROTATION: 0.1,                 // Minimum velocity to apply directional rotation (scene units/s)
+        ROTATION_SPEED: 0.15,                           // Rotation interpolation speed (slerp factor, 0-1)
+        VOYAGER_SCALE: 3,                               // Built-in Voyager model scale factor
+        GLB_TARGET_SIZE: 15                             // Target size for loaded GLB models (scene units)
+    },
+
+    // Orbit controls
+    ORBIT_CONTROLS: {
+        DAMPING_FACTOR: 0.05        // Camera damping coefficient (0 = no damping, 1 = full damping)
+    }
+} as const;
+
+// ====================================================================
+// Planet Orbital Data (for mission system)
+// ====================================================================
+// Orbital radius of each planet in astronomical units (AU)
+// Used by mission system to create orbit-reach missions
+
+export const PLANET_ORBITS = {
+    Mercury: 0.39,
+    Venus: 0.72,
+    Earth: 1.00,
+    Mars: 1.52,
+    Jupiter: 5.20,
+    Saturn: 9.58,
+    Uranus: 19.20,
+    Neptune: 30.05,
+} as const;
+
+export type PlanetName = keyof typeof PLANET_ORBITS;
 
 export type ProbeState = {
     position: THREE.Vector3;
@@ -125,7 +301,8 @@ function createVoyagerProbe(): THREE.Group {
     probe.add(instruments);
 
     // Scale up for visibility
-    probe.scale.set(3, 3, 3);
+    const scale = CELESTIAL_CONSTANTS.PROBE.VOYAGER_SCALE;
+    probe.scale.set(scale, scale, scale);
 
     return probe;
 }
@@ -155,7 +332,7 @@ function loadGLBProbe(
             const maxDim = Math.max(size.x, size.y, size.z);
 
             // Auto-normalize: scale to target size
-            const targetSize = 15; // Target size in scene units (3x larger for better visibility)
+            const targetSize = CELESTIAL_CONSTANTS.PROBE.GLB_TARGET_SIZE;
             const normalizedScale = targetSize / maxDim;
             model.scale.setScalar(normalizedScale);
 
@@ -261,12 +438,21 @@ function loadGLBProbe(
 
 export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMult?: number; G?: number; starMass?: number; gravityGridEnabled?: boolean; gridEnabled?: boolean; probeModelPath?: string | null; orientation?: { autoAlign?: boolean; rotationY?: number; invertDirection?: boolean } }) {
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 50000);
-    camera.position.set(0, 400, 2200);
+    const camera = new THREE.PerspectiveCamera(
+        CAMERA_CONSTANTS.FOV_DEGREES,
+        window.innerWidth / window.innerHeight,
+        CAMERA_CONSTANTS.NEAR_PLANE,
+        CAMERA_CONSTANTS.FAR_PLANE
+    );
+    camera.position.set(
+        CAMERA_CONSTANTS.INITIAL_POSITION.x,
+        CAMERA_CONSTANTS.INITIAL_POSITION.y,
+        CAMERA_CONSTANTS.INITIAL_POSITION.z
+    );
 
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, CAMERA_CONSTANTS.MAX_PIXEL_RATIO));
 
     // Setup post-processing for bloom effect
     const composer = new EffectComposer(renderer);
@@ -276,28 +462,37 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     // Bloom pass for glowing sun
     const bloomPass = new UnrealBloomPass(
         new THREE.Vector2(window.innerWidth, window.innerHeight),
-        1.5,  // strength
-        0.4,  // radius
-        0.85  // threshold
+        BLOOM_CONSTANTS.STRENGTH,
+        BLOOM_CONSTANTS.RADIUS,
+        BLOOM_CONSTANTS.THRESHOLD
     );
     composer.addPass(bloomPass);
 
-    const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+    const ambient = new THREE.AmbientLight(0xffffff, LIGHTING_CONSTANTS.AMBIENT_INTENSITY);
     scene.add(ambient);
-    const directional = new THREE.DirectionalLight(0xffffff, 0.8);
-    directional.position.set(5, 10, 7.5);
+    const directional = new THREE.DirectionalLight(0xffffff, LIGHTING_CONSTANTS.DIRECTIONAL_INTENSITY);
+    directional.position.set(
+        LIGHTING_CONSTANTS.DIRECTIONAL_POSITION.x,
+        LIGHTING_CONSTANTS.DIRECTIONAL_POSITION.y,
+        LIGHTING_CONSTANTS.DIRECTIONAL_POSITION.z
+    );
     scene.add(directional);
 
     // Simple grid for reference (large enough to show outer planets)
-    const grid = new THREE.GridHelper(7000, 1000, 0x444444, 0x222222);
+    const grid = new THREE.GridHelper(
+        GRID_CONSTANTS.FLAT_GRID.SIZE,
+        GRID_CONSTANTS.FLAT_GRID.DIVISIONS,
+        GRID_CONSTANTS.FLAT_GRID.COLOR_CENTER,
+        GRID_CONSTANTS.FLAT_GRID.COLOR_GRID
+    );
     grid.visible = options?.gridEnabled ?? false;
     scene.add(grid);
 
     // ====================================================================
     // Gravity Well Grid (curved based on gravitational potential)
     // ====================================================================
-    const gridSize = 7000;
-    const gridDivisions = 200; // High resolution for smooth curvature
+    const gridSize = GRID_CONSTANTS.GRAVITY_GRID.SIZE;
+    const gridDivisions = GRID_CONSTANTS.GRAVITY_GRID.DIVISIONS;
     const gravityWellGeometry = new THREE.PlaneGeometry(gridSize, gridSize, gridDivisions, gridDivisions);
     gravityWellGeometry.rotateX(-Math.PI / 2); // Rotate to horizontal (XZ plane)
 
@@ -306,7 +501,7 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
         color: 0xd3d3d3,
         wireframe: true,
         transparent: true,
-        opacity: 0.05
+        opacity: GRID_CONSTANTS.GRAVITY_GRID.OPACITY
     });
 
     const gravityWellMesh = new THREE.Mesh(gravityWellGeometry, gravityWellMaterial);
@@ -322,11 +517,11 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
 
     // central star at origin (can be overridden via options)
     const starMass = options?.starMass ?? PHYSICS_SCALE.SUN_MASS;
-    const starGeom = new THREE.SphereGeometry(5, 24, 24);
+    const starGeom = new THREE.SphereGeometry(CELESTIAL_CONSTANTS.STAR.RADIUS, 24, 24);
     const starMat = new THREE.MeshStandardMaterial({
-        color: 0xffee88,
-        emissive: 0xffaa00,  // Bright orange emissive for bloom effect
-        emissiveIntensity: 2.5  // Strong emissive intensity for bloom
+        color: CELESTIAL_CONSTANTS.STAR.COLOR,
+        emissive: CELESTIAL_CONSTANTS.STAR.EMISSIVE,
+        emissiveIntensity: CELESTIAL_CONSTANTS.STAR.EMISSIVE_INTENSITY
     });
     const starMesh = new THREE.Mesh(starGeom, starMat);
     starMesh.position.set(0, 0, 0);
@@ -334,17 +529,25 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     // allow the star to move under gravity (we'll initialize COM-zero velocities below)
     bodies.push({ id: 'star', mass: starMass, position: [0, 0, 0], velocity: [0, 0, 0], radius: 5, isProbe: false });
 
-    // Solar system-like planets (units: 1 AU = 100 scene units)
+    // ====================================================================
+    // Solar System Planet Definitions
+    // ====================================================================
+    // Units:
+    // - rAU: Orbital radius in astronomical units (1 AU = Earth-Sun distance = 100 scene units)
+    // - radius: Visual radius in scene units (NOT to scale with real planets for visibility)
+    // - mass: Mass in Earth masses (Earth = 1.0)
+    // - phase: Initial orbital phase angle in radians (determines starting position)
+    // - color: Hex color code for planet appearance
     const AU = PHYSICS_SCALE.AU;
     const solarDefs = [
-        { id: 'Mercury', rAU: 0.39, radius: 3, color: 0xaaaaaa, phase: 0, mass: 0.055 },
-        { id: 'Venus',   rAU: 0.72, radius: 5, color: 0xffddaa, phase: 0.5, mass: 0.815 },
-        { id: 'Earth',   rAU: 1.00, radius: 5.5, color: 0x3366ff, phase: 1.0, mass: 1.0 },
-        { id: 'Mars',    rAU: 1.52, radius: 4, color: 0xff6633, phase: 1.6, mass: 0.107 },
-        { id: 'Jupiter', rAU: 5.20, radius: 14, color: 0xffcc77, phase: 2.2, mass: 317.8 },
-        { id: 'Saturn',  rAU: 9.58, radius: 12, color: 0xffee88, phase: 3.0, mass: 95.16 },
-        { id: 'Uranus',  rAU:19.20, radius: 9, color: 0x88ccff, phase: 4.0, mass: 14.5 },
-        { id: 'Neptune', rAU:30.05, radius: 9, color: 0x3366aa, phase: 5.0, mass: 17.1 },
+        { id: 'Mercury', rAU: 0.39, radius: 3, color: 0xaaaaaa, phase: 0, mass: 0.055 },      // mass: 0.055 Earth masses
+        { id: 'Venus',   rAU: 0.72, radius: 5, color: 0xffddaa, phase: 0.5, mass: 0.815 },    // mass: 0.815 Earth masses
+        { id: 'Earth',   rAU: 1.00, radius: 5.5, color: 0x3366ff, phase: 1.0, mass: 1.0 },    // mass: 1.0 Earth mass (reference)
+        { id: 'Mars',    rAU: 1.52, radius: 4, color: 0xff6633, phase: 1.6, mass: 0.107 },    // mass: 0.107 Earth masses
+        { id: 'Jupiter', rAU: 5.20, radius: 14, color: 0xffcc77, phase: 2.2, mass: 317.8 },   // mass: 317.8 Earth masses
+        { id: 'Saturn',  rAU: 9.58, radius: 12, color: 0xffee88, phase: 3.0, mass: 95.16 },   // mass: 95.16 Earth masses
+        { id: 'Uranus',  rAU:19.20, radius: 9, color: 0x88ccff, phase: 4.0, mass: 14.5 },     // mass: 14.5 Earth masses
+        { id: 'Neptune', rAU:30.05, radius: 9, color: 0x3366aa, phase: 5.0, mass: 17.1 },     // mass: 17.1 Earth masses
     ];
 
     const starMassScaled = starMass; // use starMass as mass scale
@@ -369,7 +572,7 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     // Create Voyager-style probe (will be replaced by GLB model if loading succeeds)
     let probe = createVoyagerProbe();
 
-    const probeR = 100;  // 1.0 AU (same as Earth orbit)
+    const probeR = CELESTIAL_CONSTANTS.PROBE.INITIAL_RADIUS_AU * PHYSICS_SCALE.AU;
     probe.position.set(0, 0, probeR);
 
     // Store orientation config on built-in Voyager probe
@@ -419,7 +622,7 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     }
 
     const gVal = options?.G ?? DEFAULT_G;
-    const probeMult = options?.probeSpeedMult ?? 1.05;  // Realistic escape velocity (5% above circular)
+    const probeMult = options?.probeSpeedMult ?? CELESTIAL_CONSTANTS.PROBE.DEFAULT_SPEED_MULTIPLIER;
     const vCircular = Math.sqrt((gVal * starMass) / probeR);
     const probeBody: Body = { id: 'probe', mass: 1, position: [0, 0, probeR], velocity: [vCircular * probeMult, 0, 0], radius: 0.6, isProbe: true };
     bodies.push(probeBody);
@@ -456,7 +659,7 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     // OrbitControls for interactive camera
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
+    controls.dampingFactor = CELESTIAL_CONSTANTS.ORBIT_CONTROLS.DAMPING_FACTOR;
     controls.enablePan = true;
     controls.update();
 
@@ -465,14 +668,14 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     // ====================================================================
     // Create background stars with color variation for visual depth
     function createStarField() {
-        const starCount = 8000;
+        const starCount = STAR_FIELD_CONSTANTS.COUNT;
         const starGeometry = new THREE.BufferGeometry();
         const starPositions = new Float32Array(starCount * 3);
         const starColors = new Float32Array(starCount * 3);
 
         for (let i = 0; i < starCount; i++) {
             // Position: random spherical distribution
-            const radius = 5000 + Math.random() * 10000; // 5000-15000 range
+            const radius = STAR_FIELD_CONSTANTS.MIN_RADIUS + Math.random() * (STAR_FIELD_CONSTANTS.MAX_RADIUS - STAR_FIELD_CONSTANTS.MIN_RADIUS);
             const theta = Math.random() * Math.PI * 2;   // 0-2π
             const phi = Math.acos(2 * Math.random() - 1); // 0-π (uniform sphere)
 
@@ -504,11 +707,11 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
         starGeometry.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
 
         const starMaterial = new THREE.PointsMaterial({
-            size: 10,
+            size: STAR_FIELD_CONSTANTS.SIZE,
             vertexColors: true,
             sizeAttenuation: true,
             transparent: true,
-            opacity: 0.8
+            opacity: STAR_FIELD_CONSTANTS.OPACITY
         });
 
         const stars = new THREE.Points(starGeometry, starMaterial);
@@ -520,19 +723,18 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     // Trail (orbit path) - sample points stored as Vector3 and rendered smooth via Catmull-Rom
     const trailPoints: THREE.Vector3[] = [];
     const trailGeometry = new THREE.BufferGeometry();
-    const trailMaterial = new THREE.LineBasicMaterial({ color: 0x00ff88 });
+    const trailMaterial = new THREE.LineBasicMaterial({ color: TRAIL_CONSTANTS.COLOR });
     const trailLine = new THREE.Line(trailGeometry, trailMaterial);
     scene.add(trailLine);
 
     function addTrailPoint(p: THREE.Vector3) {
-        const maxPoints = 2000;
         trailPoints.push(p.clone());
-        if (trailPoints.length > maxPoints) {
+        if (trailPoints.length > TRAIL_CONSTANTS.MAX_POINTS) {
             trailPoints.shift();
         }
 
         if (trailPoints.length >= 2) {
-            const curve = new THREE.CatmullRomCurve3(trailPoints, false, 'catmullrom', 0.5);
+            const curve = new THREE.CatmullRomCurve3(trailPoints, false, 'catmullrom', TRAIL_CONSTANTS.CURVE_TENSION);
             const divisions = Math.min(Math.max(trailPoints.length * 6, 64), 3000);
             const smoothPoints = curve.getPoints(divisions);
             const positions: number[] = [];
@@ -611,15 +813,15 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
         // Create torus (ring)
         const torusGeometry = new THREE.TorusGeometry(
             encounterRadius,           // radius
-            encounterRadius * 0.08,    // tube thickness (8% of radius)
-            8,                         // radial segments
-            64                         // tubular segments
+            encounterRadius * VISUALIZATION_CONSTANTS.INFLUENCE_ZONE.TUBE_THICKNESS_RATIO,
+            VISUALIZATION_CONSTANTS.INFLUENCE_ZONE.RADIAL_SEGMENTS,
+            VISUALIZATION_CONSTANTS.INFLUENCE_ZONE.TUBULAR_SEGMENTS
         );
 
         const torusMaterial = new THREE.MeshBasicMaterial({
-            color: 0x00ff00,
+            color: VISUALIZATION_CONSTANTS.INFLUENCE_ZONE.COLOR,
             transparent: true,
-            opacity: 0.25,
+            opacity: VISUALIZATION_CONSTANTS.INFLUENCE_ZONE.OPACITY,
             side: THREE.DoubleSide
         });
 
@@ -642,7 +844,7 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
 
     for (const pd of solarDefs) {
         const orbitRadius = pd.rAU * AU;
-        const segments = 128; // Number of points in the circle
+        const segments = VISUALIZATION_CONSTANTS.ORBIT_LINE.SEGMENTS;
         const points: THREE.Vector3[] = [];
 
         // Create circle points
@@ -658,8 +860,8 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
         const orbitMaterial = new THREE.LineBasicMaterial({
             color: pd.color,
             transparent: true,
-            opacity: 0.3,
-            linewidth: 1
+            opacity: VISUALIZATION_CONSTANTS.ORBIT_LINE.OPACITY,
+            linewidth: VISUALIZATION_CONSTANTS.ORBIT_LINE.LINE_WIDTH
         });
 
         const orbitLine = new THREE.Line(orbitGeometry, orbitMaterial);
@@ -674,12 +876,12 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     const predictionPoints: THREE.Vector3[] = [];
     const predictionGeometry = new THREE.BufferGeometry();
     const predictionMaterial = new THREE.LineDashedMaterial({
-        color: 0xffaa00,
-        dashSize: 3,
-        gapSize: 2,
-        linewidth: 1,
+        color: VISUALIZATION_CONSTANTS.PREDICTION.COLOR,
+        dashSize: VISUALIZATION_CONSTANTS.PREDICTION.DASH_SIZE,
+        gapSize: VISUALIZATION_CONSTANTS.PREDICTION.GAP_SIZE,
+        linewidth: VISUALIZATION_CONSTANTS.ORBIT_LINE.LINE_WIDTH,
         transparent: true,
-        opacity: 0.6
+        opacity: VISUALIZATION_CONSTANTS.PREDICTION.OPACITY
     });
     const predictionLine = new THREE.Line(predictionGeometry, predictionMaterial);
     scene.add(predictionLine);
@@ -714,7 +916,7 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     }
 
     let lastPredictionUpdate = 0;
-    const predictionUpdateInterval = 500; // Update every 500ms
+    const predictionUpdateInterval = VISUALIZATION_CONSTANTS.PREDICTION.UPDATE_INTERVAL_MS;
 
     function updatePredictedTrajectory() {
         const now = performance.now();
@@ -727,8 +929,8 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
         if (probeIndex < 0) return;
 
         // Run simulation forward for predictionTime seconds
-        const predictionTime = 15; // seconds
-        const predictionSteps = 150; // number of points
+        const predictionTime = VISUALIZATION_CONSTANTS.PREDICTION.TIME_SECONDS;
+        const predictionSteps = VISUALIZATION_CONSTANTS.PREDICTION.STEPS;
         const dt = predictionTime / predictionSteps;
 
         predictionPoints.length = 0;
@@ -748,7 +950,7 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
 
         // Simulate future trajectory
         for (let i = 0; i < predictionSteps; i++) {
-            const { bodies: nextBodies, events } = stepBodies(predictedBodies, dt, gRun, predSimTime, 0.5, swingOptions);
+            const { bodies: nextBodies, events } = stepBodies(predictedBodies, dt, gRun, predSimTime, PHYSICS_CONSTANTS.DEFAULT_SOFTENING, swingOptions);
             predSimTime += dt;
 
             // Copy nextBodies back to predictedBodies (safely handle type)
@@ -885,7 +1087,7 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, CAMERA_CONSTANTS.MAX_PIXEL_RATIO));
         composer.setSize(window.innerWidth, window.innerHeight);
     }
 
@@ -893,13 +1095,27 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
 
     let simTime = 0;
 
-    // swing-by tuning options (tweak these values)
-    // With realistic Sun/planet mass ratios, swing-by effects are smaller for inner planets
-    // but significant for gas giants (Jupiter, Saturn). Threshold adjusted accordingly.
+    // ====================================================================
+    // Swing-by Detection Tuning Options
+    // ====================================================================
+    // These values are tuned for the solar system simulation with realistic mass ratios.
+    // They differ from PHYSICS_CONSTANTS.DEFAULT_SWING_BY_OPTIONS for the following reasons:
+    //
+    // - deltaVThreshold: 0.01 (vs default 0.05)
+    //   Lower threshold to detect weaker gravity assists from inner planets (Mercury, Venus, Mars)
+    //   With realistic Sun/planet mass ratios, inner planet swing-bys produce smaller deltaV
+    //   Gas giants (Jupiter, Saturn) still produce significant effects detectable at this threshold
+    //
+    // - minGap: 0.4 (vs default 0.5)
+    //   Slightly shorter cooldown allows for closer planet flybys to be detected separately
+    //   Useful when probe passes through multiple planets in quick succession
+    //
+    // - encounterMultiplier: 2.5 (matches default)
+    //   Standard detection radius works well for realistic planet sizes
     const swingOptions = {
-        encounterMultiplier: 2.5,   // Slightly wider detection radius
-        deltaVThreshold: 0.01,      // Lower threshold to catch smaller effects (was 0.03)
-        minGap: 0.4                 // Shorter cooldown between detections
+        encounterMultiplier: 2.5,
+        deltaVThreshold: 0.01,
+        minGap: 0.4
     };
 
     // simple visual markers for swing-by events
@@ -908,7 +1124,7 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     function stepSimulation(dt: number) {
         // call physics.stepBodies with plain-data bodies
         const gRun = options?.G ?? DEFAULT_G;
-        const { bodies: nextBodies, events } = stepBodies(bodies, dt, gRun, simTime, 0.5, swingOptions);
+        const { bodies: nextBodies, events } = stepBodies(bodies, dt, gRun, simTime, PHYSICS_CONSTANTS.DEFAULT_SOFTENING, swingOptions);
         simTime += dt;
 
         // apply nextBodies back to visuals and local bodies
@@ -930,12 +1146,12 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
                 if (state.fuel <= 0) {
                     state.status = 'Fuel Depleted';
                 } else {
-                    state.status = state.velocity.length() > 1e-3 ? 'Running' : 'Idle';
+                    state.status = state.velocity.length() > CELESTIAL_CONSTANTS.PROBE.MIN_VELOCITY_FOR_RUNNING ? 'Running' : 'Idle';
                 }
 
                 // Smoothly rotate probe to face velocity direction
                 const speed = state.velocity.length();
-                if (speed > 0.1) { // Only rotate if moving fast enough
+                if (speed > CELESTIAL_CONSTANTS.PROBE.MIN_VELOCITY_FOR_ROTATION) { // Only rotate if moving fast enough
                     // Calculate target direction from velocity vector
                     let direction = state.velocity.clone().normalize();
 
@@ -962,8 +1178,7 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
 
                     // Smoothly interpolate (slerp) from current to target rotation
                     // Lower value = smoother/slower rotation, higher = faster
-                    const rotationSpeed = 0.15; // 15% per frame
-                    probe.quaternion.slerp(targetQuaternion, rotationSpeed);
+                    probe.quaternion.slerp(targetQuaternion, CELESTIAL_CONSTANTS.PROBE.ROTATION_SPEED);
                 }
             }
             // update planet meshes (check if this body's id is in planetMeshes array)
@@ -999,18 +1214,22 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
                     // find body position for marker
                     const body = nextBodies.find((b) => b.id === ev.bodyId);
                     if (body) {
-                        const markerGeom = new THREE.SphereGeometry(0.8, 8, 8);
-                        const markerMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+                        const markerGeom = new THREE.SphereGeometry(
+                            VISUALIZATION_CONSTANTS.EVENT_MARKER.RADIUS,
+                            VISUALIZATION_CONSTANTS.EVENT_MARKER.SEGMENTS,
+                            VISUALIZATION_CONSTANTS.EVENT_MARKER.SEGMENTS
+                        );
+                        const markerMat = new THREE.MeshBasicMaterial({ color: VISUALIZATION_CONSTANTS.EVENT_MARKER.COLOR });
                         const marker = new THREE.Mesh(markerGeom, markerMat);
                         marker.position.set(body.position[0], body.position[1], body.position[2]);
                         scene.add(marker);
                         eventMarkers.push(marker);
-                        // fade out marker after 1.2s
+                        // fade out marker after specified duration
                         setTimeout(() => {
                             scene.remove(marker);
                             const i = eventMarkers.indexOf(marker);
                             if (i >= 0) eventMarkers.splice(i, 1);
-                        }, 1200);
+                        }, VISUALIZATION_CONSTANTS.EVENT_MARKER.DURATION_MS);
                     }
                     // flash probe material if available (main body)
                     try {
@@ -1057,7 +1276,7 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
 
         const positions = gravityWellGeometry.attributes.position.array as Float32Array;
         const gVal = options?.G ?? DEFAULT_G;
-        const depthScale = 50; // Scale factor for visual effect (adjust for visibility)
+        const depthScale = GRID_CONSTANTS.GRAVITY_GRID.DEPTH_SCALE;
 
         // Reset to original positions
         for (let i = 0; i < positions.length; i++) {

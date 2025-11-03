@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { ALL_MISSIONS } from '../data/missions';
 import { MissionWithProgress, GameStats } from '../types/mission';
 
@@ -7,6 +7,9 @@ interface MissionProgressProps {
     velocity: number;
     slingshots: number;
     fuel: number;
+    distanceFromSun: number;
+    completedMissionIds: Set<string>;
+    onMissionCompleted: (missionId: string) => void;
 }
 
 const MissionProgress: React.FC<MissionProgressProps> = ({
@@ -14,6 +17,9 @@ const MissionProgress: React.FC<MissionProgressProps> = ({
     velocity,
     slingshots,
     fuel,
+    distanceFromSun,
+    completedMissionIds,
+    onMissionCompleted,
 }) => {
     // Create game stats object
     const stats: GameStats = {
@@ -21,26 +27,33 @@ const MissionProgress: React.FC<MissionProgressProps> = ({
         velocity,
         slingshots,
         fuel,
+        distanceFromSun,
     };
+
+    // Track previous completed missions to detect new completions
+    const prevCompletedRef = useRef<Set<string>>(new Set());
 
     // Map missions to include current progress and completion status
     const missions: MissionWithProgress[] = ALL_MISSIONS.map(mission => {
-        // Determine current value based on unit type
-        let current: number;
-        if (mission.unit === 'AU') {
-            current = distance;
-        } else if (mission.unit === 'km/s') {
-            current = velocity;
-        } else if (mission.unit === '回') {
-            current = slingshots;
-        } else {
-            current = 0;
+        // Determine current value based on progressField
+        const current = stats[mission.progressField];
+
+        // Check if already completed (persisted state)
+        const wasCompleted = completedMissionIds.has(mission.id);
+
+        // Check current condition
+        const isCurrentlyCompleted = mission.checkCompleted(stats);
+
+        // If newly completed (not in persisted set, but condition met), notify parent
+        if (isCurrentlyCompleted && !wasCompleted && !prevCompletedRef.current.has(mission.id)) {
+            onMissionCompleted(mission.id);
+            prevCompletedRef.current.add(mission.id);
         }
 
         return {
             ...mission,
             current,
-            completed: mission.checkCompleted(stats),
+            completed: wasCompleted || isCurrentlyCompleted,
         };
     });
 

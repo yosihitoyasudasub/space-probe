@@ -11,6 +11,7 @@ interface HUDProps {
     distance?: number;
     fuel?: number;
     slingshots?: number;
+    distanceFromSun?: number;
     velocityHistory?: DataPoint[];
     distanceHistory?: DataPoint[];
     probeSpeedMult?: number;
@@ -27,6 +28,8 @@ interface HUDProps {
     setSelectedModel?: (v: string) => void;
     isSimulationStarted?: boolean;
     setIsSimulationStarted?: (v: boolean) => void;
+    completedMissionIds?: Set<string>;
+    onMissionCompleted?: (missionId: string) => void;
 }
 
 const HUD: React.FC<HUDProps> = ({
@@ -35,6 +38,7 @@ const HUD: React.FC<HUDProps> = ({
     distance = 0,
     fuel = 100,
     slingshots = 0,
+    distanceFromSun = 1.0,
     velocityHistory = [],
     distanceHistory = [],
     probeSpeedMult = 1.05,
@@ -51,6 +55,8 @@ const HUD: React.FC<HUDProps> = ({
     setSelectedModel = () => {},
     isSimulationStarted = false,
     setIsSimulationStarted = () => {},
+    completedMissionIds = new Set(),
+    onMissionCompleted = () => {},
 }) => {
     const [showCharts, setShowCharts] = useState(false);
     const [showMissions, setShowMissions] = useState(false);
@@ -121,7 +127,7 @@ const HUD: React.FC<HUDProps> = ({
                     </span>
                     <span className="stat-separator">|</span>
                     <span className="stat-item">
-                        D:<span className="stat-value">{distance.toFixed(0)}</span>AU
+                        D:<span className="stat-value">{distanceFromSun.toFixed(2)}</span>AU
                     </span>
                     <span className="stat-separator">|</span>
                     <span className="stat-item">
@@ -208,6 +214,9 @@ const HUD: React.FC<HUDProps> = ({
                         velocity={velocity}
                         slingshots={slingshots}
                         fuel={fuel}
+                        distanceFromSun={distanceFromSun}
+                        completedMissionIds={completedMissionIds}
+                        onMissionCompleted={onMissionCompleted}
                     />
                 </div>
             )}

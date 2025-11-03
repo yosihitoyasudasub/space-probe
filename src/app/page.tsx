@@ -37,6 +37,10 @@ const Page = () => {
     const [distance, setDistance] = useState<number>(0);
     const [fuel, setFuel] = useState<number>(100);
     const [slingshots, setSlingshots] = useState<number>(0);
+    const [distanceFromSun, setDistanceFromSun] = useState<number>(1.0); // Initial: 1 AU (Earth orbit)
+
+    // Mission tracking - completed mission IDs
+    const [completedMissionIds, setCompletedMissionIds] = useState<Set<string>>(new Set());
 
     // Simulation control
     const [isSimulationStarted, setIsSimulationStarted] = useState<boolean>(false);
@@ -46,8 +50,9 @@ const Page = () => {
     const [distanceHistory, setDistanceHistory] = useState<DataPoint[]>([]);
     const startTimeRef = useRef<number>(Date.now());
 
-    // simulation tuning parameters (editable via Controls)
-    const [probeSpeedMult, setProbeSpeedMult] = useState<number>(1.05);
+    // Simulation tuning parameters (editable via Controls)
+    // All default values use PHYSICS_SCALE constants for consistency
+    const [probeSpeedMult, setProbeSpeedMult] = useState<number>(1.05); // 5% above circular orbit velocity
     const [gravityG, setGravityG] = useState<number>(PHYSICS_SCALE.G);
     const [starMass, setStarMass] = useState<number>(PHYSICS_SCALE.SUN_MASS);
     const [cameraView, setCameraView] = useState<CameraView>('free');
@@ -74,6 +79,15 @@ const Page = () => {
         });
     }, []);
 
+    // Mission completion callback
+    const handleMissionCompleted = useCallback((missionId: string) => {
+        setCompletedMissionIds(prev => {
+            const newSet = new Set(prev);
+            newSet.add(missionId);
+            return newSet;
+        });
+    }, []);
+
     // stable setters object to pass down (memoized so reference is stable)
     const hudSetters = React.useMemo(
         () => ({
@@ -81,9 +95,10 @@ const Page = () => {
             setVelocity: setVelocityWithHistory,
             setDistance: setDistanceWithHistory,
             setFuel,
-            setSlingshots
+            setSlingshots,
+            setDistanceFromSun
         }),
-        [setStatus, setVelocityWithHistory, setDistanceWithHistory, setFuel, setSlingshots]
+        [setStatus, setVelocityWithHistory, setDistanceWithHistory, setFuel, setSlingshots, setDistanceFromSun]
     );
 
     return (
@@ -95,6 +110,7 @@ const Page = () => {
                 distance={distance}
                 fuel={fuel}
                 slingshots={slingshots}
+                distanceFromSun={distanceFromSun}
                 velocityHistory={velocityHistory}
                 distanceHistory={distanceHistory}
                 probeSpeedMult={probeSpeedMult}
@@ -111,6 +127,8 @@ const Page = () => {
                 setSelectedModel={setSelectedModel}
                 isSimulationStarted={isSimulationStarted}
                 setIsSimulationStarted={setIsSimulationStarted}
+                completedMissionIds={completedMissionIds}
+                onMissionCompleted={handleMissionCompleted}
             />
             <CameraControls cameraView={cameraView} setCameraView={setCameraView} />
             <TouchControls />

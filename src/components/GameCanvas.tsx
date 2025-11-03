@@ -5,12 +5,54 @@ import { initThreeJS, PHYSICS_SCALE } from '../lib/threeSetup';
 import { CameraView } from './Controls';
 import { PROBE_MODELS } from '../app/page';
 
+// ====================================================================
+// Game Loop Constants
+// ====================================================================
+
+const GAME_LOOP_CONSTANTS = {
+    // Physics simulation constants
+    FIXED_TIMESTEP_HZ: 60,                  // Physics update frequency (60 FPS)
+    MAX_FRAME_DELTA_SECONDS: 0.25,          // Maximum frame delta to prevent "spiral of death"
+                                            // Limits time accumulation when frame rate drops
+
+    // Input/thrust constants
+    THRUST_DELTA_V_SCALE: 0.02,             // Delta-v per frame from thrust input (scene units/s)
+    MIN_VELOCITY_EPSILON: 0.001,            // Minimum velocity for control mode switching (scene units/s)
+
+    // Camera view positions (scene units)
+    TOP_VIEW_CAMERA: {
+        x: 0,
+        y: 1500,    // 15 AU above orbital plane
+        z: 0
+    },
+
+    PROBE_FOLLOW_CAMERA: {
+        OFFSET_BACK: 70,        // Units behind probe
+        OFFSET_UP: 80,          // Units above probe
+        STATIC_OFFSET_UP: 80,   // Offset when probe is stationary
+        STATIC_OFFSET_FORWARD: 150,  // Forward offset when stationary
+        MIN_SPEED: 0.1          // Minimum speed to use velocity-based positioning (scene units/s)
+    },
+
+    // Trail visualization
+    TRAIL_UPDATE_INTERVAL_MS: 100,          // Milliseconds between adding trail points
+
+    // HUD update optimization
+    HUD: {
+        UPDATE_THROTTLE_MS: 200,            // Minimum milliseconds between HUD updates
+        VELOCITY_THRESHOLD: 0.7,            // Minimum velocity change to force HUD update (km/s)
+        DISTANCE_THRESHOLD: 0.1,            // Minimum distance change to force HUD update
+        FUEL_THRESHOLD: 1                   // Minimum fuel change to force HUD update (%)
+    }
+} as const;
+
 type HUDSetters = {
     setStatus: React.Dispatch<React.SetStateAction<string>>;
     setVelocity: (value: number) => void;
     setDistance: (value: number) => void;
     setFuel: React.Dispatch<React.SetStateAction<number>>;
     setSlingshots: React.Dispatch<React.SetStateAction<number>>;
+    setDistanceFromSun: (value: number) => void;
 };
 
 interface Props {
@@ -27,7 +69,7 @@ interface Props {
     isSimulationStarted?: boolean;
 }
 
-const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravityG = 1.0, starMass = 4000, cameraView = 'free', gravityGridEnabled = false, setGravityGridEnabled, gridEnabled = false, setGridEnabled, selectedModel = 'space_fighter', isSimulationStarted = false }) => {
+const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravityG = PHYSICS_SCALE.G, starMass = PHYSICS_SCALE.SUN_MASS, cameraView = 'free', gravityGridEnabled = false, setGravityGridEnabled, gridEnabled = false, setGridEnabled, selectedModel = 'space_fighter', isSimulationStarted = false }) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const rafRef = useRef<number | null>(null);
     const cameraViewRef = useRef<CameraView>(cameraView);
@@ -141,8 +183,8 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
 
-        // Fixed timestep physics loop (e.g., 60 Hz)
-        const fixedTimeStep = 1 / 60; // seconds
+        // Fixed timestep physics loop
+        const fixedTimeStep = 1 / GAME_LOOP_CONSTANTS.FIXED_TIMESTEP_HZ;
         let accumulator = 0;
         let lastTime = performance.now() / 1000;
 
@@ -152,7 +194,7 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
             lastTime = now;
 
             // clamp delta to avoid spiral of death
-            if (delta > 0.25) delta = 0.25;
+            if (delta > GAME_LOOP_CONSTANTS.MAX_FRAME_DELTA_SECONDS) delta = GAME_LOOP_CONSTANTS.MAX_FRAME_DELTA_SECONDS;
 
             accumulator += delta;
             // Only run physics simulation if simulation has started
@@ -160,7 +202,7 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
                 while (accumulator >= fixedTimeStep) {
                     try {
                         // apply input-driven delta-v before stepping
-                        const dvScale = 0.02; // tune this for feel (scene-units/sec)
+                        const dvScale = GAME_LOOP_CONSTANTS.THRUST_DELTA_V_SCALE;
                         let dv: [number, number, number] = [0, 0, 0];
 
                         // Calculate thrust direction based on current velocity (velocity-relative control)
@@ -170,7 +212,7 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
                             const vz = state.velocity.z;
                             const speed = Math.sqrt(vx * vx + vy * vy + vz * vz);
 
-                            if (speed > 0.001) {
+                            if (speed > GAME_LOOP_CONSTANTS.MIN_VELOCITY_EPSILON) {
                                 // Normalize velocity to get forward direction
                                 const fx = vx / speed;
                                 const fy = vy / speed;
@@ -260,7 +302,11 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
             try {
                 if (cameraViewRef.current === 'top') {
                     // Top view: camera above the sun
-                    camera.position.set(0, 1500, 0);
+                    camera.position.set(
+                        GAME_LOOP_CONSTANTS.TOP_VIEW_CAMERA.x,
+                        GAME_LOOP_CONSTANTS.TOP_VIEW_CAMERA.y,
+                        GAME_LOOP_CONSTANTS.TOP_VIEW_CAMERA.z
+                    );
                     camera.lookAt(0, 0, 0);
                     controls.enabled = false;
                 } else if (cameraViewRef.current === 'probe') {
@@ -270,18 +316,22 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
                         const vel = state.velocity;
                         const speed = vel ? vel.length() : 0;
 
-                        if (speed > 0.1) {
+                        if (speed > GAME_LOOP_CONSTANTS.PROBE_FOLLOW_CAMERA.MIN_SPEED) {
                             // Position camera behind the probe based on velocity direction
                             const velNorm = vel.clone().normalize();
-                            const camOffset = velNorm.multiplyScalar(-70); // 70 units behind
+                            const camOffset = velNorm.multiplyScalar(-GAME_LOOP_CONSTANTS.PROBE_FOLLOW_CAMERA.OFFSET_BACK);
                             const camPos = probePos.clone().add(camOffset);
-                            camPos.y += 80; // 80 units above
+                            camPos.y += GAME_LOOP_CONSTANTS.PROBE_FOLLOW_CAMERA.OFFSET_UP;
 
                             camera.position.copy(camPos);
                             camera.lookAt(probePos.x, probePos.y, probePos.z);
                         } else {
                             // If probe is stationary, use fixed offset
-                            camera.position.set(probePos.x, probePos.y + 80, probePos.z + 150);
+                            camera.position.set(
+                                probePos.x,
+                                probePos.y + GAME_LOOP_CONSTANTS.PROBE_FOLLOW_CAMERA.STATIC_OFFSET_UP,
+                                probePos.z + GAME_LOOP_CONSTANTS.PROBE_FOLLOW_CAMERA.STATIC_OFFSET_FORWARD
+                            );
                             camera.lookAt(probePos.x, probePos.y, probePos.z);
                         }
                     }
@@ -295,11 +345,11 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
                 // ignore camera update errors
             }
 
-            // add trail point periodically (every 100ms)
+            // add trail point periodically
             if (addTrailPoint) {
                 const nowMsPoint = performance.now();
                 if (!trailRef.current) trailRef.current = { lastMs: nowMsPoint };
-                if (nowMsPoint - trailRef.current.lastMs > 100) {
+                if (nowMsPoint - trailRef.current.lastMs > GAME_LOOP_CONSTANTS.TRAIL_UPDATE_INTERVAL_MS) {
                     try {
                         addTrailPoint(state.position);
                     } catch (e) {
@@ -317,8 +367,12 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
 
                     const speed = state.velocity ? state.velocity.length() : 0;
                     const speedKmPerSec = speed * PHYSICS_SCALE.VELOCITY_TO_KM_PER_SEC;
-                    const shouldUpdateTime = nowMs - lastMs > 200; // 200ms throttle
-                    const largeChange = Math.abs(speedKmPerSec - lastVals.velocity) > 0.7 || Math.abs(state.distance - lastVals.distance) > 0.1 || Math.abs(state.fuel - lastVals.fuel) > 1 || state.slingshots !== lastVals.slingshots || state.status !== lastVals.status;
+                    const shouldUpdateTime = nowMs - lastMs > GAME_LOOP_CONSTANTS.HUD.UPDATE_THROTTLE_MS;
+                    const largeChange = Math.abs(speedKmPerSec - lastVals.velocity) > GAME_LOOP_CONSTANTS.HUD.VELOCITY_THRESHOLD
+                        || Math.abs(state.distance - lastVals.distance) > GAME_LOOP_CONSTANTS.HUD.DISTANCE_THRESHOLD
+                        || Math.abs(state.fuel - lastVals.fuel) > GAME_LOOP_CONSTANTS.HUD.FUEL_THRESHOLD
+                        || state.slingshots !== lastVals.slingshots
+                        || state.status !== lastVals.status;
 
                     if (shouldUpdateTime || largeChange) {
                         hudSetters.setVelocity(speedKmPerSec);
@@ -326,6 +380,16 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
                         hudSetters.setFuel(state.fuel);
                         hudSetters.setSlingshots(state.slingshots);
                         hudSetters.setStatus(state.status);
+
+                        // Calculate distance from sun (太陽からの距離)
+                        const probePos = state.position;
+                        const distanceFromSunSceneUnits = Math.sqrt(
+                            probePos.x * probePos.x +
+                            probePos.y * probePos.y +
+                            probePos.z * probePos.z
+                        );
+                        const distanceFromSunAU = distanceFromSunSceneUnits / PHYSICS_SCALE.AU;
+                        hudSetters.setDistanceFromSun(distanceFromSunAU);
 
                         hudUpdateRef.current = { lastMs: nowMs, lastVals: { velocity: speedKmPerSec, distance: state.distance, fuel: state.fuel, slingshots: state.slingshots, status: state.status } };
                     }

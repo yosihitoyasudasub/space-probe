@@ -14,11 +14,17 @@ export type MissionCategory = 'beginner' | 'intermediate' | 'advanced';
  * Game statistics used for mission completion checking
  */
 export interface GameStats {
-    distance: number;    // Distance traveled in AU
-    velocity: number;    // Current velocity in km/s
-    slingshots: number;  // Number of slingshot maneuvers performed
-    fuel: number;        // Remaining fuel percentage (0-100)
+    distance: number;           // Distance traveled in AU (累積移動距離)
+    velocity: number;           // Current velocity in km/s (現在速度)
+    slingshots: number;         // Number of slingshot maneuvers performed (スイングバイ回数)
+    fuel: number;               // Remaining fuel percentage (0-100) (残燃料)
+    distanceFromSun: number;    // Current distance from the sun in AU (太陽からの現在距離)
 }
+
+/**
+ * Field in GameStats to use for mission progress display
+ */
+export type ProgressField = 'distance' | 'distanceFromSun' | 'velocity' | 'slingshots' | 'fuel';
 
 /**
  * Mission definition structure
@@ -30,6 +36,7 @@ export interface Mission {
     category: MissionCategory;                       // Difficulty category
     target: number;                                  // Target value to achieve
     unit: string;                                    // Unit of measurement
+    progressField: ProgressField;                    // Which GameStats field to show for progress
     checkCompleted: (stats: GameStats) => boolean;   // Function to check if mission is completed
 }
 

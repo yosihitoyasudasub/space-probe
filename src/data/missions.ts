@@ -6,13 +6,14 @@
  */
 
 import { Mission, GameStats, MissionCategory } from '../types/mission';
+import { PLANET_ORBITS, PlanetName } from '../lib/threeSetup';
 
 // ====================================================================
 // Helper Functions - Mission Factories
 // ====================================================================
 
 /**
- * Creates a distance-based mission
+ * Creates a distance-based mission (distance from the sun)
  */
 function createDistanceMission(
     id: string,
@@ -28,7 +29,8 @@ function createDistanceMission(
         category,
         target,
         unit: 'AU',
-        checkCompleted: (stats: GameStats) => stats.distance >= target,
+        progressField: 'distanceFromSun',
+        checkCompleted: (stats: GameStats) => stats.distanceFromSun >= target,
     };
 }
 
@@ -49,6 +51,7 @@ function createVelocityMission(
         category,
         target,
         unit: 'km/s',
+        progressField: 'velocity',
         checkCompleted: (stats: GameStats) => stats.velocity >= target,
     };
 }
@@ -70,12 +73,13 @@ function createSlingshotMission(
         category,
         target,
         unit: '回',
+        progressField: 'slingshots',
         checkCompleted: (stats: GameStats) => stats.slingshots >= target,
     };
 }
 
 /**
- * Creates a fuel efficiency mission
+ * Creates a fuel efficiency mission (distance from the sun + fuel requirement)
  */
 function createFuelEfficiencyMission(
     id: string,
@@ -92,8 +96,39 @@ function createFuelEfficiencyMission(
         category,
         target: distanceTarget,
         unit: 'AU',
+        progressField: 'distanceFromSun',
         checkCompleted: (stats: GameStats) =>
-            stats.distance >= distanceTarget && stats.fuel >= fuelTarget,
+            stats.distanceFromSun >= distanceTarget && stats.fuel >= fuelTarget,
+    };
+}
+
+/**
+ * Creates a planet orbit reach mission
+ * @param id Mission ID
+ * @param planetName Planet name (Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune)
+ * @param tolerance Tolerance range in AU (default: 0.2 AU)
+ * @param category Mission category
+ */
+function createOrbitReachMission(
+    id: string,
+    planetName: PlanetName,
+    tolerance: number = 0.2,
+    category: MissionCategory = 'beginner'
+): Mission {
+    const targetOrbit = PLANET_ORBITS[planetName];
+
+    return {
+        id,
+        title: `${planetName}軌道到達`,
+        description: `${planetName}の軌道半径（${targetOrbit.toFixed(2)} AU）付近に到達`,
+        category,
+        target: targetOrbit,
+        unit: 'AU',
+        progressField: 'distanceFromSun',
+        checkCompleted: (stats: GameStats) => {
+            const diff = Math.abs(stats.distanceFromSun - targetOrbit);
+            return diff <= tolerance;
+        },
     };
 }
 
@@ -123,6 +158,12 @@ export const INTERMEDIATE_MISSIONS: Mission[] = [
         '5 AU到達',
         '木星軌道付近に到達',
         5,
+        'intermediate'
+    ),
+    createOrbitReachMission(
+        'reach-jupiter-orbit',
+        'Jupiter',
+        0.3,
         'intermediate'
     ),
     createVelocityMission(
