@@ -1,6 +1,49 @@
 // This physics module avoids direct dependence on three.js types so it can be
 // unit-tested and reused. Positions/velocities are plain number tuples [x,y,z].
 
+// ====================================================================
+// Physics Constants
+// ====================================================================
+// These constants define the core physical parameters of the simulation.
+// All values use the scaled unit system defined in threeSetup.ts:PHYSICS_SCALE
+
+export const PHYSICS_CONSTANTS = {
+    // Minimum vector length threshold to avoid division by zero in normalization
+    MIN_VECTOR_LENGTH: 1e-12,
+
+    // Default gravitational constant (dimensionless, scaled for game units)
+    // This should match PHYSICS_SCALE.G from threeSetup.ts
+    DEFAULT_G: 1.0,
+
+    // Softening length (scene units) to prevent singularities in gravity calculations
+    // When bodies get very close, softening smooths out the 1/r^2 force to prevent
+    // infinite accelerations. Typical value: 0.1 scene units (≈0.001 AU)
+    DEFAULT_SOFTENING: 0.1,
+
+    // Velocity Verlet / Leapfrog integration half-step coefficient
+    // This is an algorithmic constant (always 0.5 for this integrator)
+    LEAPFROG_HALF_STEP: 0.5,
+
+    // Minimum mass threshold (in Earth masses) to be considered in calculations
+    // Bodies with mass below this are treated as massless (e.g., probes)
+    MIN_PLANET_MASS: 1e-6,
+
+    // Default swing-by detection parameters
+    DEFAULT_SWING_BY_OPTIONS: {
+        // Encounter radius = planet.radius * encounterMultiplier
+        // Larger values make swing-by detection more forgiving
+        encounterMultiplier: 2.5,
+
+        // Minimum speed increase (scene units/s) to count as a swing-by
+        // Lower values detect weaker gravity assists
+        deltaVThreshold: 0.05,
+
+        // Cooldown time (seconds) before the same body can trigger another swing-by
+        // Prevents multiple rapid detections during a single flyby
+        minGap: 0.5
+    }
+} as const;
+
 export type Vec3 = [number, number, number];
 
 export type Body = {
@@ -44,7 +87,7 @@ function vecLen(a: Vec3): number {
 }
 
 function vecNormalize(a: Vec3): Vec3 {
-    const l = vecLen(a) || 1e-12;
+    const l = vecLen(a) || PHYSICS_CONSTANTS.MIN_VECTOR_LENGTH;
     return [a[0] / l, a[1] / l, a[2] / l];
 }
 
@@ -59,7 +102,7 @@ export type SwingByOptions = {
     minGap?: number; // seconds before same body can trigger again
 };
 
-export function stepBodies(origBodies: Body[], dt: number, G = 1.0, simTime = 0, softening = 0.1, opts?: SwingByOptions): StepResult {
+export function stepBodies(origBodies: Body[], dt: number, G: number = PHYSICS_CONSTANTS.DEFAULT_G, simTime: number = 0, softening: number = PHYSICS_CONSTANTS.DEFAULT_SOFTENING, opts?: SwingByOptions): StepResult {
     const bodies = cloneBodies(origBodies);
     const n = bodies.length;
 
@@ -99,7 +142,7 @@ export function stepBodies(origBodies: Body[], dt: number, G = 1.0, simTime = 0,
             vHalf[i] = vecClone(bodies[i].velocity);
             continue;
         }
-        vHalf[i] = vecAdd(bodies[i].velocity, vecScale(accs[i], dt * 0.5));
+        vHalf[i] = vecAdd(bodies[i].velocity, vecScale(accs[i], dt * PHYSICS_CONSTANTS.LEAPFROG_HALF_STEP));
         // full-step position
         bodies[i].position = vecAdd(bodies[i].position, vecScale(vHalf[i], dt));
     }
@@ -112,7 +155,7 @@ export function stepBodies(origBodies: Body[], dt: number, G = 1.0, simTime = 0,
     // finish velocity
     for (let i = 0; i < n; i++) {
         if (bodies[i].isStatic) continue;
-        bodies[i].velocity = vecAdd(vHalf[i], vecScale(accsNew[i], dt * 0.5));
+        bodies[i].velocity = vecAdd(vHalf[i], vecScale(accsNew[i], dt * PHYSICS_CONSTANTS.LEAPFROG_HALF_STEP));
     }
 
     const events: StepResult['events'] = { swingBys: [] };
@@ -126,14 +169,14 @@ export function stepBodies(origBodies: Body[], dt: number, G = 1.0, simTime = 0,
         for (let j = 0; j < n; j++) {
             if (i === j) continue;
             const other = bodies[j];
-            if (other.mass < 1e-6) continue;
+            if (other.mass < PHYSICS_CONSTANTS.MIN_PLANET_MASS) continue;
             const rx = probe.position[0] - other.position[0];
             const ry = probe.position[1] - other.position[1];
             const rz = probe.position[2] - other.position[2];
             const dist = Math.sqrt(rx * rx + ry * ry + rz * rz);
-            const encounterMultiplier = opts?.encounterMultiplier ?? 2.5;
-            const deltaVThreshold = opts?.deltaVThreshold ?? 0.05;
-            const gap = opts?.minGap ?? 0.5;
+            const encounterMultiplier = opts?.encounterMultiplier ?? PHYSICS_CONSTANTS.DEFAULT_SWING_BY_OPTIONS.encounterMultiplier;
+            const deltaVThreshold = opts?.deltaVThreshold ?? PHYSICS_CONSTANTS.DEFAULT_SWING_BY_OPTIONS.deltaVThreshold;
+            const gap = opts?.minGap ?? PHYSICS_CONSTANTS.DEFAULT_SWING_BY_OPTIONS.minGap;
             const encounterRadius = Math.max((other.radius || 1) * encounterMultiplier, 1.0);
             const lastAt = other._lastEncounterAt || 0;
             if (dist <= encounterRadius && simTime - lastAt > gap) {

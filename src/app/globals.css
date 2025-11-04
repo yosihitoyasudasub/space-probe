@@ -767,3 +767,295 @@ body {
         display: none;
     }
 }
+
+/* ====================================================================
+   Hamburger Menu UI (All screen sizes)
+   ==================================================================== */
+
+/* ハンバーガーメニュー対応HUD */
+.hud-hamburger {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(0, 0, 0, 0.85);
+    padding: 10px 15px;
+    border: 1px solid #00ff88;
+    border-radius: 6px;
+    z-index: 100;
+}
+
+/* ハンバーガーボタン */
+.hamburger-btn {
+    background: transparent;
+    border: 1px solid #00ff88;
+    color: #00ff88;
+    font-size: 20px;
+    line-height: 1;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.hamburger-btn:hover {
+    background: rgba(0, 255, 136, 0.2);
+    box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+
+.hamburger-btn:active {
+    transform: scale(0.95);
+}
+
+/* コンパクト統計情報 */
+.hud-stats-compact {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #00ff88;
+}
+
+.stat-compact {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.stat-separator {
+    color: rgba(0, 255, 136, 0.5);
+}
+
+/* レスポンシブ: 小さい画面では文字サイズを縮小 */
+@media (max-width: 480px) {
+    .hud-stats-compact {
+        font-size: 11px;
+    }
+    .hamburger-btn {
+        font-size: 18px;
+        padding: 4px 8px;
+    }
+}
+
+/* メニューオーバーレイ */
+.menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 998;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* ドロワーメニュー */
+.menu-drawer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 280px;
+    max-width: 80vw;
+    background: rgba(0, 20, 40, 0.98);
+    border-right: 2px solid #00ff88;
+    box-shadow: 4px 0 20px rgba(0, 255, 136, 0.3);
+    z-index: 999;
+    animation: slideInLeft 0.3s ease-out;
+    overflow-y: auto;
+}
+
+@keyframes slideInLeft {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+/* メニューヘッダー */
+.menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid rgba(0, 255, 136, 0.3);
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.menu-header h3 {
+    color: #00ff88;
+    margin: 0;
+    font-size: 20px;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+
+.menu-close-btn {
+    background: transparent;
+    border: none;
+    color: #00ff88;
+    font-size: 32px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.menu-close-btn:hover {
+    color: #fff;
+    transform: rotate(90deg);
+}
+
+/* メニュー項目 */
+.menu-items {
+    padding: 20px 15px;
+}
+
+.menu-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    background: rgba(0, 255, 136, 0.05);
+    border: 1px solid rgba(0, 255, 136, 0.3);
+    color: #00ff88;
+    font-size: 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.menu-item:hover {
+    background: rgba(0, 255, 136, 0.15);
+    border-color: #00ff88;
+    box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+}
+
+.menu-item:active {
+    transform: scale(0.98);
+}
+
+.menu-item.active {
+    background: rgba(0, 255, 136, 0.2);
+    border-color: #00ff88;
+    box-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+}
+
+.menu-icon {
+    font-size: 20px;
+    width: 24px;
+    display: inline-block;
+    text-align: center;
+}
+
+/* モデル選択 */
+.menu-model-selector {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(0, 255, 136, 0.3);
+}
+
+.menu-model-selector label {
+    display: block;
+    color: #00ff88;
+    margin-bottom: 10px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.menu-model-selector select {
+    width: 100%;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid #00ff88;
+    color: #00ff88;
+    font-size: 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.menu-model-selector select:hover {
+    background: rgba(0, 255, 136, 0.1);
+    box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+}
+
+.menu-model-selector select:focus {
+    outline: none;
+    border-color: #fff;
+    box-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+}
+
+/* スクロールバーのスタイリング */
+.menu-drawer::-webkit-scrollbar {
+    width: 8px;
+}
+
+.menu-drawer::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.menu-drawer::-webkit-scrollbar-thumb {
+    background: rgba(0, 255, 136, 0.5);
+    border-radius: 4px;
+}
+
+.menu-drawer::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 255, 136, 0.8);
+}
+
+/* ====================================================================
+   Panel Close Button (×)
+   ==================================================================== */
+
+.panel-close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid #00ff88;
+    color: #00ff88;
+    font-size: 24px;
+    line-height: 1;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+    z-index: 10;
+}
+
+.panel-close-btn:hover {
+    background: rgba(255, 0, 0, 0.3);
+    border-color: #ff0000;
+    color: #ff0000;
+    transform: rotate(90deg);
+}
+
+.panel-close-btn:active {
+    transform: rotate(90deg) scale(0.9);
+}

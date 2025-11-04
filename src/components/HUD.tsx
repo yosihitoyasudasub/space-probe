@@ -64,6 +64,7 @@ const HUD: React.FC<HUDProps> = ({
     const [showMissions, setShowMissions] = useState(false);
     const [showHelp, setShowHelp] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const handleChartsToggle = () => {
         setShowCharts(!showCharts);
@@ -72,6 +73,7 @@ const HUD: React.FC<HUDProps> = ({
             setShowHelp(false);
             setShowSettings(false);
         }
+        setIsMenuOpen(false); // メニューを閉じる
     };
 
     const handleMissionsToggle = () => {
@@ -81,6 +83,7 @@ const HUD: React.FC<HUDProps> = ({
             setShowHelp(false);
             setShowSettings(false);
         }
+        setIsMenuOpen(false); // メニューを閉じる
     };
 
     const handleHelpToggle = () => {
@@ -90,6 +93,7 @@ const HUD: React.FC<HUDProps> = ({
             setShowMissions(false);
             setShowSettings(false);
         }
+        setIsMenuOpen(false); // メニューを閉じる
     };
 
     const handleSettingsToggle = () => {
@@ -99,6 +103,7 @@ const HUD: React.FC<HUDProps> = ({
             setShowMissions(false);
             setShowHelp(false);
         }
+        setIsMenuOpen(false); // メニューを閉じる
     };
 
     return (
@@ -114,82 +119,114 @@ const HUD: React.FC<HUDProps> = ({
                     </button>
                 </div>
             )}
-            <div id="ui" className="hud-container hud-compact">
-                {/* 上段：統計情報 */}
-                <div className="hud-compact-line">
-                    <span className="stat-item">
-                        STS:
-                        <span className={`stat-value status-${status.toLowerCase().replace(' ', '-')}`}>
-                            {status}
-                        </span>
+            {/* ハンバーガーメニュー対応HUD */}
+            <div id="ui" className="hud-hamburger">
+                <button
+                    className="hamburger-btn"
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    title="Menu"
+                >
+                    ☰
+                </button>
+                <div className="hud-stats-compact">
+                    <span className="stat-compact">
+                        V:<span className="stat-value">{velocity.toFixed(1)}</span>
                     </span>
                     <span className="stat-separator">|</span>
-                    <span className="stat-item">
-                        V:<span className="stat-value">{velocity.toFixed(1)}</span>km/s
+                    <span className="stat-compact">
+                        D:<span className="stat-value">{distanceFromSun.toFixed(2)}</span>
                     </span>
                     <span className="stat-separator">|</span>
-                    <span className="stat-item">
-                        D:<span className="stat-value">{distanceFromSun.toFixed(2)}</span>AU
+                    <span className="stat-compact">
+                        F:<span className={`stat-value ${fuel < 20 ? 'low-fuel' : ''}`}>{fuel.toFixed(1)}</span>%
                     </span>
-                    <span className="stat-separator">|</span>
-                    <span className="stat-item">
-                        Fuel:
-                        <span className={`stat-value ${fuel < 20 ? 'low-fuel' : ''}`}>
-                            {fuel.toFixed(1)}
-                        </span>%
-                    </span>
-                </div>
-
-                {/* 下段：ボタン類 */}
-                <div className="hud-compact-line">
-                    <div className="hud-toggle-buttons">
-                        <button
-                            className={`toggle-btn ${showCharts ? 'active' : ''}`}
-                            onClick={handleChartsToggle}
-                            title="Toggle charts"
-                        >
-                            Charts
-                        </button>
-                        <button
-                            className={`toggle-btn ${showMissions ? 'active' : ''}`}
-                            onClick={handleMissionsToggle}
-                            title="Toggle mission progress"
-                        >
-                            Missions
-                        </button>
-                        <button
-                            className={`toggle-btn ${showHelp ? 'active' : ''}`}
-                            onClick={handleHelpToggle}
-                            title="Show controls"
-                        >
-                            Controls
-                        </button>
-                        <button
-                            className={`toggle-btn ${showSettings ? 'active' : ''}`}
-                            onClick={handleSettingsToggle}
-                            title="Simulation settings"
-                        >
-                            Settings
-                        </button>
-                        <label className="model-selector" title="Select probe model">
-                            <select
-                                value={selectedModel}
-                                onChange={(e) => setSelectedModel(e.target.value)}
-                                className="model-dropdown"
-                            >
-                                {PROBE_MODELS.map((model) => (
-                                    <option key={model.value} value={model.value}>
-                                        {model.label}
-                                    </option>
-                                ))}
-                            </select>
-                        </label>
-                    </div>
                 </div>
             </div>
 
+            {/* ドロワーメニュー */}
+            {isMenuOpen && (
+                <>
+                    {/* オーバーレイ */}
+                    <div
+                        className="menu-overlay"
+                        onClick={() => setIsMenuOpen(false)}
+                    />
+
+                    {/* メニュー本体 */}
+                    <div className="menu-drawer">
+                        <div className="menu-header">
+                            <h3>Space Probe</h3>
+                            <button
+                                className="menu-close-btn"
+                                onClick={() => setIsMenuOpen(false)}
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                        <div className="menu-items">
+                            <button
+                                className={`menu-item ${showCharts ? 'active' : ''}`}
+                                onClick={handleChartsToggle}
+                            >
+                                <span className="menu-icon">📊</span>
+                                <span>Charts</span>
+                            </button>
+
+                            <button
+                                className={`menu-item ${showMissions ? 'active' : ''}`}
+                                onClick={handleMissionsToggle}
+                            >
+                                <span className="menu-icon">🎯</span>
+                                <span>Missions</span>
+                            </button>
+
+                            <button
+                                className={`menu-item ${showHelp ? 'active' : ''}`}
+                                onClick={handleHelpToggle}
+                            >
+                                <span className="menu-icon">❓</span>
+                                <span>Controls</span>
+                            </button>
+
+                            <button
+                                className={`menu-item ${showSettings ? 'active' : ''}`}
+                                onClick={handleSettingsToggle}
+                            >
+                                <span className="menu-icon">⚙️</span>
+                                <span>Settings</span>
+                            </button>
+
+                            <div className="menu-model-selector">
+                                <label>Probe Model:</label>
+                                <select
+                                    value={selectedModel}
+                                    onChange={(e) => {
+                                        setSelectedModel(e.target.value);
+                                        setIsMenuOpen(false);
+                                    }}
+                                >
+                                    {PROBE_MODELS.map((model) => (
+                                        <option key={model.value} value={model.value}>
+                                            {model.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </>
+            )}
+
             {showCharts && (
                 <div className="hud-charts-panel">
+                    <button
+                        className="panel-close-btn"
+                        onClick={() => setShowCharts(false)}
+                        title="Close charts"
+                    >
+                        ×
+                    </button>
                     <MiniChart
                         data={velocityHistory}
                         color="#00ff88"
@@ -211,6 +248,13 @@ const HUD: React.FC<HUDProps> = ({
 
             {showMissions && (
                 <div className="hud-missions-panel">
+                    <button
+                        className="panel-close-btn"
+                        onClick={() => setShowMissions(false)}
+                        title="Close missions"
+                    >
+                        ×
+                    </button>
                     <MissionProgress
                         distance={distance}
                         velocity={velocity}
@@ -226,12 +270,26 @@ const HUD: React.FC<HUDProps> = ({
 
             {showHelp && (
                 <div className="hud-help-panel">
+                    <button
+                        className="panel-close-btn"
+                        onClick={() => setShowHelp(false)}
+                        title="Close controls"
+                    >
+                        ×
+                    </button>
                     <ControlsHelp />
                 </div>
             )}
 
             {showSettings && (
                 <div className="hud-settings-panel">
+                    <button
+                        className="panel-close-btn"
+                        onClick={() => setShowSettings(false)}
+                        title="Close settings"
+                    >
+                        ×
+                    </button>
                     <SettingsPanel
                         probeSpeedMult={probeSpeedMult}
                         setProbeSpeedMult={setProbeSpeedMult}
