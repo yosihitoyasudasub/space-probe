@@ -39,8 +39,9 @@ const Page = () => {
     const [slingshots, setSlingshots] = useState<number>(0);
     const [distanceFromSun, setDistanceFromSun] = useState<number>(1.0); // Initial: 1 AU (Earth orbit)
 
-    // Mission tracking - completed mission IDs
+    // Mission tracking - completed mission IDs and orbit times
     const [completedMissionIds, setCompletedMissionIds] = useState<Set<string>>(new Set());
+    const [orbitTimes, setOrbitTimes] = useState<Record<string, number>>({});
 
     // Simulation control
     const [isSimulationStarted, setIsSimulationStarted] = useState<boolean>(false);
@@ -96,9 +97,10 @@ const Page = () => {
             setDistance: setDistanceWithHistory,
             setFuel,
             setSlingshots,
-            setDistanceFromSun
+            setDistanceFromSun,
+            setOrbitTimes
         }),
-        [setStatus, setVelocityWithHistory, setDistanceWithHistory, setFuel, setSlingshots, setDistanceFromSun]
+        [setStatus, setVelocityWithHistory, setDistanceWithHistory, setFuel, setSlingshots, setDistanceFromSun, setOrbitTimes]
     );
 
     return (
@@ -129,6 +131,7 @@ const Page = () => {
                 setIsSimulationStarted={setIsSimulationStarted}
                 completedMissionIds={completedMissionIds}
                 onMissionCompleted={handleMissionCompleted}
+                orbitTimes={orbitTimes}
             />
             <CameraControls cameraView={cameraView} setCameraView={setCameraView} />
             <TouchControls />

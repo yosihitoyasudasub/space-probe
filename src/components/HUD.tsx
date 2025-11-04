@@ -30,6 +30,7 @@ interface HUDProps {
     setIsSimulationStarted?: (v: boolean) => void;
     completedMissionIds?: Set<string>;
     onMissionCompleted?: (missionId: string) => void;
+    orbitTimes?: Record<string, number>;
 }
 
 const HUD: React.FC<HUDProps> = ({
@@ -57,6 +58,7 @@ const HUD: React.FC<HUDProps> = ({
     setIsSimulationStarted = () => {},
     completedMissionIds = new Set(),
     onMissionCompleted = () => {},
+    orbitTimes = {},
 }) => {
     const [showCharts, setShowCharts] = useState(false);
     const [showMissions, setShowMissions] = useState(false);
@@ -217,6 +219,7 @@ const HUD: React.FC<HUDProps> = ({
                         distanceFromSun={distanceFromSun}
                         completedMissionIds={completedMissionIds}
                         onMissionCompleted={onMissionCompleted}
+                        orbitTimes={orbitTimes}
                     />
                 </div>
             )}

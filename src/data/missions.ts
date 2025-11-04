@@ -108,26 +108,44 @@ function createFuelEfficiencyMission(
  * @param planetName Planet name (Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune)
  * @param tolerance Tolerance range in AU (default: 0.2 AU)
  * @param category Mission category
+ * @param requiredDuration Required time in seconds to stay in orbit range (default: 10 seconds)
+ * @param requiredVelocity Required insertion velocity in km/s (optional)
+ * @param velocityTolerance Velocity tolerance in km/s (optional, default: 5 km/s)
  */
 function createOrbitReachMission(
     id: string,
     planetName: PlanetName,
     tolerance: number = 0.2,
-    category: MissionCategory = 'beginner'
+    category: MissionCategory = 'beginner',
+    requiredDuration: number = 10,
+    requiredVelocity?: number,
+    velocityTolerance: number = 5
 ): Mission {
     const targetOrbit = PLANET_ORBITS[planetName];
 
+    // Build description based on whether velocity requirement exists
+    let description = `${planetName}の軌道半径（${targetOrbit.toFixed(2)} AU）に`;
+    if (requiredVelocity) {
+        description += `${requiredVelocity} ± ${velocityTolerance} km/sで侵入し、`;
+    }
+    description += `${requiredDuration}秒間滞在`;
+
     return {
         id,
-        title: `${planetName}軌道到達`,
-        description: `${planetName}の軌道半径（${targetOrbit.toFixed(2)} AU）付近に到達`,
+        title: `${planetName}軌道投入`,
+        description,
         category,
         target: targetOrbit,
         unit: 'AU',
         progressField: 'distanceFromSun',
+        requiredDuration,
+        requiredVelocity,
+        velocityTolerance,
         checkCompleted: (stats: GameStats) => {
             const diff = Math.abs(stats.distanceFromSun - targetOrbit);
-            return diff <= tolerance;
+            const inRange = diff <= tolerance;
+            const timeInOrbit = stats.orbitTimes[id] || 0;
+            return inRange && timeInOrbit >= requiredDuration;
         },
     };
 }
@@ -164,7 +182,10 @@ export const INTERMEDIATE_MISSIONS: Mission[] = [
         'reach-jupiter-orbit',
         'Jupiter',
         0.3,
-        'intermediate'
+        'intermediate',
+        10,
+        13,  // Required velocity: 13 km/s (approximately Jupiter's orbital velocity)
+        1    // Velocity tolerance: ±1 km/s
     ),
     createVelocityMission(
         'speed-20',

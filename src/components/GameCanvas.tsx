@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useEffect, useRef } from 'react';
-import { initThreeJS, PHYSICS_SCALE } from '../lib/threeSetup';
+import { initThreeJS, PHYSICS_SCALE, PLANET_ORBITS } from '../lib/threeSetup';
 import { CameraView } from './Controls';
 import { PROBE_MODELS } from '../app/page';
+import { ALL_MISSIONS } from '../data/missions';
 
 // ====================================================================
 // Game Loop Constants
@@ -53,6 +54,7 @@ type HUDSetters = {
     setFuel: React.Dispatch<React.SetStateAction<number>>;
     setSlingshots: React.Dispatch<React.SetStateAction<number>>;
     setDistanceFromSun: (value: number) => void;
+    setOrbitTimes: React.Dispatch<React.SetStateAction<Record<string, number>>>;
 };
 
 interface Props {
@@ -119,6 +121,13 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
         if (!canvas) return;
     const hudUpdateRef = { current: undefined as any } as React.MutableRefObject<any>;
     const trailRef = { current: undefined as any } as React.MutableRefObject<any>;
+
+    // Track orbit times for time-based missions
+    const orbitTimesTracker: Record<string, number> = {};
+
+    // Track whether each mission is currently in range and has met velocity requirement
+    const missionInRangeTracker: Record<string, boolean> = {};
+    const missionVelocityMetTracker: Record<string, boolean> = {};
 
     // Get model path from selected model
     const modelData = PROBE_MODELS.find(m => m.value === selectedModel);
@@ -280,6 +289,67 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
                             // If fuel depleted, thrust is not applied (status will be set in stepSimulation)
                         }
                         stepSimulation(fixedTimeStep);
+
+                        // Update orbit times for time-based missions
+                        // Calculate current distance from sun
+                        const probePos = state.position;
+                        const distanceFromSunSceneUnits = Math.sqrt(
+                            probePos.x * probePos.x +
+                            probePos.y * probePos.y +
+                            probePos.z * probePos.z
+                        );
+                        const distanceFromSunAU = distanceFromSunSceneUnits / PHYSICS_SCALE.AU;
+
+                        // Calculate current velocity in km/s
+                        const speed = state.velocity ? state.velocity.length() : 0;
+                        const speedKmPerSec = speed * PHYSICS_SCALE.VELOCITY_TO_KM_PER_SEC;
+
+                        // Check each time-based orbit mission
+                        ALL_MISSIONS.forEach(mission => {
+                            if (mission.requiredDuration) {
+                                // This is a time-based orbit mission
+                                // Extract target orbit from mission (it's the target field for orbit missions)
+                                const targetOrbit = mission.target;
+
+                                // Calculate tolerance (we need to extract this from the checkCompleted function
+                                // or hard-code it. For simplicity, let's check if we're in range by
+                                // looking at the mission's description or using a default tolerance)
+                                // Looking at createOrbitReachMission, default tolerance is 0.2 AU
+                                const tolerance = 0.2; // Default tolerance
+
+                                const diff = Math.abs(distanceFromSunAU - targetOrbit);
+                                const inRange = diff <= tolerance;
+
+                                // Check velocity condition while in range
+                                let velocityMet = false;
+                                if (inRange) {
+                                    if (mission.requiredVelocity && mission.velocityTolerance !== undefined) {
+                                        // Check if velocity is within required range
+                                        const velocityDiff = Math.abs(speedKmPerSec - mission.requiredVelocity);
+                                        velocityMet = velocityDiff <= mission.velocityTolerance;
+                                    } else {
+                                        // No velocity requirement, automatically pass
+                                        velocityMet = true;
+                                    }
+                                }
+
+                                // Update trackers
+                                missionInRangeTracker[mission.id] = inRange;
+                                missionVelocityMetTracker[mission.id] = velocityMet;
+
+                                if (inRange && velocityMet) {
+                                    // Increment time in orbit only if both range and velocity requirements are met
+                                    const currentTime = orbitTimesTracker[mission.id] || 0;
+                                    // Stop counting when target duration is reached
+                                    if (currentTime < mission.requiredDuration) {
+                                        orbitTimesTracker[mission.id] = Math.min(currentTime + fixedTimeStep, mission.requiredDuration);
+                                    }
+                                } else {
+                                    // Reset time if conditions are not met
+                                    orbitTimesTracker[mission.id] = 0;
+                                }
+                            }
+                        });
                     } catch (e) {
                         // swallow physics errors to keep render loop alive
                         console.error('physics step error', e);
@@ -390,6 +460,9 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
                         );
                         const distanceFromSunAU = distanceFromSunSceneUnits / PHYSICS_SCALE.AU;
                         hudSetters.setDistanceFromSun(distanceFromSunAU);
+
+                        // Update orbit times
+                        hudSetters.setOrbitTimes({ ...orbitTimesTracker });
 
                         hudUpdateRef.current = { lastMs: nowMs, lastVals: { velocity: speedKmPerSec, distance: state.distance, fuel: state.fuel, slingshots: state.slingshots, status: state.status } };
                     }

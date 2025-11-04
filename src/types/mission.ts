@@ -19,6 +19,7 @@ export interface GameStats {
     slingshots: number;         // Number of slingshot maneuvers performed (スイングバイ回数)
     fuel: number;               // Remaining fuel percentage (0-100) (残燃料)
     distanceFromSun: number;    // Current distance from the sun in AU (太陽からの現在距離)
+    orbitTimes: Record<string, number>; // Time spent in orbit range for each mission (seconds)
 }
 
 /**
@@ -38,6 +39,9 @@ export interface Mission {
     unit: string;                                    // Unit of measurement
     progressField: ProgressField;                    // Which GameStats field to show for progress
     checkCompleted: (stats: GameStats) => boolean;   // Function to check if mission is completed
+    requiredDuration?: number;                       // Required duration in seconds for time-based missions (e.g., orbit missions)
+    requiredVelocity?: number;                       // Required velocity in km/s for orbit insertion missions
+    velocityTolerance?: number;                      // Velocity tolerance in km/s (±range)
 }
 
 /**
