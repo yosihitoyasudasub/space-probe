@@ -138,7 +138,7 @@ export const TRAIL_CONSTANTS = {
 export const VISUALIZATION_CONSTANTS = {
     // Planetary orbit lines
     ORBIT_LINE: {
-        SEGMENTS: 128,              // Number of points in orbit circle (balance smoothness vs performance)
+        SEGMENTS: 512,              // Number of points in orbit circle (increased for smoother curves)
         OPACITY: 0.3,               // Orbit line opacity
         LINE_WIDTH: 1               // Line width (note: may not work in all browsers)
     },
@@ -188,7 +188,7 @@ export const CELESTIAL_CONSTANTS = {
     // Probe (spacecraft)
     PROBE: {
         INITIAL_RADIUS_AU: 1.0,                         // Initial orbital radius (astronomical units)
-        DEFAULT_SPEED_MULTIPLIER: 1.05,                 // Speed multiplier for escape trajectory (5% above circular orbit)
+        DEFAULT_SPEED_MULTIPLIER: 1.0,                  // Speed multiplier (1.0 = perfect circular orbit, >1.0 = escape trajectory)
         MIN_VELOCITY_FOR_RUNNING: 1e-3,                 // Minimum velocity to show "Running" status (scene units/s)
         MIN_VELOCITY_FOR_ROTATION: 0.1,                 // Minimum velocity to apply directional rotation (scene units/s)
         ROTATION_SPEED: 0.15,                           // Rotation interpolation speed (slerp factor, 0-1)
@@ -845,18 +845,22 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     for (const pd of solarDefs) {
         const orbitRadius = pd.rAU * AU;
         const segments = VISUALIZATION_CONSTANTS.ORBIT_LINE.SEGMENTS;
-        const points: THREE.Vector3[] = [];
 
-        // Create circle points
-        for (let i = 0; i <= segments; i++) {
-            const theta = (i / segments) * Math.PI * 2;
-            const x = Math.cos(theta) * orbitRadius;
-            const z = Math.sin(theta) * orbitRadius;
-            points.push(new THREE.Vector3(x, 0, z));
-        }
+        // Use EllipseCurve for mathematically perfect circle (ellipse is special case where xRadius = yRadius)
+        const curve = new THREE.EllipseCurve(
+            0, 0,                      // Center (aX, aY)
+            orbitRadius, orbitRadius,  // X radius, Y radius (equal for circle)
+            0, 2 * Math.PI,            // Start angle, end angle (full circle)
+            false,                     // Clockwise
+            0                          // Rotation angle
+        );
+
+        // Generate high-resolution 2D points and convert to 3D space
+        const points2D = curve.getPoints(segments);
+        const points3D = points2D.map(p => new THREE.Vector3(p.x, 0, p.y));
 
         // Create line geometry
-        const orbitGeometry = new THREE.BufferGeometry().setFromPoints(points);
+        const orbitGeometry = new THREE.BufferGeometry().setFromPoints(points3D);
         const orbitMaterial = new THREE.LineBasicMaterial({
             color: pd.color,
             transparent: true,

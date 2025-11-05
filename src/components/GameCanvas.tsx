@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef } from 'react';
-import { initThreeJS, PHYSICS_SCALE, PLANET_ORBITS } from '../lib/threeSetup';
+import { initThreeJS, PHYSICS_SCALE, PLANET_ORBITS, CELESTIAL_CONSTANTS } from '../lib/threeSetup';
 import { CameraView } from './Controls';
 import { PROBE_MODELS } from '../app/page';
 import { ALL_MISSIONS } from '../data/missions';
@@ -71,7 +71,7 @@ interface Props {
     isSimulationStarted?: boolean;
 }
 
-const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravityG = PHYSICS_SCALE.G, starMass = PHYSICS_SCALE.SUN_MASS, cameraView = 'free', gravityGridEnabled = false, setGravityGridEnabled, gridEnabled = false, setGridEnabled, selectedModel = 'space_fighter', isSimulationStarted = false }) => {
+const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = CELESTIAL_CONSTANTS.PROBE.DEFAULT_SPEED_MULTIPLIER, gravityG = PHYSICS_SCALE.G, starMass = PHYSICS_SCALE.SUN_MASS, cameraView = 'free', gravityGridEnabled = false, setGravityGridEnabled, gridEnabled = false, setGridEnabled, selectedModel = 'space_fighter', isSimulationStarted = false }) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const rafRef = useRef<number | null>(null);
     const cameraViewRef = useRef<CameraView>(cameraView);

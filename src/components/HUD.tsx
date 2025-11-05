@@ -4,6 +4,7 @@ import MiniChart from './MiniChart';
 import MissionProgress from './MissionProgress';
 import ControlsHelp from './ControlsHelp';
 import SettingsPanel from './SettingsPanel';
+import { PHYSICS_SCALE, CELESTIAL_CONSTANTS } from '../lib/threeSetup';
 
 interface HUDProps {
     status?: string;
@@ -42,11 +43,11 @@ const HUD: React.FC<HUDProps> = ({
     distanceFromSun = 1.0,
     velocityHistory = [],
     distanceHistory = [],
-    probeSpeedMult = 1.05,
+    probeSpeedMult = CELESTIAL_CONSTANTS.PROBE.DEFAULT_SPEED_MULTIPLIER,
     setProbeSpeedMult = () => {},
-    gravityG = 0.133,
+    gravityG = PHYSICS_SCALE.G,
     setGravityG = () => {},
-    starMass = 333000,
+    starMass = PHYSICS_SCALE.SUN_MASS,
     setStarMass = () => {},
     gravityGridEnabled = false,
     setGravityGridEnabled = () => {},
@@ -130,11 +131,11 @@ const HUD: React.FC<HUDProps> = ({
                 </button>
                 <div className="hud-stats-compact">
                     <span className="stat-compact">
-                        V:<span className="stat-value">{velocity.toFixed(1)}</span>
+                        V:<span className="stat-value">{velocity.toFixed(1)}</span>km/s
                     </span>
                     <span className="stat-separator">|</span>
                     <span className="stat-compact">
-                        D:<span className="stat-value">{distanceFromSun.toFixed(2)}</span>
+                        D:<span className="stat-value">{distanceFromSun.toFixed(2)}</span>AU
                     </span>
                     <span className="stat-separator">|</span>
                     <span className="stat-compact">

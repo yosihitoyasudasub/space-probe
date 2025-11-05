@@ -12,7 +12,7 @@ body {
     font-family: var(--font-primary);
     background: #000;
     overflow: hidden;
-    color: #0f0;
+    color: #ffffff;
 }
 
 #gameCanvas {
@@ -52,7 +52,7 @@ body {
 }
 
 .stat-value {
-    color: #0f0;
+    color: rgb(255, 255, 255);
     font-weight: bold;
 }
 
@@ -127,8 +127,8 @@ body {
 
 .toggle-btn {
     background: rgba(0, 255, 255, 0.1);
-    border: 0px solid #0ff;
-    color: #0ff;
+    border: 0.0px solid #0ff;
+    color: rgb(255, 255, 255);
     padding: 5px 5px;
     border-radius: 5px;
     cursor: pointer;
@@ -553,16 +553,20 @@ body {
 }
 
 .camera-btn {
-    background: rgba(0, 0, 0, 0.7);
-    border: 1px solid #0ff;
-    color: #0ff;
-    padding: 5px 5px;
-    border-radius: 5px;
+    height: 30px;
+    background: rgba(0, 0, 0, 0.1);
+    border: 0.0px solid rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+    padding: 5px 8px;
+    border-radius: 0px;
     cursor: pointer;
     font-size: 14px;
     font-family: var(--font-primary);
     transition: all 0.2s ease;
     white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .camera-btn:hover {
@@ -674,7 +678,7 @@ body {
 .start-button {
     background: linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(0, 255, 0, 0.2));
     border: 3px solid #0ff;
-    color: #0ff;
+    color: #ffffff;
     padding: 30px 60px;
     font-size: 32px;
     font-family: var(--font-primary);
@@ -721,15 +725,15 @@ body {
 }
 
 .touch-btn {
-    width: 40px;
-    height: 40px;
-    border: 1px solid rgba(0, 255, 255, 0.6);
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(5px);
-    color: #0ff;
-    font-size: 16px;
+    width: 30px;
+    height: 30px;
+    border: 0.0px solid rgba(255, 255, 255, 0.25);
+    background: rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(1px);
+    color: #ffffff;
+    font-size: 14px;
     font-weight: bold;
-    border-radius: 5px;
+    border-radius: 0px;
     cursor: pointer;
     user-select: none;
     -webkit-user-select: none;
@@ -758,10 +762,11 @@ body {
 }
 
 .touch-btn-restart {
-    width: 45px;
-    height: 45px;
-    font-size: 18px;
-    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    font-size: 14px;
+    border-radius: 0%;
+    font-weight: normal;
 }
 
 /* Hide touch controls on desktop (screens wider than 768px) */
@@ -794,11 +799,11 @@ body {
 /* ハンバーガーボタン */
 .hamburger-btn {
     background: transparent;
-    border: 1px solid #00ff88;
-    color: #00ff88;
-    font-size: 20px;
+    border: 0.0px solid #00ff88;
+    color: #ffffff;
+    font-size: 16px;
     line-height: 1;
-    padding: 5px 10px;
+    padding: 4px 8px;
     cursor: pointer;
     border-radius: 4px;
     transition: all 0.2s;
@@ -819,7 +824,7 @@ body {
     align-items: center;
     gap: 8px;
     font-size: 13px;
-    color: #00ff88;
+    color: #ffffff;
 }
 
 .stat-compact {
@@ -838,8 +843,8 @@ body {
         font-size: 11px;
     }
     .hamburger-btn {
-        font-size: 18px;
-        padding: 4px 8px;
+        font-size: 14px;
+        padding: 3px 6px;
     }
 }
 
@@ -910,7 +915,7 @@ body {
 .menu-close-btn {
     background: transparent;
     border: none;
-    color: #00ff88;
+    color: #ffffff;
     font-size: 32px;
     line-height: 1;
     cursor: pointer;
@@ -943,7 +948,7 @@ body {
     margin-bottom: 10px;
     background: rgba(0, 255, 136, 0.05);
     border: 1px solid rgba(0, 255, 136, 0.3);
-    color: #00ff88;
+    color: #ffffff;
     font-size: 16px;
     border-radius: 6px;
     cursor: pointer;
@@ -1039,7 +1044,7 @@ body {
     right: 10px;
     background: rgba(0, 0, 0, 0.7);
     border: 1px solid #00ff88;
-    color: #00ff88;
+    color: #ffffff;
     font-size: 24px;
     line-height: 1;
     width: 30px;

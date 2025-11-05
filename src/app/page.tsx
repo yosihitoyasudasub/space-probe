@@ -6,7 +6,7 @@ import HUD from '../components/HUD';
 import Controls, { CameraView } from '../components/Controls';
 import CameraControls from '../components/CameraControls';
 import TouchControls from '../components/TouchControls';
-import { PHYSICS_SCALE } from '../lib/threeSetup';
+import { PHYSICS_SCALE, CELESTIAL_CONSTANTS } from '../lib/threeSetup';
 
 export interface DataPoint {
     time: number;
@@ -52,8 +52,8 @@ const Page = () => {
     const startTimeRef = useRef<number>(Date.now());
 
     // Simulation tuning parameters (editable via Controls)
-    // All default values use PHYSICS_SCALE constants for consistency
-    const [probeSpeedMult, setProbeSpeedMult] = useState<number>(1.05); // 5% above circular orbit velocity
+    // All default values use PHYSICS_SCALE/CELESTIAL_CONSTANTS for consistency
+    const [probeSpeedMult, setProbeSpeedMult] = useState<number>(CELESTIAL_CONSTANTS.PROBE.DEFAULT_SPEED_MULTIPLIER);
     const [gravityG, setGravityG] = useState<number>(PHYSICS_SCALE.G);
     const [starMass, setStarMass] = useState<number>(PHYSICS_SCALE.SUN_MASS);
     const [cameraView, setCameraView] = useState<CameraView>('free');
