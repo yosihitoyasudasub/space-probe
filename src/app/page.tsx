@@ -59,6 +59,8 @@ const Page = () => {
     const [cameraView, setCameraView] = useState<CameraView>('free');
     const [gravityGridEnabled, setGravityGridEnabled] = useState<boolean>(false);
     const [gridEnabled, setGridEnabled] = useState<boolean>(false);
+    const [planetOrbitsEnabled, setPlanetOrbitsEnabled] = useState<boolean>(true);
+    const [predictionEnabled, setPredictionEnabled] = useState<boolean>(true);
     const [selectedModel, setSelectedModel] = useState<string>('space_fighter');
 
     // 履歴データ付きセッター
@@ -105,7 +107,7 @@ const Page = () => {
 
     return (
         <div>
-            <GameCanvas hudSetters={hudSetters} probeSpeedMult={probeSpeedMult} gravityG={gravityG} starMass={starMass} cameraView={cameraView} gravityGridEnabled={gravityGridEnabled} setGravityGridEnabled={setGravityGridEnabled} gridEnabled={gridEnabled} setGridEnabled={setGridEnabled} selectedModel={selectedModel} isSimulationStarted={isSimulationStarted} />
+            <GameCanvas hudSetters={hudSetters} probeSpeedMult={probeSpeedMult} gravityG={gravityG} starMass={starMass} cameraView={cameraView} gravityGridEnabled={gravityGridEnabled} setGravityGridEnabled={setGravityGridEnabled} gridEnabled={gridEnabled} setGridEnabled={setGridEnabled} planetOrbitsEnabled={planetOrbitsEnabled} setPlanetOrbitsEnabled={setPlanetOrbitsEnabled} predictionEnabled={predictionEnabled} setPredictionEnabled={setPredictionEnabled} selectedModel={selectedModel} isSimulationStarted={isSimulationStarted} />
             <HUD
                 status={status}
                 velocity={velocity}
@@ -125,6 +127,10 @@ const Page = () => {
                 setGravityGridEnabled={setGravityGridEnabled}
                 gridEnabled={gridEnabled}
                 setGridEnabled={setGridEnabled}
+                planetOrbitsEnabled={planetOrbitsEnabled}
+                setPlanetOrbitsEnabled={setPlanetOrbitsEnabled}
+                predictionEnabled={predictionEnabled}
+                setPredictionEnabled={setPredictionEnabled}
                 selectedModel={selectedModel}
                 setSelectedModel={setSelectedModel}
                 isSimulationStarted={isSimulationStarted}

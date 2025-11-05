@@ -11,6 +11,10 @@ interface SettingsPanelProps {
     setGravityGridEnabled?: (v: boolean) => void;
     gridEnabled?: boolean;
     setGridEnabled?: (v: boolean) => void;
+    planetOrbitsEnabled?: boolean;
+    setPlanetOrbitsEnabled?: (v: boolean) => void;
+    predictionEnabled?: boolean;
+    setPredictionEnabled?: (v: boolean) => void;
 }
 
 const SettingsPanel: React.FC<SettingsPanelProps> = ({
@@ -24,6 +28,10 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
     setGravityGridEnabled = () => {},
     gridEnabled = false,
     setGridEnabled = () => {},
+    planetOrbitsEnabled = true,
+    setPlanetOrbitsEnabled = () => {},
+    predictionEnabled = true,
+    setPredictionEnabled = () => {},
 }) => {
     return (
         <div className="settings-panel">
@@ -79,6 +87,26 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                             onChange={(e) => setGridEnabled(e.target.checked)}
                         />
                         <span>Show flat grid</span>
+                    </label>
+                </div>
+                <div className="setting-item">
+                    <label className="gravity-grid-checkbox">
+                        <input
+                            type="checkbox"
+                            checked={planetOrbitsEnabled}
+                            onChange={(e) => setPlanetOrbitsEnabled(e.target.checked)}
+                        />
+                        <span>Show planet orbits</span>
+                    </label>
+                </div>
+                <div className="setting-item">
+                    <label className="gravity-grid-checkbox">
+                        <input
+                            type="checkbox"
+                            checked={predictionEnabled}
+                            onChange={(e) => setPredictionEnabled(e.target.checked)}
+                        />
+                        <span>Show prediction trajectory</span>
                     </label>
                 </div>
             </div>

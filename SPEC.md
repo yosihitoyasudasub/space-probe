@@ -2468,6 +2468,289 @@ interface Mission {
 
 ---
 
+### 3.17 惑星軌道表示制御
+
+惑星の公転軌道線の表示/非表示を切り替える機能。Settings画面から任意に惑星軌道の表示を制御できます。
+
+#### 3.17.1 概要
+
+太陽系の構造を視覚的に理解するために表示されている惑星軌道線を、必要に応じて非表示にできる機能。シーンをすっきりさせたい場合や、探査機の軌跡のみに集中したい場合に有用。
+
+#### 3.17.2 機能仕様
+
+**基本動作:**
+- Settingsパネル内のチェックボックスで制御
+- デフォルトは**表示ON**（チェック済み）
+- チェックを外すと全惑星の軌道線が即座に非表示
+- 設定変更は即座に反映（リスタート不要）
+
+**制御対象:**
+- 全惑星の円形軌道線（水星、金星、地球、火星、木星、土星、天王星、海王星）
+- 各惑星の軌道線の色と透明度は変更されず、visible属性のみを制御
+
+#### 3.17.3 UI配置
+
+**場所:** Settings パネル（ハンバーガーメニュー → Settings）
+
+**表示順:**
+```
+Settings Panel
+├─ Probe speed multiplier [スライダー]
+├─ Gravity G [スライダー]
+├─ Star mass [スライダー]
+├─ ☑ Show gravity well grid
+├─ ☑ Show flat grid
+└─ ☑ Show planet orbits  ← 新規追加
+```
+
+#### 3.17.4 実装詳細
+
+**状態管理:**
+- `planetOrbitsEnabled: boolean` (デフォルト: `true`)
+- `page.tsx` でstateを管理
+- `GameCanvas.tsx` → `threeSetup.ts` へpropsとして伝達
+
+**ファイル変更:**
+
+1. **`src/app/page.tsx`**
+```typescript
+const [planetOrbitsEnabled, setPlanetOrbitsEnabled] = useState<boolean>(true);
+```
+
+2. **`src/components/SettingsPanel.tsx`**
+```typescript
+<label className="gravity-grid-checkbox">
+    <input
+        type="checkbox"
+        checked={planetOrbitsEnabled}
+        onChange={(e) => setPlanetOrbitsEnabled(e.target.checked)}
+    />
+    <span>Show planet orbits</span>
+</label>
+```
+
+3. **`src/lib/threeSetup.ts`**
+```typescript
+// 軌道線作成時に初期表示状態を設定
+const orbitLine = new THREE.Line(orbitGeometry, orbitMaterial);
+orbitLine.visible = options?.planetOrbitsEnabled ?? true;
+scene.add(orbitLine);
+orbitLines.push(orbitLine);
+
+// 表示/非表示を切り替える関数
+function updatePlanetOrbits(enabled: boolean) {
+    orbitLines.forEach(line => {
+        line.visible = enabled;
+    });
+}
+```
+
+4. **`src/components/GameCanvas.tsx`**
+```typescript
+// useEffectで状態変化を監視
+useEffect(() => {
+    if (planetOrbitsRef.current && planetOrbitsRef.current.updatePlanetOrbits) {
+        planetOrbitsRef.current.updatePlanetOrbits(planetOrbitsEnabled);
+    }
+}, [planetOrbitsEnabled]);
+```
+
+#### 3.17.5 技術的特徴
+
+**パフォーマンス:**
+- 軌道線の描画/非描画のみでジオメトリは保持
+- オーバーヘッドはほぼゼロ
+- リアルタイム切り替え可能
+
+**他機能との独立性:**
+- 重力井戸グリッド、平面グリッドと独立
+- 探査機の軌跡表示とは別管理
+- カメラ視点とは無関係に動作
+
+#### 3.17.6 ユースケース
+
+1. **初心者向け:** 軌道線を表示して太陽系の構造を把握
+2. **上級者向け:** 軌道線を非表示にしてシンプルなビューで探査
+3. **スクリーンショット撮影:** 用途に応じて軌道線の有無を選択
+4. **デバッグ/開発:** 軌道線の表示状態を確認しながら調整
+
+---
+
+### 3.18 予測軌道表示制御
+
+探査機の将来の軌道予測（オレンジ色の破線）とスイングバイ成功確率インジケーターの表示/非表示を切り替える機能。Settings画面から任意に予測軌道の表示を制御できます。
+
+#### 3.18.1 概要
+
+探査機の現在の速度と重力場から計算された将来15秒間の軌道を視覚化する予測線を、必要に応じて非表示にできる機能。予測計算は比較的重い処理のため、非表示時は計算自体もスキップされ、パフォーマンスが向上します。
+
+#### 3.18.2 機能仕様
+
+**基本動作:**
+- Settingsパネル内のチェックボックスで制御
+- デフォルトは**表示ON**（チェック済み）
+- チェックを外すと予測軌道線とインジケーターが即座に非表示
+- 設定変更は即座に反映（リスタート不要）
+- 非表示時は予測計算をスキップ（CPU負荷軽減）
+
+**制御対象:**
+- 予測軌道線（オレンジ色の破線、15秒先までの予測）
+- スイングバイ成功確率インジケーター（惑星近くのテキストスプライト）
+
+**パフォーマンス最適化:**
+- 非表示時は`updatePredictedTrajectory()`関数が早期リターン
+- 重い計算（150ステップの物理シミュレーション）をスキップ
+- フレームレートの向上
+
+#### 3.18.3 UI配置
+
+**場所:** Settings パネル（ハンバーガーメニュー → Settings）
+
+**表示順:**
+```
+Settings Panel
+├─ Probe speed multiplier [スライダー]
+├─ Gravity G [スライダー]
+├─ Star mass [スライダー]
+├─ ☑ Show gravity well grid
+├─ ☑ Show flat grid
+├─ ☑ Show planet orbits
+└─ ☑ Show prediction trajectory  ← 新規追加
+```
+
+#### 3.18.4 実装詳細
+
+**状態管理:**
+- `predictionEnabled: boolean` (デフォルト: `true`)
+- `page.tsx` でstateを管理
+- `GameCanvas.tsx` → `threeSetup.ts` へpropsとして伝達
+
+**ファイル変更:**
+
+1. **`src/app/page.tsx`**
+```typescript
+const [predictionEnabled, setPredictionEnabled] = useState<boolean>(true);
+```
+
+2. **`src/components/SettingsPanel.tsx`**
+```typescript
+<label className="gravity-grid-checkbox">
+    <input
+        type="checkbox"
+        checked={predictionEnabled}
+        onChange={(e) => setPredictionEnabled(e.target.checked)}
+    />
+    <span>Show prediction trajectory</span>
+</label>
+```
+
+3. **`src/lib/threeSetup.ts`**
+```typescript
+// 初期状態を保持する変数
+let predictionEnabledState = options?.predictionEnabled ?? true;
+
+// 予測軌道線の初期表示状態を設定
+const predictionLine = new THREE.Line(predictionGeometry, predictionMaterial);
+predictionLine.visible = options?.predictionEnabled ?? true;
+scene.add(predictionLine);
+
+// 予測計算関数（無効時は早期リターン）
+function updatePredictedTrajectory() {
+    // 予測が無効なら計算をスキップ（パフォーマンス向上）
+    if (!predictionEnabledState) return;
+
+    // 重い予測計算...
+    // 150ステップの物理シミュレーション
+}
+
+// 表示/非表示を切り替える関数
+function updatePrediction(enabled: boolean) {
+    predictionEnabledState = enabled;  // 内部状態を更新
+    predictionLine.visible = enabled;
+    // Success indicators も連動して切り替え
+    successIndicators.forEach(indicator => {
+        indicator.mesh.visible = enabled;
+    });
+}
+```
+
+4. **`src/components/GameCanvas.tsx`**
+```typescript
+// useEffectで状態変化を監視
+const predictionRef = useRef<any>(null);
+useEffect(() => {
+    if (predictionRef.current && predictionRef.current.updatePrediction) {
+        predictionRef.current.updatePrediction(predictionEnabled);
+    }
+}, [predictionEnabled]);
+```
+
+#### 3.18.5 技術的特徴
+
+**パフォーマンス最適化:**
+- 非表示時は予測計算を完全にスキップ（早期リターン）
+- 150ステップの物理シミュレーション（`stepBodies`呼び出し）を回避
+- CPU使用率が大幅に削減
+- フレームレートの安定化
+
+**状態管理の工夫:**
+- `predictionEnabledState`変数でユーザー設定を保持
+- `updatePredictedTrajectory()`内で強制的に`visible = true`しない
+- ユーザー設定が常に尊重される
+
+**他機能との独立性:**
+- 重力井戸グリッド、平面グリッド、惑星軌道とは独立
+- 探査機の軌跡（トレイル）表示とは別管理
+- カメラ視点とは無関係に動作
+
+#### 3.18.6 予測軌道の技術仕様
+
+**予測アルゴリズム:**
+- 現在の物理状態（全天体の位置・速度）をクローン
+- 15秒先まで150ステップで未来をシミュレーション
+- 0.1秒ごとに探査機の位置を記録
+- Catmull-Rom補間なし（折れ線で表示）
+
+**計算コスト:**
+- 更新頻度: 500ミリ秒ごと（2 FPS）
+- 1回の計算: 150ステップのN体シミュレーション
+- スイングバイ検出も実行（成功確率の計算）
+
+**表示スタイル:**
+```typescript
+PREDICTION: {
+    TIME_SECONDS: 15,           // 15秒先まで予測
+    STEPS: 150,                 // 150ステップ（0.1秒間隔）
+    UPDATE_INTERVAL_MS: 500,    // 0.5秒ごとに更新
+    DASH_SIZE: 3,               // 破線の長さ
+    GAP_SIZE: 2,                // 破線の隙間
+    COLOR: 0xffaa00,            // オレンジ色
+    OPACITY: 0.6                // 透明度60%
+}
+```
+
+#### 3.18.7 ユースケース
+
+1. **初心者向け:** 予測を表示して軌道計画を視覚的に理解
+2. **上級者向け:** 予測を非表示にして直感的な操作に集中
+3. **パフォーマンス重視:** 低スペック端末で予測をOFFにして軽量化
+4. **スクリーンショット撮影:** 予測線なしのクリーンな画面を撮影
+5. **デバッグ/開発:** 予測アルゴリズムの動作確認
+
+#### 3.18.8 既知の制約事項
+
+**予測精度:**
+- 推進操作（矢印キー入力）は予測に含まれない
+- プレイヤーの操作で実際の軌道は変化する
+- あくまで「このまま進んだ場合」の参考情報
+
+**計算コスト:**
+- 予測は比較的重い処理（150ステップのシミュレーション）
+- 低スペック端末では若干のフレームレート低下の可能性
+- 非表示にすることで完全に回避可能
+
+---
+
 ## 4. 物理エンジン設計
 
 ### 4.1 数学モデル

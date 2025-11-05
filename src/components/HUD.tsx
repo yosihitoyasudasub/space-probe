@@ -25,6 +25,10 @@ interface HUDProps {
     setGravityGridEnabled?: (v: boolean) => void;
     gridEnabled?: boolean;
     setGridEnabled?: (v: boolean) => void;
+    planetOrbitsEnabled?: boolean;
+    setPlanetOrbitsEnabled?: (v: boolean) => void;
+    predictionEnabled?: boolean;
+    setPredictionEnabled?: (v: boolean) => void;
     selectedModel?: string;
     setSelectedModel?: (v: string) => void;
     isSimulationStarted?: boolean;
@@ -53,6 +57,10 @@ const HUD: React.FC<HUDProps> = ({
     setGravityGridEnabled = () => {},
     gridEnabled = true,
     setGridEnabled = () => {},
+    planetOrbitsEnabled = true,
+    setPlanetOrbitsEnabled = () => {},
+    predictionEnabled = true,
+    setPredictionEnabled = () => {},
     selectedModel = 'space_fighter',
     setSelectedModel = () => {},
     isSimulationStarted = false,
@@ -302,6 +310,10 @@ const HUD: React.FC<HUDProps> = ({
                         setGravityGridEnabled={setGravityGridEnabled}
                         gridEnabled={gridEnabled}
                         setGridEnabled={setGridEnabled}
+                        planetOrbitsEnabled={planetOrbitsEnabled}
+                        setPlanetOrbitsEnabled={setPlanetOrbitsEnabled}
+                        predictionEnabled={predictionEnabled}
+                        setPredictionEnabled={setPredictionEnabled}
                     />
                 </div>
             )}

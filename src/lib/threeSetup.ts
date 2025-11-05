@@ -128,10 +128,11 @@ export const STAR_FIELD_CONSTANTS = {
 
 export const TRAIL_CONSTANTS = {
     // Probe trajectory trail visualization
-    MAX_POINTS: 2000,               // Maximum trail points (limits memory usage)
+    MAX_POINTS: 200,               // Maximum trail points (limits memory usage)
                                     // At 100ms per point, this is 200 seconds of trail
     UPDATE_INTERVAL_MS: 100,        // Milliseconds between trail point additions
     COLOR: 0x00ff88,                // Trail color (cyan-green)
+    OPACITY: 0.0,                   // Trail opacity (0.0 = fully transparent, 1.0 = opaque)
     CURVE_TENSION: 0.5              // Catmull-Rom curve tension (0 = loose, 1 = tight)
 } as const;
 
@@ -148,7 +149,7 @@ export const VISUALIZATION_CONSTANTS = {
         TUBE_THICKNESS_RATIO: 0.08, // Tube thickness as ratio of radius (8% of encounter radius)
         RADIAL_SEGMENTS: 8,         // Number of radial segments (lower for performance)
         TUBULAR_SEGMENTS: 64,       // Number of tubular segments (higher for smoothness)
-        COLOR: 0x00ff00,            // Zone color (green)
+        COLOR: 0x808080,            // Zone color
         OPACITY: 0.25               // Zone opacity
     },
 
@@ -436,7 +437,7 @@ function loadGLBProbe(
     );
 }
 
-export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMult?: number; G?: number; starMass?: number; gravityGridEnabled?: boolean; gridEnabled?: boolean; probeModelPath?: string | null; orientation?: { autoAlign?: boolean; rotationY?: number; invertDirection?: boolean } }) {
+export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMult?: number; G?: number; starMass?: number; gravityGridEnabled?: boolean; gridEnabled?: boolean; planetOrbitsEnabled?: boolean; predictionEnabled?: boolean; probeModelPath?: string | null; orientation?: { autoAlign?: boolean; rotationY?: number; invertDirection?: boolean } }) {
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(
         CAMERA_CONSTANTS.FOV_DEGREES,
@@ -723,7 +724,11 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     // Trail (orbit path) - sample points stored as Vector3 and rendered smooth via Catmull-Rom
     const trailPoints: THREE.Vector3[] = [];
     const trailGeometry = new THREE.BufferGeometry();
-    const trailMaterial = new THREE.LineBasicMaterial({ color: TRAIL_CONSTANTS.COLOR });
+    const trailMaterial = new THREE.LineBasicMaterial({
+        color: TRAIL_CONSTANTS.COLOR,
+        transparent: true,
+        opacity: TRAIL_CONSTANTS.OPACITY
+    });
     const trailLine = new THREE.Line(trailGeometry, trailMaterial);
     scene.add(trailLine);
 
@@ -869,6 +874,7 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
         });
 
         const orbitLine = new THREE.Line(orbitGeometry, orbitMaterial);
+        orbitLine.visible = options?.planetOrbitsEnabled ?? true;
         scene.add(orbitLine);
         orbitLines.push(orbitLine);
     }
@@ -888,6 +894,7 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
         opacity: VISUALIZATION_CONSTANTS.PREDICTION.OPACITY
     });
     const predictionLine = new THREE.Line(predictionGeometry, predictionMaterial);
+    predictionLine.visible = options?.predictionEnabled ?? true;
     scene.add(predictionLine);
 
     // Success prediction indicators (text sprites near planets)
@@ -921,8 +928,12 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
 
     let lastPredictionUpdate = 0;
     const predictionUpdateInterval = VISUALIZATION_CONSTANTS.PREDICTION.UPDATE_INTERVAL_MS;
+    let predictionEnabledState = options?.predictionEnabled ?? true;
 
     function updatePredictedTrajectory() {
+        // Early return if prediction is disabled
+        if (!predictionEnabledState) return;
+
         const now = performance.now();
         if (now - lastPredictionUpdate < predictionUpdateInterval) return;
         lastPredictionUpdate = now;
@@ -990,9 +1001,7 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
             predictionGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
             predictionGeometry.computeBoundingSphere();
             predictionLine.computeLineDistances(); // Required for dashed lines
-            predictionLine.visible = true;
-        } else {
-            predictionLine.visible = false;
+            // Don't override user's visibility setting
         }
 
         // Update success indicators
@@ -1275,8 +1284,18 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     // ====================================================================
     // Gravity Well Grid Update Function
     // ====================================================================
+    // Update throttling: Only update every 100ms instead of every frame (60fps)
+    // This reduces CPU load from ~970万 calculations/sec to ~160万 calculations/sec (83% reduction)
+    let lastGravityUpdate = 0;
+    const GRAVITY_UPDATE_INTERVAL_MS = 100;  // Update every 100ms (10 times per second)
+
     function updateGravityWellGrid() {
         if (!gravityWellMesh.visible) return;
+
+        // Throttle updates to reduce CPU load
+        const now = performance.now();
+        if (now - lastGravityUpdate < GRAVITY_UPDATE_INTERVAL_MS) return;
+        lastGravityUpdate = now;
 
         const positions = gravityWellGeometry.attributes.position.array as Float32Array;
         const gVal = options?.G ?? DEFAULT_G;
@@ -1346,6 +1365,8 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     function updateGravityGrid(enabled: boolean) {
         gravityWellMesh.visible = enabled;
         if (enabled) {
+            // Force immediate update when enabling by resetting the timestamp
+            lastGravityUpdate = 0;
             updateGravityWellGrid();
         }
     }
@@ -1353,6 +1374,23 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     // Toggle flat grid visibility
     function updateGrid(enabled: boolean) {
         grid.visible = enabled;
+    }
+
+    // Toggle planet orbits visibility
+    function updatePlanetOrbits(enabled: boolean) {
+        orbitLines.forEach(line => {
+            line.visible = enabled;
+        });
+    }
+
+    // Toggle prediction trajectory visibility
+    function updatePrediction(enabled: boolean) {
+        predictionEnabledState = enabled;
+        predictionLine.visible = enabled;
+        // Also toggle success indicators
+        successIndicators.forEach(indicator => {
+            indicator.mesh.visible = enabled;
+        });
     }
 
     function dispose() {
@@ -1421,7 +1459,7 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
         }
     }
 
-    return { scene, camera, renderer, composer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid, updateGrid, switchProbeModel };
+    return { scene, camera, renderer, composer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid, updateGrid, updatePlanetOrbits, updatePrediction, switchProbeModel };
 }
 
 // small helper to allow external callers to apply delta-v to the probe

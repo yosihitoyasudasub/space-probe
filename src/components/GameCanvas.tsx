@@ -67,11 +67,15 @@ interface Props {
     setGravityGridEnabled?: (v: boolean) => void;
     gridEnabled?: boolean;
     setGridEnabled?: (v: boolean) => void;
+    planetOrbitsEnabled?: boolean;
+    setPlanetOrbitsEnabled?: (v: boolean) => void;
+    predictionEnabled?: boolean;
+    setPredictionEnabled?: (v: boolean) => void;
     selectedModel?: string;
     isSimulationStarted?: boolean;
 }
 
-const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = CELESTIAL_CONSTANTS.PROBE.DEFAULT_SPEED_MULTIPLIER, gravityG = PHYSICS_SCALE.G, starMass = PHYSICS_SCALE.SUN_MASS, cameraView = 'free', gravityGridEnabled = false, setGravityGridEnabled, gridEnabled = false, setGridEnabled, selectedModel = 'space_fighter', isSimulationStarted = false }) => {
+const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = CELESTIAL_CONSTANTS.PROBE.DEFAULT_SPEED_MULTIPLIER, gravityG = PHYSICS_SCALE.G, starMass = PHYSICS_SCALE.SUN_MASS, cameraView = 'free', gravityGridEnabled = false, setGravityGridEnabled, gridEnabled = false, setGridEnabled, planetOrbitsEnabled = true, setPlanetOrbitsEnabled, predictionEnabled = true, setPredictionEnabled, selectedModel = 'space_fighter', isSimulationStarted = false }) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const rafRef = useRef<number | null>(null);
     const cameraViewRef = useRef<CameraView>(cameraView);
@@ -102,6 +106,22 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = CELESTIAL_CO
             gridRef.current.updateGrid(gridEnabled);
         }
     }, [gridEnabled]);
+
+    // Update planet orbits when planetOrbitsEnabled changes
+    const planetOrbitsRef = useRef<any>(null);
+    useEffect(() => {
+        if (planetOrbitsRef.current && planetOrbitsRef.current.updatePlanetOrbits) {
+            planetOrbitsRef.current.updatePlanetOrbits(planetOrbitsEnabled);
+        }
+    }, [planetOrbitsEnabled]);
+
+    // Update prediction trajectory when predictionEnabled changes
+    const predictionRef = useRef<any>(null);
+    useEffect(() => {
+        if (predictionRef.current && predictionRef.current.updatePrediction) {
+            predictionRef.current.updatePrediction(predictionEnabled);
+        }
+    }, [predictionEnabled]);
 
     // Store switchProbeModel function
     const switchProbeModelRef = useRef<any>(null);
@@ -135,10 +155,12 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = CELESTIAL_CO
     const orientation = (modelData as any)?.orientation;
 
     // pass simulation tuning options to initThreeJS
-    let threeObj: any = (initThreeJS as any)(canvas, { probeSpeedMult, G: gravityG, starMass, gravityGridEnabled, gridEnabled, probeModelPath, orientation });
-    let { scene, camera, renderer, composer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid, updateGrid, switchProbeModel } = threeObj;
+    let threeObj: any = (initThreeJS as any)(canvas, { probeSpeedMult, G: gravityG, starMass, gravityGridEnabled, gridEnabled, planetOrbitsEnabled, predictionEnabled, probeModelPath, orientation });
+    let { scene, camera, renderer, composer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid, updateGrid, updatePlanetOrbits, updatePrediction, switchProbeModel } = threeObj;
     gravityGridRef.current = { updateGravityGrid };
     gridRef.current = { updateGrid };
+    planetOrbitsRef.current = { updatePlanetOrbits };
+    predictionRef.current = { updatePrediction };
     switchProbeModelRef.current = { switchProbeModel };
 
     // input state
@@ -158,12 +180,14 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = CELESTIAL_CO
         // Reset grid states to hidden
         if (setGravityGridEnabled) setGravityGridEnabled(false);
         if (setGridEnabled) setGridEnabled(false);
-        // Initialize with grids hidden
-        threeObj = (initThreeJS as any)(canvas, { probeSpeedMult, G: gravityG, starMass, gravityGridEnabled: false, gridEnabled: false, probeModelPath, orientation });
-        ({ scene, camera, renderer, composer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid, updateGrid, switchProbeModel } = threeObj);
+        // Initialize with grids hidden, keep planet orbits and prediction as user configured
+        threeObj = (initThreeJS as any)(canvas, { probeSpeedMult, G: gravityG, starMass, gravityGridEnabled: false, gridEnabled: false, planetOrbitsEnabled, predictionEnabled, probeModelPath, orientation });
+        ({ scene, camera, renderer, composer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid, updateGrid, updatePlanetOrbits, updatePrediction, switchProbeModel } = threeObj);
         // Update refs after restart
         gravityGridRef.current = { updateGravityGrid };
         gridRef.current = { updateGrid };
+        planetOrbitsRef.current = { updatePlanetOrbits };
+        predictionRef.current = { updatePrediction };
         switchProbeModelRef.current = { switchProbeModel };
         // Restart animation loop
         lastTime = performance.now() / 1000;
