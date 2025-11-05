@@ -514,7 +514,7 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
 
     // Create a list of bodies: central star, planets, probe
     const bodies: Body[] = [];
-    const planetMeshes: { id: string; mesh: THREE.Mesh }[] = [];
+    const planetMeshes: { id: string; mesh: THREE.Mesh; rotationSpeed: number }[] = [];
 
     // central star at origin (can be overridden via options)
     const starMass = options?.starMass ?? PHYSICS_SCALE.SUN_MASS;
