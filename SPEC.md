@@ -2820,6 +2820,210 @@ PREDICTION: {
 - 低スペック端末では若干のフレームレート低下の可能性
 - 非表示にすることで完全に回避可能
 
+### 3.19 惑星の視覚化強化（テクスチャ・自転・地軸の傾き）
+
+惑星の外観と動きをよりリアルに表現するため、テクスチャマッピング、自転アニメーション、地軸の傾きを実装しています。これにより太陽系の天体がより実在感のある表示になります。
+
+#### 3.19.1 概要
+
+**実装内容:**
+- 地球にリアルなテクスチャを適用
+- 全惑星の自転アニメーション（個別速度設定）
+- 実測データに基づく地軸の傾き
+- 金星の逆回転、木星・土星の高速回転の再現
+
+**ファイル構成:**
+```
+public/
+└── textures/
+    └── earth.jpg         # 地球のテクスチャ画像
+```
+
+#### 3.19.2 惑星テクスチャ
+
+**実装箇所:** `src/lib/threeSetup.ts:555-570`
+
+**地球のテクスチャ適用:**
+```typescript
+const textureLoader = new THREE.TextureLoader();
+
+for (const pd of solarDefs) {
+    let mat: THREE.MeshStandardMaterial;
+    if (pd.id === 'Earth') {
+        const earthTexture = textureLoader.load('/textures/earth.jpg');
+        mat = new THREE.MeshStandardMaterial({ map: earthTexture });
+    } else {
+        mat = new THREE.MeshStandardMaterial({ color: pd.color });
+    }
+    // ...
+}
+```
+
+**現在の実装状態:**
+- **地球**: リアルテクスチャ（`/textures/earth.jpg`）
+- **その他の惑星**: 単色マテリアル（従来通り）
+
+**拡張性:**
+- 他の惑星のテクスチャも同様の方法で追加可能
+- テクスチャファイルを`public/textures/`に配置し、条件分岐を追加するだけ
+
+#### 3.19.3 地軸の傾き（Axial Tilt）
+
+**実装箇所:** `src/lib/threeSetup.ts:545-553`
+
+**各惑星の地軸傾斜角:**
+```typescript
+const solarDefs = [
+    { id: 'Mercury', axialTilt: 0.034 * Math.PI / 180 },    // 0.034° (ほぼ垂直)
+    { id: 'Venus',   axialTilt: 177.4 * Math.PI / 180 },    // 177.4° (ほぼ逆さま)
+    { id: 'Earth',   axialTilt: 23.5 * Math.PI / 180 },     // 23.5° (季節の原因)
+    { id: 'Mars',    axialTilt: 25.2 * Math.PI / 180 },     // 25.2° (地球に似ている)
+    { id: 'Jupiter', axialTilt: 3.1 * Math.PI / 180 },      // 3.1° (ほぼ垂直)
+    { id: 'Saturn',  axialTilt: 26.7 * Math.PI / 180 },     // 26.7° (顕著な傾き)
+    { id: 'Uranus',  axialTilt: 97.8 * Math.PI / 180 },     // 97.8° (横倒し！)
+    { id: 'Neptune', axialTilt: 28.3 * Math.PI / 180 },     // 28.3° (中程度の傾き)
+];
+```
+
+**適用方法:**
+```typescript
+mesh.rotation.z = pd.axialTilt;  // Z軸回転で傾きを適用
+```
+
+**特徴的な惑星:**
+| 惑星 | 傾き | 特徴 |
+|------|------|------|
+| Mercury | 0.034° | ほぼ垂直（最も小さい） |
+| Venus | 177.4° | ほぼ逆さま（逆回転の一因） |
+| **Earth** | **23.5°** | **季節が生まれる原因** |
+| Mars | 25.2° | 地球に類似（火星にも季節がある） |
+| **Uranus** | **97.8°** | **横倒し（最も極端）** |
+
+#### 3.19.4 惑星の自転速度
+
+**実装箇所:**
+- 定義: `src/lib/threeSetup.ts:545-553`
+- アニメーション: `src/components/GameCanvas.tsx:499-511`
+
+**各惑星の自転速度（ラジアン/フレーム）:**
+```typescript
+const solarDefs = [
+    { id: 'Mercury', rotationSpeed: 0.005 },     // 非常に遅い（58.6日周期）
+    { id: 'Venus',   rotationSpeed: -0.003 },    // 逆回転（243日周期、マイナス値）
+    { id: 'Earth',   rotationSpeed: 0.01 },      // 標準（24時間周期）
+    { id: 'Mars',    rotationSpeed: 0.01 },      // 地球と同じ（24.6時間周期）
+    { id: 'Jupiter', rotationSpeed: 0.02 },      // 高速（9.9時間周期）
+    { id: 'Saturn',  rotationSpeed: 0.018 },     // 高速（10.7時間周期）
+    { id: 'Uranus',  rotationSpeed: 0.012 },     // 中速（17.2時間周期）
+    { id: 'Neptune', rotationSpeed: 0.013 },     // 中速（16時間周期）
+];
+```
+
+**自転速度の比較:**
+| 惑星 | 速度 | 視覚的な回転速度 | 実際の周期 |
+|------|------|----------------|-----------|
+| Mercury | 0.005 | 遅い | 58.6日 |
+| **Venus** | **-0.003** | **逆回転（遅い）** | **243日** |
+| Earth | 0.01 | 標準 | 24時間 |
+| Mars | 0.01 | 標準 | 24.6時間 |
+| **Jupiter** | **0.02** | **最速** | **9.9時間** |
+| **Saturn** | **0.018** | **高速** | **10.7時間** |
+| Uranus | 0.012 | 中速 | 17.2時間 |
+| Neptune | 0.013 | 中速 | 16時間 |
+
+**アニメーションループ:**
+```typescript
+// GameCanvas.tsx:499-511
+planetMeshes.forEach((pm: any) => {
+    if (pm.mesh && pm.rotationSpeed !== undefined) {
+        pm.mesh.rotation.y += pm.rotationSpeed;  // Y軸周りの回転
+    }
+});
+```
+
+#### 3.19.5 特徴的な天体の動き
+
+**金星（Venus）:**
+- 逆回転（`rotationSpeed: -0.003`）
+- 地軸がほぼ逆さま（177.4°）
+- 太陽系で唯一の時計回り自転
+
+**天王星（Uranus）:**
+- 横倒し（97.8°の傾き）
+- 自転軸がほぼ公転面に沿っている
+- 「転がるように」公転する
+
+**木星・土星（Gas Giants）:**
+- 高速回転（0.018-0.02 rad/frame）
+- 実際にも太陽系で最も速く自転する惑星
+- ガス巨星の特徴を再現
+
+#### 3.19.6 データの管理
+
+**一元管理:**
+全ての惑星データは`threeSetup.ts`の`solarDefs`配列で管理されています。
+
+```typescript
+const solarDefs = [
+    {
+        id: 'Earth',
+        rAU: 1.00,              // 軌道半径
+        radius: 5.5,            // 視覚的サイズ
+        color: 0x3366ff,        // 色
+        phase: 1.0,             // 初期位相
+        mass: 1.0,              // 質量
+        axialTilt: 23.5 * Math.PI / 180,   // 地軸の傾き
+        rotationSpeed: 0.01                 // 自転速度
+    },
+    // ... 他の惑星
+];
+```
+
+**メリット:**
+- 1箇所で全データを管理
+- 天文データに基づく正確な値
+- 拡張性が高い（新しい惑星の追加が容易）
+- コメントで実際の値を併記
+
+#### 3.19.7 パフォーマンス
+
+**計算負荷:**
+- 自転アニメーション: 軽量（各惑星で単純な加算のみ）
+- テクスチャロード: 初期化時のみ（非同期）
+- 地軸の傾き: 初期化時のみ（静的）
+
+**最適化:**
+- テクスチャは`TextureLoader`で1回だけ読み込み
+- 自転計算は毎フレーム実行されるが、演算負荷は無視できるレベル
+- 60 FPS維持に影響なし
+
+#### 3.19.8 今後の拡張案
+
+**他の惑星のテクスチャ追加:**
+```typescript
+// 火星、木星などのテクスチャを追加する場合
+if (pd.id === 'Earth') {
+    mat = new THREE.MeshStandardMaterial({ map: earthTexture });
+} else if (pd.id === 'Mars') {
+    const marsTexture = textureLoader.load('/textures/mars.jpg');
+    mat = new THREE.MeshStandardMaterial({ map: marsTexture });
+} else if (pd.id === 'Jupiter') {
+    const jupiterTexture = textureLoader.load('/textures/jupiter.jpg');
+    mat = new THREE.MeshStandardMaterial({ map: jupiterTexture });
+}
+// ...
+```
+
+**推奨テクスチャソース:**
+- **Solar System Scope**: https://www.solarsystemscope.com/textures/
+- **NASA Visible Earth**: 公式の惑星画像
+- 解像度: 2K（2048×1024）で十分
+
+**設定可能な自転速度:**
+- Settings UIに自転速度スライダーを追加
+- リアルタイムで速度変更可能
+- 教育的な用途に便利
+
 ---
 
 ## 4. 物理エンジン設計
@@ -4030,6 +4234,7 @@ SOFTWARE.
 | 2025-10-26 | 2.1 | Bloomエフェクト実装 - UnrealBloomPassによる太陽の発光エフェクト、EffectComposerでポストプロセッシング、emissiveIntensity 2.5の強い自己発光、threshold 0.85で太陽のみ発光 |
 | 2025-10-26 | 2.2 | タッチコントロール実装（スマホ対応） - 矢印ボタン（右下配置、40px×40px）とRボタン（右端中央、45px×45px円形）、レスポンシブデザイン（768px以下で表示）、タッチ/マウスイベント両対応、カメラボタンと統一デザイン |
 | 2025-11-04 | 2.3 | 軌道投入ミッション実装 - 3段階達成条件（軌道範囲・速度・滞在時間）、範囲内で常時速度チェック、条件不満足時の自動リセット、時間ベースUI表示、Jupiter軌道投入ミッション追加（5.20 AU、13±1 km/s、10秒滞在）、レンダリング中の状態更新エラー修正（useEffect使用） |
+| 2025-11-05 | 2.4 | 惑星視覚化の大幅改善 - 地球にリアルテクスチャ追加（public/textures/earth.jpg）、全惑星の自転実装（個別速度設定）、実測データに基づく地軸の傾き実装（Mercury 0.034°〜Uranus 97.8°）、金星の逆回転再現、木星・土星の高速回転再現、惑星影響圏（トーラス）非表示化、定数による一元管理（solarDefs配列） |
 
 ---
 

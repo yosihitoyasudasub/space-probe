@@ -163,7 +163,7 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = CELESTIAL_CO
 
     // pass simulation tuning options to initThreeJS
     let threeObj: any = (initThreeJS as any)(canvas, { probeSpeedMult, G: gravityG, starMass, gravityGridEnabled, gridEnabled, planetOrbitsEnabled, predictionEnabled, probeModelPath, orientation });
-    let { scene, camera, renderer, composer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid, updateGrid, updatePlanetOrbits, updatePrediction, switchProbeModel } = threeObj;
+    let { scene, camera, renderer, composer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid, updateGrid, updatePlanetOrbits, updatePrediction, switchProbeModel, planetMeshes } = threeObj;
     gravityGridRef.current = { updateGravityGrid };
     gridRef.current = { updateGrid };
     planetOrbitsRef.current = { updatePlanetOrbits };
@@ -189,7 +189,7 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = CELESTIAL_CO
         if (setGridEnabled) setGridEnabled(false);
         // Initialize with grids hidden, keep planet orbits and prediction as user configured
         threeObj = (initThreeJS as any)(canvas, { probeSpeedMult, G: gravityG, starMass, gravityGridEnabled: false, gridEnabled: false, planetOrbitsEnabled, predictionEnabled, probeModelPath, orientation });
-        ({ scene, camera, renderer, composer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid, updateGrid, updatePlanetOrbits, updatePrediction, switchProbeModel } = threeObj);
+        ({ scene, camera, renderer, composer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid, updateGrid, updatePlanetOrbits, updatePrediction, switchProbeModel, planetMeshes } = threeObj);
         // Update refs after restart
         gravityGridRef.current = { updateGravityGrid };
         gridRef.current = { updateGrid };
@@ -494,6 +494,20 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = CELESTIAL_CO
                     }
                     trailRef.current.lastMs = nowMsPoint;
                 }
+            }
+
+            // Rotate all planets based on their individual rotation speeds
+            try {
+                if (planetMeshes && planetMeshes.length > 0) {
+                    planetMeshes.forEach((pm: any) => {
+                        if (pm.mesh && pm.rotationSpeed !== undefined) {
+                            // Rotate planet around its Y-axis at its specific speed
+                            pm.mesh.rotation.y += pm.rotationSpeed;
+                        }
+                    });
+                }
+            } catch (e) {
+                // ignore rotation errors
             }
 
                 // update HUD if setters provided (throttled)

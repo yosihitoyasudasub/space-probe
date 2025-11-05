@@ -150,7 +150,7 @@ export const VISUALIZATION_CONSTANTS = {
         RADIAL_SEGMENTS: 8,         // Number of radial segments (lower for performance)
         TUBULAR_SEGMENTS: 64,       // Number of tubular segments (higher for smoothness)
         COLOR: 0x808080,            // Zone color
-        OPACITY: 0.25               // Zone opacity
+        OPACITY: 0.2               // Zone opacity
     },
 
     // Predicted trajectory (dashed line showing future path)
@@ -539,29 +539,47 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     // - mass: Mass in Earth masses (Earth = 1.0)
     // - phase: Initial orbital phase angle in radians (determines starting position)
     // - color: Hex color code for planet appearance
+    // - axialTilt: Axial tilt in radians (rotation axis inclination relative to orbital plane)
+    // - rotationSpeed: Rotation speed in radians per frame (Y-axis rotation)
     const AU = PHYSICS_SCALE.AU;
     const solarDefs = [
-        { id: 'Mercury', rAU: 0.39, radius: 3, color: 0xaaaaaa, phase: 0, mass: 0.055 },      // mass: 0.055 Earth masses
-        { id: 'Venus',   rAU: 0.72, radius: 5, color: 0xffddaa, phase: 0.5, mass: 0.815 },    // mass: 0.815 Earth masses
-        { id: 'Earth',   rAU: 1.00, radius: 5.5, color: 0x3366ff, phase: 1.0, mass: 1.0 },    // mass: 1.0 Earth mass (reference)
-        { id: 'Mars',    rAU: 1.52, radius: 4, color: 0xff6633, phase: 1.6, mass: 0.107 },    // mass: 0.107 Earth masses
-        { id: 'Jupiter', rAU: 5.20, radius: 14, color: 0xffcc77, phase: 2.2, mass: 317.8 },   // mass: 317.8 Earth masses
-        { id: 'Saturn',  rAU: 9.58, radius: 12, color: 0xffee88, phase: 3.0, mass: 95.16 },   // mass: 95.16 Earth masses
-        { id: 'Uranus',  rAU:19.20, radius: 9, color: 0x88ccff, phase: 4.0, mass: 14.5 },     // mass: 14.5 Earth masses
-        { id: 'Neptune', rAU:30.05, radius: 9, color: 0x3366aa, phase: 5.0, mass: 17.1 },     // mass: 17.1 Earth masses
+        { id: 'Mercury', rAU: 0.39, radius: 3, color: 0xaaaaaa, phase: 0, mass: 0.055, axialTilt: 0.034 * Math.PI / 180, rotationSpeed: 0.005 },      // Very slow rotation (58.6 Earth days)
+        { id: 'Venus',   rAU: 0.72, radius: 5, color: 0xffddaa, phase: 0.5, mass: 0.815, axialTilt: 177.4 * Math.PI / 180, rotationSpeed: -0.003 },    // Retrograde rotation (243 Earth days, backward!)
+        { id: 'Earth',   rAU: 1.00, radius: 5.5, color: 0x3366ff, phase: 1.0, mass: 1.0, axialTilt: 23.5 * Math.PI / 180, rotationSpeed: 0.01 },    // Standard rotation (24 hours)
+        { id: 'Mars',    rAU: 1.52, radius: 4, color: 0xff6633, phase: 1.6, mass: 0.107, axialTilt: 25.2 * Math.PI / 180, rotationSpeed: 0.01 },    // Similar to Earth (24.6 hours)
+        { id: 'Jupiter', rAU: 5.20, radius: 14, color: 0xffcc77, phase: 2.2, mass: 317.8, axialTilt: 3.1 * Math.PI / 180, rotationSpeed: 0.02 },   // Fast rotation (9.9 hours)
+        { id: 'Saturn',  rAU: 9.58, radius: 12, color: 0xffee88, phase: 3.0, mass: 95.16, axialTilt: 26.7 * Math.PI / 180, rotationSpeed: 0.018 },   // Fast rotation (10.7 hours)
+        { id: 'Uranus',  rAU:19.20, radius: 9, color: 0x88ccff, phase: 4.0, mass: 14.5, axialTilt: 97.8 * Math.PI / 180, rotationSpeed: 0.012 },     // Medium rotation (17.2 hours)
+        { id: 'Neptune', rAU:30.05, radius: 9, color: 0x3366aa, phase: 5.0, mass: 17.1, axialTilt: 28.3 * Math.PI / 180, rotationSpeed: 0.013 },     // Medium rotation (16 hours)
     ];
+
+    // Create texture loader for planet textures
+    const textureLoader = new THREE.TextureLoader();
 
     const starMassScaled = starMass; // use starMass as mass scale
     for (const pd of solarDefs) {
         const pdR = pd.rAU * AU;
         const geom = new THREE.SphereGeometry(pd.radius, 16, 16);
-        const mat = new THREE.MeshStandardMaterial({ color: pd.color });
+
+        // Apply texture to Earth, use solid color for other planets
+        let mat: THREE.MeshStandardMaterial;
+        if (pd.id === 'Earth') {
+            const earthTexture = textureLoader.load('/textures/earth.jpg');
+            mat = new THREE.MeshStandardMaterial({ map: earthTexture });
+        } else {
+            mat = new THREE.MeshStandardMaterial({ color: pd.color });
+        }
+
         const mesh = new THREE.Mesh(geom, mat);
         const x = Math.sin(pd.phase) * pdR;
         const z = Math.cos(pd.phase) * pdR;
         mesh.position.set(x, 0, z);
+
+        // Apply axial tilt (rotation axis inclination)
+        mesh.rotation.z = pd.axialTilt;
+
         scene.add(mesh);
-        planetMeshes.push({ id: pd.id, mesh });
+        planetMeshes.push({ id: pd.id, mesh, rotationSpeed: pd.rotationSpeed });
     const gVal = options?.G ?? DEFAULT_G;
     const v = Math.sqrt((gVal * starMassScaled) / pdR);
         const vx = v * Math.cos(pd.phase);
@@ -834,6 +852,7 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
         // Rotate to align with XZ plane (horizontal)
         torus.rotation.x = Math.PI / 2;
         torus.position.copy(pm.mesh.position);
+        torus.visible = false;  // Hide influence zones
         scene.add(torus);
         influenceZones.push(torus);
 
@@ -1459,7 +1478,7 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
         }
     }
 
-    return { scene, camera, renderer, composer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid, updateGrid, updatePlanetOrbits, updatePrediction, switchProbeModel };
+    return { scene, camera, renderer, composer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid, updateGrid, updatePlanetOrbits, updatePrediction, switchProbeModel, planetMeshes };
 }
 
 // small helper to allow external callers to apply delta-v to the probe
