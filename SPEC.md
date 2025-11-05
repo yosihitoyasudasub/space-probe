@@ -2836,36 +2836,84 @@ PREDICTION: {
 ```
 public/
 └── textures/
-    └── earth.jpg         # 地球のテクスチャ画像
+    ├── earth.jpg         # 地球のテクスチャ画像
+    ├── mars.jpg          # 火星のテクスチャ画像（オプション）
+    ├── jupiter.jpg       # 木星のテクスチャ画像（オプション）
+    └── ...               # 他の惑星（追加すれば自動的に表示）
 ```
+
+**規約:**
+- ファイル名は惑星名を小文字にした`.jpg`形式
+- テクスチャがない惑星は単色マテリアルで表示（フォールバック）
+- コード変更不要で追加可能
 
 #### 3.19.2 惑星テクスチャ
 
-**実装箇所:** `src/lib/threeSetup.ts:555-570`
+**実装箇所:** `src/lib/threeSetup.ts:564-584`
 
-**地球のテクスチャ適用:**
+**規約ベースの自動テクスチャ読み込み:**
 ```typescript
 const textureLoader = new THREE.TextureLoader();
 
 for (const pd of solarDefs) {
-    let mat: THREE.MeshStandardMaterial;
-    if (pd.id === 'Earth') {
-        const earthTexture = textureLoader.load('/textures/earth.jpg');
-        mat = new THREE.MeshStandardMaterial({ map: earthTexture });
-    } else {
-        mat = new THREE.MeshStandardMaterial({ color: pd.color });
-    }
+    // 規約: /textures/{惑星名小文字}.jpg
+    const texturePath = `/textures/${pd.id.toLowerCase()}.jpg`;
+    const mat = new THREE.MeshStandardMaterial({ color: pd.color }); // デフォルトは単色
+
+    // 非同期でテクスチャ読み込みを試行
+    textureLoader.load(
+        texturePath,
+        (texture) => {
+            // 成功: テクスチャを適用
+            mat.map = texture;
+            mat.color.set(0xffffff); // 白にリセット（テクスチャの色を正確に表示）
+            mat.needsUpdate = true;
+        },
+        undefined,
+        (error) => {
+            // 失敗: 単色のまま（フォールバック）
+        }
+    );
     // ...
 }
 ```
 
-**現在の実装状態:**
-- **地球**: リアルテクスチャ（`/textures/earth.jpg`）
-- **その他の惑星**: 単色マテリアル（従来通り）
+**重要: カラーリセット処理**
 
-**拡張性:**
-- 他の惑星のテクスチャも同様の方法で追加可能
-- テクスチャファイルを`public/textures/`に配置し、条件分岐を追加するだけ
+テクスチャが読み込まれた際、`mat.color.set(0xffffff)`で白にリセットします。これは：
+- Three.jsでは`color`と`map`が乗算されるため
+- 火星の色（オレンジ）がテクスチャに乗算されると、白い氷冠がオレンジ色になってしまう
+- 白にリセットすることでテクスチャの色を正確に再現
+
+**ファイル名規約:**
+- **Mercury**: `mercury.jpg`
+- **Venus**: `venus.jpg`
+- **Earth**: `earth.jpg`
+- **Mars**: `mars.jpg`
+- **Jupiter**: `jupiter.jpg`
+- **Saturn**: `saturn.jpg`
+- **Uranus**: `uranus.jpg`
+- **Neptune**: `neptune.jpg`
+
+**テクスチャソース:**
+- **推奨**: Solar System Scope (https://www.solarsystemscope.com/textures/)
+- 無料・登録不要
+- 2K解像度（2048×1024）で十分な品質
+- 全惑星のテクスチャが揃っている
+
+**現在の実装状態:**
+- **全惑星対応**: テクスチャファイルを配置するだけで自動的に適用
+- **フォールバック**: テクスチャがない惑星は単色マテリアルを使用
+- **コード変更不要**: 新しい惑星を追加する際も`solarDefs`にデータを追加するだけ
+
+**使用例:**
+```
+public/textures/
+├── earth.jpg       ✅ テクスチャで表示
+├── mars.jpg        ✅ テクスチャで表示
+├── jupiter.jpg     ✅ テクスチャで表示
+└── mercury.jpg     ⚪ なければ単色で表示
+```
 
 #### 3.19.3 地軸の傾き（Axial Tilt）
 
@@ -2997,32 +3045,53 @@ const solarDefs = [
 - 自転計算は毎フレーム実行されるが、演算負荷は無視できるレベル
 - 60 FPS維持に影響なし
 
-#### 3.19.8 今後の拡張案
+#### 3.19.8 テクスチャの追加方法
 
-**他の惑星のテクスチャ追加:**
-```typescript
-// 火星、木星などのテクスチャを追加する場合
-if (pd.id === 'Earth') {
-    mat = new THREE.MeshStandardMaterial({ map: earthTexture });
-} else if (pd.id === 'Mars') {
-    const marsTexture = textureLoader.load('/textures/mars.jpg');
-    mat = new THREE.MeshStandardMaterial({ map: marsTexture });
-} else if (pd.id === 'Jupiter') {
-    const jupiterTexture = textureLoader.load('/textures/jupiter.jpg');
-    mat = new THREE.MeshStandardMaterial({ map: jupiterTexture });
-}
-// ...
+**現在の実装では自動読み込みが実装済みです。**
+
+**手順:**
+1. テクスチャ画像をダウンロード（推奨: Solar System Scope）
+2. `public/textures/`に配置し、ファイル名を規約に従って命名
+3. ブラウザをリフレッシュ
+
+**具体例（火星のテクスチャを追加）:**
+```bash
+# 1. Solar System Scopeから2k_mars.jpgをダウンロード
+# 2. ファイル名をmars.jpgにリネーム
+# 3. public/textures/mars.jpgに配置
+# 4. ブラウザをリフレッシュ → 自動的に適用される！
 ```
 
+**コード変更は不要です。** 規約ベースの自動読み込みにより、テクスチャファイルを配置するだけで表示されます。
+
 **推奨テクスチャソース:**
-- **Solar System Scope**: https://www.solarsystemscope.com/textures/
-- **NASA Visible Earth**: 公式の惑星画像
-- 解像度: 2K（2048×1024）で十分
+| ソース | URL | 特徴 |
+|--------|-----|------|
+| **Solar System Scope** | https://www.solarsystemscope.com/textures/ | 無料・登録不要・全惑星揃っている |
+| NASA Visible Earth | https://visibleearth.nasa.gov/ | 公式・高品質・地球専門 |
+| NASA Mars Exploration | https://mars.nasa.gov/ | 火星専門・高解像度 |
+
+**推奨解像度:**
+- 2K（2048×1024）で十分
+- 4K以上はファイルサイズが大きく、読み込みに時間がかかる
+- モバイル端末では2Kが最適
+
+#### 3.19.9 今後の拡張案
 
 **設定可能な自転速度:**
 - Settings UIに自転速度スライダーを追加
 - リアルタイムで速度変更可能
 - 教育的な用途に便利
+
+**リング（土星の輪）の追加:**
+- 土星にリングテクスチャを追加
+- `RingGeometry`を使用
+- 透明度を設定して立体感を演出
+
+**大気効果:**
+- 地球・金星・火星に薄い大気レイヤーを追加
+- `ShaderMaterial`でフレネル効果を実装
+- リムライティングで大気の輝きを再現
 
 ---
 
@@ -3870,7 +3939,11 @@ space-probe-game-next/
 │   │       └── physics.swingby.test.ts # スイングバイ検出テスト
 │   └── types/
 │       └── index.d.ts          # グローバル型定義
-├── public/                     # 静的アセット（未使用）
+├── public/                     # 静的アセット
+│   └── textures/               # 惑星テクスチャ画像
+│       ├── earth.jpg           # 地球のテクスチャ
+│       ├── mars.jpg            # 火星のテクスチャ（オプション）
+│       └── ...                 # 他の惑星（追加可能）
 ├── node_modules/               # 依存パッケージ
 ├── package.json                # プロジェクト設定・依存関係
 ├── package-lock.json           # 依存バージョンロック
@@ -4234,7 +4307,7 @@ SOFTWARE.
 | 2025-10-26 | 2.1 | Bloomエフェクト実装 - UnrealBloomPassによる太陽の発光エフェクト、EffectComposerでポストプロセッシング、emissiveIntensity 2.5の強い自己発光、threshold 0.85で太陽のみ発光 |
 | 2025-10-26 | 2.2 | タッチコントロール実装（スマホ対応） - 矢印ボタン（右下配置、40px×40px）とRボタン（右端中央、45px×45px円形）、レスポンシブデザイン（768px以下で表示）、タッチ/マウスイベント両対応、カメラボタンと統一デザイン |
 | 2025-11-04 | 2.3 | 軌道投入ミッション実装 - 3段階達成条件（軌道範囲・速度・滞在時間）、範囲内で常時速度チェック、条件不満足時の自動リセット、時間ベースUI表示、Jupiter軌道投入ミッション追加（5.20 AU、13±1 km/s、10秒滞在）、レンダリング中の状態更新エラー修正（useEffect使用） |
-| 2025-11-05 | 2.4 | 惑星視覚化の大幅改善 - 地球にリアルテクスチャ追加（public/textures/earth.jpg）、全惑星の自転実装（個別速度設定）、実測データに基づく地軸の傾き実装（Mercury 0.034°〜Uranus 97.8°）、金星の逆回転再現、木星・土星の高速回転再現、惑星影響圏（トーラス）非表示化、定数による一元管理（solarDefs配列） |
+| 2025-11-05 | 2.4 | 惑星視覚化の大幅改善 - 規約ベースの自動テクスチャ読み込み実装（全惑星対応、ファイル配置のみで自動適用）、テクスチャ使用時のcolor白リセット（氷などの白が正しく表示）、全惑星の自転実装（個別速度設定）、実測データに基づく地軸の傾き実装（Mercury 0.034°〜Uranus 97.8°）、金星の逆回転再現、木星・土星の高速回転再現、惑星影響圏（トーラス）非表示化、定数による一元管理（solarDefs配列）、Solar System Scope推奨リンク追加 |
 
 ---
 

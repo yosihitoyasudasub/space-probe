@@ -541,6 +541,7 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     // - color: Hex color code for planet appearance
     // - axialTilt: Axial tilt in radians (rotation axis inclination relative to orbital plane)
     // - rotationSpeed: Rotation speed in radians per frame (Y-axis rotation)
+    // https://www.solarsystemscope.com/textures/
     const AU = PHYSICS_SCALE.AU;
     const solarDefs = [
         { id: 'Mercury', rAU: 0.39, radius: 3, color: 0xaaaaaa, phase: 0, mass: 0.055, axialTilt: 0.034 * Math.PI / 180, rotationSpeed: 0.005 },      // Very slow rotation (58.6 Earth days)
@@ -561,14 +562,27 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
         const pdR = pd.rAU * AU;
         const geom = new THREE.SphereGeometry(pd.radius, 16, 16);
 
-        // Apply texture to Earth, use solid color for other planets
-        let mat: THREE.MeshStandardMaterial;
-        if (pd.id === 'Earth') {
-            const earthTexture = textureLoader.load('/textures/earth.jpg');
-            mat = new THREE.MeshStandardMaterial({ map: earthTexture });
-        } else {
-            mat = new THREE.MeshStandardMaterial({ color: pd.color });
-        }
+        // Attempt to load texture for this planet (convention: /textures/{planetname}.jpg)
+        // If texture doesn't exist, fall back to solid color material
+        const texturePath = `/textures/${pd.id.toLowerCase()}.jpg`;
+        const mat = new THREE.MeshStandardMaterial({ color: pd.color }); // Default to solid color
+
+        // Try to load texture
+        textureLoader.load(
+            texturePath,
+            (texture) => {
+                // Success: texture loaded, apply it to the material
+                mat.map = texture;
+                mat.color.set(0xffffff); // Reset color to white to show texture correctly
+                mat.needsUpdate = true;
+                console.log(`Texture loaded for ${pd.id}: ${texturePath}`);
+            },
+            undefined, // onProgress
+            (error) => {
+                // Error: texture not found, keep using solid color
+                console.log(`No texture for ${pd.id}, using solid color (${texturePath} not found)`);
+            }
+        );
 
         const mesh = new THREE.Mesh(geom, mat);
         const x = Math.sin(pd.phase) * pdR;
