@@ -75,14 +75,14 @@ const TouchControls: React.FC = () => {
                 </div>
             </div>
 
-            {/* Right-center: Restart button */}
+            {/* Top-right: Restart button */}
             <div className="touch-restart">
                 <button
                     className="touch-btn touch-btn-restart"
                     onTouchStart={handleTouchStart('restart')}
                     onMouseDown={handleTouchStart('restart')}
                 >
-                    R
+                    Reset
                 </button>
             </div>
         </>
