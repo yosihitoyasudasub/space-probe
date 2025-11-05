@@ -1,6 +1,6 @@
 import React from 'react';
 
-export type CameraView = 'free' | 'top' | 'probe';
+export type CameraView = 'free' | 'top' | 'probe' | 'cockpit';
 
 // ====================================================================
 // UI Control Range Constants

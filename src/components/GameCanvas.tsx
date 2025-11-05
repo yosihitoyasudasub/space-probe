@@ -35,6 +35,13 @@ const GAME_LOOP_CONSTANTS = {
         MIN_SPEED: 0.1          // Minimum speed to use velocity-based positioning (scene units/s)
     },
 
+    COCKPIT_CAMERA: {
+        OFFSET_BACK: 5,         // Very close behind probe (cockpit position)
+        OFFSET_UP: 2,           // Slightly above probe center
+        LOOK_AHEAD: 100,        // Distance to look ahead in velocity direction
+        MIN_SPEED: 0.1          // Minimum speed to use velocity-based positioning (scene units/s)
+    },
+
     // Trail visualization
     TRAIL_UPDATE_INTERVAL_MS: 100,          // Milliseconds between adding trail points
 
@@ -427,6 +434,42 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = CELESTIAL_CO
                                 probePos.z + GAME_LOOP_CONSTANTS.PROBE_FOLLOW_CAMERA.STATIC_OFFSET_FORWARD
                             );
                             camera.lookAt(probePos.x, probePos.y, probePos.z);
+                        }
+                    }
+                    controls.enabled = false;
+                } else if (cameraViewRef.current === 'cockpit') {
+                    // Cockpit view: camera inside/very close to probe, looking forward
+                    if (probe && state.position) {
+                        const probePos = state.position;
+                        const vel = state.velocity;
+                        const speed = vel ? vel.length() : 0;
+
+                        if (speed > GAME_LOOP_CONSTANTS.COCKPIT_CAMERA.MIN_SPEED) {
+                            // Position camera very close behind probe
+                            const velNorm = vel.clone().normalize();
+                            const camOffset = velNorm.clone().multiplyScalar(-GAME_LOOP_CONSTANTS.COCKPIT_CAMERA.OFFSET_BACK);
+                            const camPos = probePos.clone().add(camOffset);
+                            camPos.y += GAME_LOOP_CONSTANTS.COCKPIT_CAMERA.OFFSET_UP;
+
+                            // Look ahead in the direction of travel
+                            const lookAtPoint = probePos.clone().add(
+                                velNorm.clone().multiplyScalar(GAME_LOOP_CONSTANTS.COCKPIT_CAMERA.LOOK_AHEAD)
+                            );
+
+                            camera.position.copy(camPos);
+                            camera.lookAt(lookAtPoint.x, lookAtPoint.y, lookAtPoint.z);
+                        } else {
+                            // If probe is stationary, look forward
+                            camera.position.set(
+                                probePos.x,
+                                probePos.y + GAME_LOOP_CONSTANTS.COCKPIT_CAMERA.OFFSET_UP,
+                                probePos.z - GAME_LOOP_CONSTANTS.COCKPIT_CAMERA.OFFSET_BACK
+                            );
+                            camera.lookAt(
+                                probePos.x,
+                                probePos.y,
+                                probePos.z + GAME_LOOP_CONSTANTS.COCKPIT_CAMERA.LOOK_AHEAD
+                            );
                         }
                     }
                     controls.enabled = false;

@@ -30,6 +30,13 @@ const CameraControls: React.FC<CameraControlsProps> = ({ cameraView, setCameraVi
             >
                 Follow
             </button>
+            <button
+                className={`camera-btn ${cameraView === 'cockpit' ? 'active' : ''}`}
+                onClick={() => setCameraView('cockpit')}
+                title="Cockpit View"
+            >
+                Cockpit
+            </button>
         </div>
     );
 };

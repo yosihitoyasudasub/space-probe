@@ -150,7 +150,7 @@ User Input (Keyboard)
 
 ### 3.3 カメラ視点切り替え
 
-プレイヤーはUIから3種類のカメラ視点を選択できます。
+プレイヤーはUIから4種類のカメラ視点を選択できます。
 
 #### 3.3.1 視点モード
 
@@ -158,7 +158,8 @@ User Input (Keyboard)
 |-----------|------|-----------|--------------|
 | **自由視点（マウス操作）** | マウスで自由にカメラを操作できる | ユーザー操作に依存 | 有効 |
 | **真上視点（太陽中心）** | 太陽系を真上から俯瞰する | (0, 1500, 0) → (0, 0, 0) | 無効 |
-| **探査機追従視点** | 探査機を後方から追従する | 探査機の後方150ユニット、上方80ユニット | 無効 |
+| **探査機追従視点** | 探査機を後方から追従する | 探査機の後方70ユニット、上方80ユニット | 無効 |
+| **コクピット視点** | 探査機内部から進行方向を見る | 探査機の後方5ユニット、上方2ユニット | 無効 |
 
 #### 3.3.2 実装詳細
 
@@ -176,7 +177,7 @@ controls.enabled = false;
 ```typescript
 // 速度方向から逆算してカメラ位置を決定
 const velNorm = velocity.clone().normalize();
-const camOffset = velNorm.multiplyScalar(-150);  // 150ユニット後方
+const camOffset = velNorm.clone().multiplyScalar(-70);  // 70ユニット後方
 const camPos = probePos.clone().add(camOffset);
 camPos.y += 80;  // 80ユニット上方
 
@@ -187,6 +188,29 @@ controls.enabled = false;
 - 探査機の進行方向に応じて自動的にカメラが回転
 - 探査機が静止している場合は固定オフセットを使用
 - 探査機の動きを直感的に把握できる
+
+**コクピット視点:**
+```typescript
+// カメラを探査機の直後に配置し、進行方向を見る
+const velNorm = velocity.clone().normalize();
+const camOffset = velNorm.clone().multiplyScalar(-5);  // 5ユニット後方（コクピット位置）
+const camPos = probePos.clone().add(camOffset);
+camPos.y += 2;  // 2ユニット上方
+
+// 進行方向の100ユニット先を注視
+const lookAtPoint = probePos.clone().add(
+    velNorm.clone().multiplyScalar(100)
+);
+
+camera.position.copy(camPos);
+camera.lookAt(lookAtPoint);
+controls.enabled = false;
+```
+- 探査機の直後に密着したカメラ位置（コクピット内視点）
+- 常に進行方向の前方を注視
+- 最大の没入感とスピード感を提供
+- 惑星接近時の迫力が最も感じられる視点
+- 星フィールドが目の前を流れる演出効果
 
 **自由視点:**
 ```typescript
@@ -201,7 +225,8 @@ controls.update();
 
 画面左下に視点切り替えボタンを独立配置：
 - **配置**: 画面左下（bottom: 20px, left: 20px）
-- **レイアウト**: 3つのボタンを横並びに配置
+- **レイアウト**: 4つのボタンを横並びに配置
+- **ボタン**: Free / Top / Follow / Cockpit
 - **スタイル**:
   - 現在選択中の視点は緑色で発光（box-shadow付き）
   - 非選択の視点は半透明背景
@@ -209,8 +234,54 @@ controls.update();
 
 **実装箇所:**
 - `CameraControls.tsx`: 独立したカメラ視点切り替えコンポーネント
-- `GameCanvas.tsx:165-202`: カメラ位置更新ロジック
+- `GameCanvas.tsx`: カメラ位置更新ロジック
+  - Free view: 397-405行
+  - Top view: 406-413行
+  - Follow view: 414-439行
+  - Cockpit view: 440-475行
 - `page.tsx`: カメラ視点の状態管理
+
+#### 3.3.4 視点別の使用シーン
+
+| 視点 | 最適な用途 | スピード感 | 没入感 |
+|------|-----------|----------|--------|
+| **Free** | 全体俯瞰、戦略的軌道計画 | ⭐⭐ | ⭐ |
+| **Top** | 太陽系全体の把握、惑星配置確認 | ⭐ | ⭐ |
+| **Follow** | 探査機の動き観察、スイングバイ確認 | ⭐⭐⭐⭐ | ⭐⭐⭐ |
+| **Cockpit** | 操縦体験、惑星接近の迫力 | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+
+#### 3.3.5 技術的詳細
+
+**カメラ定数（`GameCanvas.tsx`）:**
+```typescript
+GAME_LOOP_CONSTANTS = {
+    TOP_VIEW_CAMERA: {
+        x: 0,
+        y: 1500,    // 15 AU above orbital plane
+        z: 0
+    },
+
+    PROBE_FOLLOW_CAMERA: {
+        OFFSET_BACK: 70,        // Units behind probe
+        OFFSET_UP: 80,          // Units above probe
+        STATIC_OFFSET_UP: 80,
+        STATIC_OFFSET_FORWARD: 150,
+        MIN_SPEED: 0.1
+    },
+
+    COCKPIT_CAMERA: {
+        OFFSET_BACK: 5,         // Very close behind probe (cockpit position)
+        OFFSET_UP: 2,           // Slightly above probe center
+        LOOK_AHEAD: 100,        // Distance to look ahead in velocity direction
+        MIN_SPEED: 0.1
+    }
+}
+```
+
+**重要な実装上の注意:**
+- `velNorm.clone()`を使用してベクトルのコピーを作成
+- `multiplyScalar()`は破壊的メソッドなので、元のベクトルを保護
+- 静止時（速度 < MIN_SPEED）は固定オフセットを使用
 
 ### 3.4 HUD表示内容（ハンバーガーメニュー）
 
