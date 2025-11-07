@@ -23,8 +23,7 @@ export const PROBE_MODELS = [
     { value: 'space_ship', label: 'Space Ship', path: '/models/space_ship.glb', orientation: { autoAlign: true, invertDirection: true } },
     { value: 'space_ship_2', label: 'Space Ship 2', path: '/models/space_ship_2.glb', orientation: { autoAlign: true, invertDirection: true } },
     { value: 'space_fighter_3', label: 'Space Fighter 3', path: '/models/space_fighter_3.glb', orientation: { autoAlign: true, invertDirection: true } },
-    { value: 'lego_scooter', label: 'LEGO Space Scooter', path: '/models/lego_885_-_space_scooter.glb', orientation: { autoAlign: true, invertDirection: true } },
-    { value: 'light_freighter', label: 'Light Freighter', path: '/models/yts-27_light_freighter_the_kowakian_corsair.glb', orientation: { autoAlign: true, invertDirection: true } }
+    { value: 'lego_scooter', label: 'Space Scooter', path: '/models/lego_885_-_space_scooter.glb', orientation: { autoAlign: true, invertDirection: true } },
 ];
 
 const Page = () => {

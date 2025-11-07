@@ -163,16 +163,6 @@ const HUD: React.FC<HUDProps> = ({
 
                     {/* メニュー本体 */}
                     <div className="menu-drawer">
-                        <div className="menu-header">
-                            <h3>Space Probe</h3>
-                            <button
-                                className="menu-close-btn"
-                                onClick={() => setIsMenuOpen(false)}
-                            >
-                                ×
-                            </button>
-                        </div>
-
                         <div className="menu-items">
                             <button
                                 className={`menu-item ${showCharts ? 'active' : ''}`}
@@ -228,15 +218,13 @@ const HUD: React.FC<HUDProps> = ({
             )}
 
             {showCharts && (
-                <div className="hud-charts-panel">
-                    <button
-                        className="panel-close-btn"
+                <>
+                    <div
+                        className="panel-overlay"
                         onClick={() => setShowCharts(false)}
-                        title="Close charts"
-                    >
-                        ×
-                    </button>
-                    <MiniChart
+                    />
+                    <div className="hud-charts-panel">
+                        <MiniChart
                         data={velocityHistory}
                         color="#00ff88"
                         label="Velocity"
@@ -252,19 +240,18 @@ const HUD: React.FC<HUDProps> = ({
                         <span className="chart-label">Swing-by count:</span>
                         <span className="chart-current" style={{ color: '#0f0' }}>{slingshots}</span>
                     </div>
-                </div>
+                    </div>
+                </>
             )}
 
             {showMissions && (
-                <div className="hud-missions-panel">
-                    <button
-                        className="panel-close-btn"
+                <>
+                    <div
+                        className="panel-overlay"
                         onClick={() => setShowMissions(false)}
-                        title="Close missions"
-                    >
-                        ×
-                    </button>
-                    <MissionProgress
+                    />
+                    <div className="hud-missions-panel">
+                        <MissionProgress
                         distance={distance}
                         velocity={velocity}
                         slingshots={slingshots}
@@ -274,32 +261,30 @@ const HUD: React.FC<HUDProps> = ({
                         onMissionCompleted={onMissionCompleted}
                         orbitTimes={orbitTimes}
                     />
-                </div>
+                    </div>
+                </>
             )}
 
             {showHelp && (
-                <div className="hud-help-panel">
-                    <button
-                        className="panel-close-btn"
+                <>
+                    <div
+                        className="panel-overlay"
                         onClick={() => setShowHelp(false)}
-                        title="Close controls"
-                    >
-                        ×
-                    </button>
-                    <ControlsHelp />
-                </div>
+                    />
+                    <div className="hud-help-panel">
+                        <ControlsHelp />
+                    </div>
+                </>
             )}
 
             {showSettings && (
-                <div className="hud-settings-panel">
-                    <button
-                        className="panel-close-btn"
+                <>
+                    <div
+                        className="panel-overlay"
                         onClick={() => setShowSettings(false)}
-                        title="Close settings"
-                    >
-                        ×
-                    </button>
-                    <SettingsPanel
+                    />
+                    <div className="hud-settings-panel">
+                        <SettingsPanel
                         probeSpeedMult={probeSpeedMult}
                         setProbeSpeedMult={setProbeSpeedMult}
                         gravityG={gravityG}
@@ -315,7 +300,8 @@ const HUD: React.FC<HUDProps> = ({
                         predictionEnabled={predictionEnabled}
                         setPredictionEnabled={setPredictionEnabled}
                     />
-                </div>
+                    </div>
+                </>
             )}
         </>
     );

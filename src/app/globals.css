@@ -220,7 +220,6 @@ body {
     left: 20px;
     background: rgba(0, 0, 0, 0.8);
     padding: 15px;
-    border: 2px solid #0ff;
     border-radius: 5px;
     z-index: 10;
     animation: slideDown 0.3s ease;
@@ -290,7 +289,6 @@ body {
     left: 20px;
     background: rgba(0, 0, 0, 0.8);
     padding: 15px;
-    border: 2px solid #0ff;
     border-radius: 5px;
     z-index: 10;
     animation: slideDown 0.3s ease;
@@ -304,7 +302,6 @@ body {
     left: 20px;
     background: rgba(0, 0, 0, 0.8);
     padding: 15px;
-    border: 2px solid #0ff;
     border-radius: 5px;
     z-index: 10;
     animation: slideDown 0.3s ease;
@@ -337,7 +334,6 @@ body {
     left: 20px;
     background: rgba(0, 0, 0, 0.8);
     padding: 15px;
-    border: 2px solid #0ff;
     border-radius: 5px;
     z-index: 10;
     animation: slideDown 0.3s ease;
@@ -876,11 +872,9 @@ body {
     top: 0;
     left: 0;
     bottom: 0;
-    width: 280px;
+    width: 210px;
     max-width: 80vw;
     background: rgba(0, 20, 40, 0.98);
-    border-right: 2px solid #00ff88;
-    box-shadow: 4px 0 20px rgba(0, 255, 136, 0.3);
     z-index: 999;
     animation: slideInLeft 0.3s ease-out;
     overflow-y: auto;
@@ -901,16 +895,14 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 20px;
-    border-bottom: 1px solid rgba(0, 255, 136, 0.3);
     background: rgba(0, 0, 0, 0.3);
 }
 
 .menu-header h3 {
-    color: #00ff88;
+    color: #ffffff;
     margin: 0;
     font-size: 20px;
     font-weight: bold;
-    text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
 }
 
 .menu-close-btn {
@@ -945,21 +937,19 @@ body {
     align-items: center;
     gap: 12px;
     text-align: left;
-    padding: 14px 16px;
-    margin-bottom: 10px;
-    background: rgba(0, 255, 136, 0.05);
-    border: 1px solid rgba(0, 255, 136, 0.3);
+    padding: 4px 8px;
+    margin-bottom: 4px;
+    background: rgba(255, 255, 255, 0.05);
     color: #ffffff;
     font-size: 16px;
+    font-family: var(--font-primary);
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .menu-item:hover {
-    background: rgba(0, 255, 136, 0.15);
-    border-color: #00ff88;
-    box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .menu-item:active {
@@ -967,9 +957,7 @@ body {
 }
 
 .menu-item.active {
-    background: rgba(0, 255, 136, 0.2);
-    border-color: #00ff88;
-    box-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+    background: rgba(255, 255, 255, 0.15);
 }
 
 .menu-icon {
@@ -981,40 +969,57 @@ body {
 
 /* モデル選択 */
 .menu-model-selector {
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid rgba(0, 255, 136, 0.3);
+    margin-top: 0;
+    padding-top: 0;
 }
 
 .menu-model-selector label {
-    display: block;
-    color: #00ff88;
-    margin-bottom: 10px;
-    font-size: 14px;
-    font-weight: bold;
+    display: none;
 }
 
 .menu-model-selector select {
     width: 100%;
-    padding: 12px;
-    background: rgba(0, 0, 0, 0.5);
-    border: 1px solid #00ff88;
-    color: #00ff88;
-    font-size: 14px;
+    padding: 4px 8px;
+    padding-right: 28px;
+    margin-bottom: 4px;
+    background-color: rgba(255, 255, 255, 0.05);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='white' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 12px 12px;
+    border: none;
+    color: #ffffff;
+    font-size: 16px;
+    font-family: var(--font-primary);
     border-radius: 6px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background-color 0.2s;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+.menu-model-selector select option {
+    background: rgba(0, 20, 40, 0.98);
+    color: #ffffff;
+    padding: 8px;
 }
 
 .menu-model-selector select:hover {
-    background: rgba(0, 255, 136, 0.1);
-    box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+    background-color: rgba(255, 255, 255, 0.1);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='white' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 12px 12px;
 }
 
 .menu-model-selector select:focus {
     outline: none;
-    border-color: #fff;
-    box-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+    background-color: rgba(255, 255, 255, 0.1);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='white' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 12px 12px;
 }
 
 /* スクロールバーのスタイリング */
@@ -1027,45 +1032,25 @@ body {
 }
 
 .menu-drawer::-webkit-scrollbar-thumb {
-    background: rgba(0, 255, 136, 0.5);
+    background: rgba(255, 255, 255, 0.3);
     border-radius: 4px;
 }
 
 .menu-drawer::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 255, 136, 0.8);
+    background: rgba(255, 255, 255, 0.5);
 }
 
 /* ====================================================================
-   Panel Close Button (×)
+   Panel Overlay (Click to close)
    ==================================================================== */
 
-.panel-close-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: rgba(0, 0, 0, 0.7);
-    border: 1px solid #00ff88;
-    color: #ffffff;
-    font-size: 24px;
-    line-height: 1;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.panel-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: transparent;
+    z-index: 9;
     cursor: pointer;
-    border-radius: 4px;
-    transition: all 0.2s;
-    z-index: 10;
-}
-
-.panel-close-btn:hover {
-    background: rgba(255, 0, 0, 0.3);
-    border-color: #ff0000;
-    color: #ff0000;
-    transform: rotate(90deg);
-}
-
-.panel-close-btn:active {
-    transform: rotate(90deg) scale(0.9);
 }

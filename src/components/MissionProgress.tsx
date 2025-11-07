@@ -87,7 +87,6 @@ const MissionProgress: React.FC<MissionProgressProps> = ({
     return (
         <div className="mission-progress">
             <div className="mission-header">
-                <h3>ミッション進捗</h3>
                 <div className="overall-progress">
                     <span className="progress-text">
                         {completedCount} / {totalMissions} 完了
