@@ -117,15 +117,19 @@ const HUD: React.FC<HUDProps> = ({
 
     return (
         <>
-            {/* Free mode Start button - shown only when simulation hasn't started */}
+            {/* Start screen - shown only when simulation hasn't started */}
             {!isSimulationStarted && (
                 <div className="start-screen">
-                    <button
-                        className="start-button"
-                        onClick={() => setIsSimulationStarted(true)}
-                    >
-                        Free mode Start
-                    </button>
+                    <div className="start-screen-stars"></div>
+                    <div className="start-screen-content">
+                        <h1 className="start-screen-title">ORBITAL LINES</h1>
+                        <button
+                            className="start-button"
+                            onClick={() => setIsSimulationStarted(true)}
+                        >
+                            START
+                        </button>
+                    </div>
                 </div>
             )}
             {/* ハンバーガーメニュー対応HUD */}
