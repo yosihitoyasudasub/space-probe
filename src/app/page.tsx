@@ -19,16 +19,12 @@ export interface DataPoint {
 //   - rotationY: manual Y-axis rotation (radians) - applied before auto-alignment
 //   - invertDirection: invert the direction after alignment (for models facing backwards)
 export const PROBE_MODELS = [
-    { value: 'voyager', label: 'Voyager (Built-in)', path: null, orientation: { autoAlign: true, invertDirection: true } },
     { value: 'space_fighter', label: 'Space Fighter', path: '/models/space_fighter.glb', orientation: { autoAlign: true, invertDirection: true } },
-    { value: 'space_shuttle', label: 'Space Shuttle', path: '/models/space_shuttle.glb', orientation: { autoAlign: true, invertDirection: true } },
-    { value: 'space_shuttle_2', label: 'Space Shuttle 2', path: '/models/space_shuttle_2.glb', orientation: { autoAlign: true, invertDirection: true } },
     { value: 'space_ship', label: 'Space Ship', path: '/models/space_ship.glb', orientation: { autoAlign: true, invertDirection: true } },
     { value: 'space_ship_2', label: 'Space Ship 2', path: '/models/space_ship_2.glb', orientation: { autoAlign: true, invertDirection: true } },
     { value: 'space_fighter_3', label: 'Space Fighter 3', path: '/models/space_fighter_3.glb', orientation: { autoAlign: true, invertDirection: true } },
     { value: 'lego_scooter', label: 'LEGO Space Scooter', path: '/models/lego_885_-_space_scooter.glb', orientation: { autoAlign: true, invertDirection: true } },
-    { value: 'sputnik', label: 'Retro Sputnik', path: '/models/space_retro_sputnik.glb', orientation: { autoAlign: true, invertDirection: true } },
-    { value: 'station_2001', label: 'Space Station (2001)', path: '/models/space_station_v_2001_a_space_odyssey.glb', orientation: { autoAlign: true, invertDirection: true } },
+    { value: 'light_freighter', label: 'Light Freighter', path: '/models/yts-27_light_freighter_the_kowakian_corsair.glb', orientation: { autoAlign: true, invertDirection: true } }
 ];
 
 const Page = () => {
