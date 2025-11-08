@@ -4,6 +4,8 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
+import { FilmPass } from 'three/examples/jsm/postprocessing/FilmPass';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass';
 import { Body, cloneBodies, stepBodies, PHYSICS_CONSTANTS } from './physics';
 
 // ====================================================================
@@ -464,21 +466,63 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     const renderPass = new RenderPass(scene, camera);
     composer.addPass(renderPass);
 
-    // Bloom pass for glowing sun
+    // Bloom pass for glowing sun (reduced to minimize spread and artifacts)
     const bloomPass = new UnrealBloomPass(
         new THREE.Vector2(window.innerWidth, window.innerHeight),
-        BLOOM_CONSTANTS.STRENGTH,
-        BLOOM_CONSTANTS.RADIUS,
-        BLOOM_CONSTANTS.THRESHOLD
+        0.8,   // strength: reduced to 0.8 for minimal glow
+        0.3,   // radius: small radius to keep glow tight around sun
+        0.9    // threshold: higher threshold (only very bright objects glow)
     );
     composer.addPass(bloomPass);
 
-    const ambient = new THREE.AmbientLight(0xffffff, LIGHTING_CONSTANTS.AMBIENT_INTENSITY);
+    // Film Grain effect for cinematic quality
+    const filmPass = new FilmPass(
+        0.15,  // noise intensity (adds texture/grain)
+        0.0,   // scanline intensity (0 = disabled)
+        0,     // scanline count
+        false  // grayscale (false = keep colors)
+    );
+    composer.addPass(filmPass);
+
+    // Vignette effect (darkens edges for focus)
+    const VignetteShader = {
+        uniforms: {
+            tDiffuse: { value: null },
+            offset: { value: 0.8 },    // 0.5-1.0 (lower = stronger)
+            darkness: { value: 1.2 }   // 1.0-2.0 (higher = darker)
+        },
+        vertexShader: `
+            varying vec2 vUv;
+            void main() {
+                vUv = uv;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+        `,
+        fragmentShader: `
+            uniform sampler2D tDiffuse;
+            uniform float offset;
+            uniform float darkness;
+            varying vec2 vUv;
+
+            void main() {
+                vec4 color = texture2D(tDiffuse, vUv);
+                vec2 uv = (vUv - vec2(0.5)) * vec2(offset);
+                color.rgb = mix(color.rgb, vec3(0.0), dot(uv, uv) * darkness);
+                gl_FragColor = color;
+            }
+        `
+    };
+    const vignettePass = new ShaderPass(VignetteShader);
+    composer.addPass(vignettePass);
+
+    // Ambient light with slight blue tint (scattered starlight in space)
+    const ambient = new THREE.AmbientLight(0x0a0a1a, LIGHTING_CONSTANTS.AMBIENT_INTENSITY);
     scene.add(ambient);
 
-    // Use PointLight instead of DirectionalLight for realistic radial lighting from the sun
+    // Sun light with realistic color temperature (5500K - slightly warm white/yellow)
     // PointLight emits light in all directions from a single point (like a star)
-    const sunLight = new THREE.PointLight(0xffffff, LIGHTING_CONSTANTS.DIRECTIONAL_INTENSITY, 0, 0);
+    const sunLight = new THREE.PointLight(0xffffee, LIGHTING_CONSTANTS.DIRECTIONAL_INTENSITY, 0, 0);
+    // Color: 0xffffee = warm white (realistic sun color)
     // Parameters: color, intensity, distance (0 = infinite), decay (0 = no decay for game visibility)
 
     // Configure shadow casting for the sun's light
@@ -558,14 +602,14 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     // https://www.solarsystemscope.com/textures/
     const AU = PHYSICS_SCALE.AU;
     const solarDefs = [
-        { id: 'Mercury', rAU: 0.39, radius: 3, color: 0xaaaaaa, phase: 0, mass: 0.055, axialTilt: 0.034 * Math.PI / 180, rotationSpeed: 0.005 },      // Very slow rotation (58.6 Earth days)
-        { id: 'Venus',   rAU: 0.72, radius: 5, color: 0xffddaa, phase: 0.5, mass: 0.815, axialTilt: 177.4 * Math.PI / 180, rotationSpeed: -0.003 },    // Retrograde rotation (243 Earth days, backward!)
-        { id: 'Earth',   rAU: 1.00, radius: 5.5, color: 0x3366ff, phase: 1.0, mass: 1.0, axialTilt: 23.5 * Math.PI / 180, rotationSpeed: 0.01 },    // Standard rotation (24 hours)
-        { id: 'Mars',    rAU: 1.52, radius: 4, color: 0xff6633, phase: 1.6, mass: 0.107, axialTilt: 25.2 * Math.PI / 180, rotationSpeed: 0.01 },    // Similar to Earth (24.6 hours)
-        { id: 'Jupiter', rAU: 5.20, radius: 14, color: 0xffcc77, phase: 2.2, mass: 317.8, axialTilt: 3.1 * Math.PI / 180, rotationSpeed: 0.02 },   // Fast rotation (9.9 hours)
-        { id: 'Saturn',  rAU: 9.58, radius: 12, color: 0xffee88, phase: 3.0, mass: 95.16, axialTilt: 26.7 * Math.PI / 180, rotationSpeed: 0.018 },   // Fast rotation (10.7 hours)
-        { id: 'Uranus',  rAU:19.20, radius: 9, color: 0x88ccff, phase: 4.0, mass: 14.5, axialTilt: 97.8 * Math.PI / 180, rotationSpeed: 0.012 },     // Medium rotation (17.2 hours)
-        { id: 'Neptune', rAU:30.05, radius: 9, color: 0x3366aa, phase: 5.0, mass: 17.1, axialTilt: 28.3 * Math.PI / 180, rotationSpeed: 0.013 },     // Medium rotation (16 hours)
+        { id: 'Mercury', rAU: 0.39, radius: 3, color: 0xaaaaaa, phase: 0, mass: 0.055, axialTilt: 0.034 * Math.PI / 180, rotationSpeed: 0.010 },      // Very slow rotation (58.6 Earth days) - 2x speed
+        { id: 'Venus',   rAU: 0.72, radius: 5, color: 0xffddaa, phase: 0.5, mass: 0.815, axialTilt: 177.4 * Math.PI / 180, rotationSpeed: -0.006 },    // Retrograde rotation (243 Earth days, backward!) - 2x speed
+        { id: 'Earth',   rAU: 1.00, radius: 5.5, color: 0x3366ff, phase: 1.0, mass: 1.0, axialTilt: 23.5 * Math.PI / 180, rotationSpeed: 0.02 },    // Standard rotation (24 hours) - 2x speed
+        { id: 'Mars',    rAU: 1.52, radius: 4, color: 0xff6633, phase: 1.6, mass: 0.107, axialTilt: 25.2 * Math.PI / 180, rotationSpeed: 0.02 },    // Similar to Earth (24.6 hours) - 2x speed
+        { id: 'Jupiter', rAU: 5.20, radius: 14, color: 0xffcc77, phase: 2.2, mass: 317.8, axialTilt: 3.1 * Math.PI / 180, rotationSpeed: 0.04 },   // Fast rotation (9.9 hours) - 2x speed
+        { id: 'Saturn',  rAU: 9.58, radius: 12, color: 0xffee88, phase: 3.0, mass: 95.16, axialTilt: 26.7 * Math.PI / 180, rotationSpeed: 0.036 },   // Fast rotation (10.7 hours) - 2x speed
+        { id: 'Uranus',  rAU:19.20, radius: 9, color: 0x88ccff, phase: 4.0, mass: 14.5, axialTilt: 97.8 * Math.PI / 180, rotationSpeed: 0.024 },     // Medium rotation (17.2 hours) - 2x speed
+        { id: 'Neptune', rAU:30.05, radius: 9, color: 0x3366aa, phase: 5.0, mass: 17.1, axialTilt: 28.3 * Math.PI / 180, rotationSpeed: 0.026 },     // Medium rotation (16 hours) - 2x speed
     ];
 
     // Create texture loader for planet textures
