@@ -1,7 +1,7 @@
 # SPEC.md - 宇宙探査機シミュレーションゲーム 仕様書兼設計書
 
-バージョン: 2.4
-最終更新日: 2025-11-04
+バージョン: 2.5
+最終更新日: 2025-11-08
 プロジェクト: space-probe-game-next
 
 ---
@@ -38,6 +38,7 @@
 - **パラメータ調整UI**: 重力定数、探査機速度倍率、中央星質量の実行時調整
 - **軌跡可視化**: 探査機の移動経路をCatmull-Rom曲線で滑らかに表示
 - **カメラ操作**: OrbitControlsによる自由視点移動
+- **BGMシステム**: 複数トラックの背景音楽再生、音量調整、ON/OFF切り替え
 
 ### 1.4 使用技術スタック
 
@@ -328,6 +329,7 @@ GAME_LOOP_CONSTANTS = {
 │ 🎯 Missions     │
 │ ❓ Controls     │
 │ ⚙️  Settings    │
+│ 🔄 Reset        │ ← シミュレーションリセット
 │                 │
 │ Probe Model:    │
 │ [Dropdown▼]     │ ← モデル選択
@@ -527,6 +529,73 @@ HUDの「設定」ボタンをクリックすると、ドロップダウンパ�
 - パネルはHUDと統一されたデザイン
 
 **注意:** パラメータ変更は次回リスタート（R キー）時に反映される。
+
+### 3.5.1 BGM（背景音楽）システム
+
+ゲームプレイ中に背景音楽を再生する機能を提供。Settingsパネルから制御可能。
+
+**機能概要:**
+- 複数のBGMトラックから選択可能
+- 音量調整（0-100%）
+- BGMのON/OFF切り替え
+- ループ再生（1曲が終わると自動的に最初から繰り返し）
+
+**設定項目:**
+
+| 設定項目 | 種類 | デフォルト | 説明 |
+|---------|------|-----------|------|
+| **Enable BGM** | チェックボックス | ON | BGMの有効/無効を切り替え |
+| **BGM Track** | ドロップダウン | Cinematic | 再生するBGMトラックを選択 |
+| **BGM Volume** | スライダー | 30% | 音量調整（0-100%） |
+
+**利用可能なBGMトラック:**
+- **Cinematic** - `/audio/bgm/Cinematic.mp3`
+- **Study Buddy** - `/audio/bgm/Study Buddy.mp3`
+
+**実装詳細:**
+
+*ファイル構成:*
+```
+public/audio/bgm/
+  ├── Cinematic.mp3
+  └── Study Buddy.mp3
+
+src/components/
+  └── BGMManager.tsx  # BGM管理用カスタムフック（useBGM）
+```
+
+*コンポーネント:*
+- **BGMManager.tsx**: `useBGM`カスタムフックを提供
+  - `audioRef`: HTMLAudioElement への参照
+  - `enabled`: BGM有効/無効状態
+  - `volume`: 音量（0.0-1.0）
+  - `selectedTrack`: 選択中のトラックパス
+  - 自動ループ再生（`audio.loop = true`）
+
+*統合:*
+- `page.tsx`: `useBGM`フックで状態を管理
+- `HUD.tsx`: BGM設定をSettingsPanelに渡す
+- `SettingsPanel.tsx`: BGMコントロールUIを表示
+
+**BGMトラック追加方法:**
+
+新しいBGMを追加する場合は以下の手順が必要：
+
+1. `public/audio/bgm/` に新しいmp3ファイルを配置
+2. `src/components/BGMManager.tsx` の `BGM_TRACKS` 配列に追加:
+   ```typescript
+   export const BGM_TRACKS: BGMTrack[] = [
+       { name: 'Cinematic', path: '/audio/bgm/Cinematic.mp3' },
+       { name: 'Study Buddy', path: '/audio/bgm/Study Buddy.mp3' },
+       { name: '新しい曲名', path: '/audio/bgm/新しいファイル名.mp3' },
+   ];
+   ```
+3. 開発サーバーを再起動
+
+**注意事項:**
+- ブラウザの自動再生ポリシーにより、ユーザー操作（クリックなど）後に再生が開始される場合があります
+- 音声ファイルは静的アセットとして配信されるため、ファイルサイズに注意
+- 現在の実装では、実行時にファイルシステムをスキャンして自動検出する機能はありません（手動でコード追加が必要）
 
 ### 3.6 UI全体の配置
 

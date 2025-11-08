@@ -29,6 +29,12 @@ interface HUDProps {
     setPlanetOrbitsEnabled?: (v: boolean) => void;
     predictionEnabled?: boolean;
     setPredictionEnabled?: (v: boolean) => void;
+    bgmEnabled?: boolean;
+    setBgmEnabled?: (v: boolean) => void;
+    bgmVolume?: number;
+    setBgmVolume?: (v: number) => void;
+    bgmTrack?: string;
+    setBgmTrack?: (v: string) => void;
     selectedModel?: string;
     setSelectedModel?: (v: string) => void;
     isSimulationStarted?: boolean;
@@ -62,6 +68,12 @@ const HUD: React.FC<HUDProps> = ({
     setPlanetOrbitsEnabled = () => {},
     predictionEnabled = true,
     setPredictionEnabled = () => {},
+    bgmEnabled = true,
+    setBgmEnabled = () => {},
+    bgmVolume = 0.3,
+    setBgmVolume = () => {},
+    bgmTrack,
+    setBgmTrack = () => {},
     selectedModel = 'space_fighter',
     setSelectedModel = () => {},
     isSimulationStarted = false,
@@ -202,6 +214,19 @@ const HUD: React.FC<HUDProps> = ({
                                 <span>Settings</span>
                             </button>
 
+                            {onReset && (
+                                <button
+                                    className="menu-item"
+                                    onClick={() => {
+                                        onReset();
+                                        setIsMenuOpen(false);
+                                    }}
+                                >
+                                    <span className="menu-icon">🔄</span>
+                                    <span>Reset</span>
+                                </button>
+                            )}
+
                             <div className="menu-model-selector">
                                 <label>Probe Model:</label>
                                 <select
@@ -305,7 +330,12 @@ const HUD: React.FC<HUDProps> = ({
                         setPlanetOrbitsEnabled={setPlanetOrbitsEnabled}
                         predictionEnabled={predictionEnabled}
                         setPredictionEnabled={setPredictionEnabled}
-                        onReset={onReset}
+                        bgmEnabled={bgmEnabled}
+                        setBgmEnabled={setBgmEnabled}
+                        bgmVolume={bgmVolume}
+                        setBgmVolume={setBgmVolume}
+                        bgmTrack={bgmTrack}
+                        setBgmTrack={setBgmTrack}
                     />
                     </div>
                 </>

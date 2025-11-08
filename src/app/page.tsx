@@ -7,6 +7,7 @@ import Controls, { CameraView } from '../components/Controls';
 import CameraControls from '../components/CameraControls';
 import TouchControls from '../components/TouchControls';
 import { PHYSICS_SCALE, CELESTIAL_CONSTANTS } from '../lib/threeSetup';
+import { useBGM } from '../components/BGMManager';
 
 export interface DataPoint {
     time: number;
@@ -40,6 +41,9 @@ const Page = () => {
 
     // Simulation control
     const [isSimulationStarted, setIsSimulationStarted] = useState<boolean>(false);
+
+    // BGM control
+    const { enabled: bgmEnabled, setEnabled: setBgmEnabled, volume: bgmVolume, setVolume: setBgmVolume, selectedTrack: bgmTrack, setSelectedTrack: setBgmTrack } = useBGM();
 
     // 履歴データの保存（最大100ポイント）
     const [velocityHistory, setVelocityHistory] = useState<DataPoint[]>([]);
@@ -133,6 +137,12 @@ const Page = () => {
                 setPlanetOrbitsEnabled={setPlanetOrbitsEnabled}
                 predictionEnabled={predictionEnabled}
                 setPredictionEnabled={setPredictionEnabled}
+                bgmEnabled={bgmEnabled}
+                setBgmEnabled={setBgmEnabled}
+                bgmVolume={bgmVolume}
+                setBgmVolume={setBgmVolume}
+                bgmTrack={bgmTrack}
+                setBgmTrack={setBgmTrack}
                 selectedModel={selectedModel}
                 setSelectedModel={setSelectedModel}
                 isSimulationStarted={isSimulationStarted}
