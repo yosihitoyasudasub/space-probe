@@ -72,12 +72,12 @@ export const CAMERA_CONSTANTS = {
 
 export const LIGHTING_CONSTANTS = {
     // Ambient light intensity (0-1 scale, unitless)
-    // Higher values make all objects brighter regardless of direction
-    AMBIENT_INTENSITY: 0.6,
+    // Lower values make shadows more prominent by darkening non-illuminated areas
+    AMBIENT_INTENSITY: 0.2,  // Reduced from 0.6 to make shadows darker
 
     // Directional light intensity (0-1 scale, unitless)
     // Simulates sunlight with direction and shadows
-    DIRECTIONAL_INTENSITY: 0.8,
+    DIRECTIONAL_INTENSITY: 1.2,  // Increased from 0.8 for stronger contrast
 
     // Directional light position (scene units)
     // Light comes from this direction (not a physical location)
@@ -455,6 +455,10 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, CAMERA_CONSTANTS.MAX_PIXEL_RATIO));
 
+    // Enable shadow mapping for realistic planet lighting
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Soft shadows for better visual quality
+
     // Setup post-processing for bloom effect
     const composer = new EffectComposer(renderer);
     const renderPass = new RenderPass(scene, camera);
@@ -471,13 +475,23 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
 
     const ambient = new THREE.AmbientLight(0xffffff, LIGHTING_CONSTANTS.AMBIENT_INTENSITY);
     scene.add(ambient);
-    const directional = new THREE.DirectionalLight(0xffffff, LIGHTING_CONSTANTS.DIRECTIONAL_INTENSITY);
-    directional.position.set(
-        LIGHTING_CONSTANTS.DIRECTIONAL_POSITION.x,
-        LIGHTING_CONSTANTS.DIRECTIONAL_POSITION.y,
-        LIGHTING_CONSTANTS.DIRECTIONAL_POSITION.z
-    );
-    scene.add(directional);
+
+    // Use PointLight instead of DirectionalLight for realistic radial lighting from the sun
+    // PointLight emits light in all directions from a single point (like a star)
+    const sunLight = new THREE.PointLight(0xffffff, LIGHTING_CONSTANTS.DIRECTIONAL_INTENSITY, 0, 0);
+    // Parameters: color, intensity, distance (0 = infinite), decay (0 = no decay for game visibility)
+
+    // Configure shadow casting for the sun's light
+    sunLight.castShadow = true;
+    sunLight.shadow.mapSize.width = 4096;  // Very high resolution for sharp, detailed shadows
+    sunLight.shadow.mapSize.height = 4096;
+    sunLight.shadow.camera.near = 0.5;
+    sunLight.shadow.camera.far = 5000;     // Cover most of solar system (50 AU)
+    sunLight.shadow.bias = -0.00005;       // Fine-tuned to reduce acne while maintaining shadow strength
+
+    // Position light at the sun (will be updated dynamically)
+    sunLight.position.set(0, 0, 0);
+    scene.add(sunLight);
 
     // Simple grid for reference (large enough to show outer planets)
     const grid = new THREE.GridHelper(
@@ -591,6 +605,11 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
 
         // Apply axial tilt (rotation axis inclination)
         mesh.rotation.z = pd.axialTilt;
+
+        // Enable shadow receiving for realistic lighting from the sun
+        // Planets only receive shadows, not cast them (no planet-to-planet shadows)
+        mesh.castShadow = false;
+        mesh.receiveShadow = true;
 
         scene.add(mesh);
         planetMeshes.push({ id: pd.id, mesh, rotationSpeed: pd.rotationSpeed });
@@ -1239,6 +1258,8 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
             // (star is now movable) synchronize star mesh to its simulated position
             if (nb.id === 'star') {
                 starMesh.position.set(nb.position[0], nb.position[1], nb.position[2]);
+                // Update sun light position to match the sun (PointLight emits radially from this point)
+                sunLight.position.copy(starMesh.position);
             }
         }
 
