@@ -476,11 +476,10 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     composer.addPass(bloomPass);
 
     // Film Grain effect for cinematic quality
+    // FilmPass constructor: (noiseIntensity, scanlinesIntensity)
     const filmPass = new FilmPass(
         0.15,  // noise intensity (adds texture/grain)
-        0.0,   // scanline intensity (0 = disabled)
-        0,     // scanline count
-        false  // grayscale (false = keep colors)
+        0.0    // scanline intensity (0 = disabled)
     );
     composer.addPass(filmPass);
 
