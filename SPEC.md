@@ -544,7 +544,7 @@ HUDの「設定」ボタンをクリックすると、ドロップダウンパ�
 
 | 設定項目 | 種類 | デフォルト | 説明 |
 |---------|------|-----------|------|
-| **Enable BGM** | チェックボックス | ON | BGMの有効/無効を切り替え |
+| **Enable BGM** | チェックボックス | OFF | BGMの有効/無効を切り替え |
 | **BGM Track** | ドロップダウン | Cinematic | 再生するBGMトラックを選択 |
 | **BGM Volume** | スライダー | 30% | 音量調整（0-100%） |
 
@@ -1368,6 +1368,98 @@ function switchProbeModel(newModelPath: string | null, orientation?: {...}) {
 2. `invertDirection`を反転（true ↔ false）
 3. 必要に応じて`rotationY`を手動設定
 4. ブラウザをリロードして確認
+
+#### 3.7.6 ブースター発光機能（推進時のみ）
+
+**概要:**
+探査機が推進操作（矢印キー入力）を行っている時のみ、ブースター部分が白く発光する視覚効果。推進の有無を直感的にフィードバックします。
+
+**実装方式:**
+
+*発光トリガー:*
+- 矢印キー（↑↓←→）が押されている
+- かつ燃料が残っている（`state.fuel > 0`）
+
+*発光仕様:*
+```typescript
+// 推進中
+emissive: 0xffffff        // 白色
+emissiveIntensity: 6.0    // 強い発光
+
+// 推進停止時
+emissive: originalEmissive  // 元の発光色
+emissiveIntensity: 1.0      // 通常強度
+```
+
+**実装詳細:**
+
+*GLBモデル読み込み時（threeSetup.ts:385-445）:*
+```typescript
+// 手動でブースターマテリアルを登録
+const thrusterMaterials: any[] = [];
+
+// TODO: モデル別にブースターメッシュを指定
+model.traverse((child: any) => {
+    if (child.isMesh && child.name === 'thruster_mesh_name') {
+        const materials = Array.isArray(child.material) ? child.material : [child.material];
+        materials.forEach((mat: any) => {
+            if (mat.emissive !== undefined) {
+                thrusterMaterials.push(mat);
+                (mat as any).originalEmissive = mat.emissive.clone();
+            }
+        });
+    }
+});
+
+// モデルに保存
+(model as any).thrusterMaterials = thrusterMaterials;
+```
+
+*ゲームループでの発光制御（GameCanvas.tsx:302-323）:*
+```typescript
+// 推進状態を判定
+const isThrustingNow = (inputState.left || inputState.right ||
+                        inputState.up || inputState.down) &&
+                        state.fuel > 0;
+
+// ブースターマテリアルの発光を更新
+if (probe && (probe as any).thrusterMaterials) {
+    const thrusterMats = (probe as any).thrusterMaterials;
+    thrusterMats.forEach((mat: any) => {
+        if (mat.emissive) {
+            if (isThrustingNow) {
+                mat.emissive.setHex(0xffffff);
+                mat.emissiveIntensity = 6.0;
+            } else {
+                if (mat.originalEmissive) {
+                    mat.emissive.copy(mat.originalEmissive);
+                }
+                mat.emissiveIntensity = 1.0;
+            }
+        }
+    });
+}
+```
+
+**カスタマイズ:**
+
+*発光強度の調整:*
+- `mat.emissiveIntensity = 6.0` の値を変更
+- 推奨範囲: 2.0（控えめ）〜 8.0（非常に強い）
+
+*ブースターメッシュの指定:*
+1. ブラウザのコンソールでモデルのメッシュ名を確認
+2. `threeSetup.ts` の TODO セクション（430-442行目）で該当メッシュを指定
+3. 複数メッシュを追加可能
+
+**Bloomエフェクトとの連携:**
+- 発光マテリアルはポストプロセッシングの Bloom エフェクトと自動連携
+- 推進時にブースターから光彩が広がる演出が自動的に適用される
+
+**注意事項:**
+- 燃料切れ時は発光しない（推進できないため）
+- ブースターメッシュは手動で指定する必要がある（自動検出なし）
+- GLBモデルのマテリアルに `emissive` プロパティが必要
 
 ### 3.8 軌道可視化
 

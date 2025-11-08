@@ -20,7 +20,7 @@ interface BGMManagerProps {
 
 export const useBGM = () => {
     const audioRef = useRef<HTMLAudioElement | null>(null);
-    const [enabled, setEnabled] = useState<boolean>(true);
+    const [enabled, setEnabled] = useState<boolean>(false);  // Default: disabled
     const [volume, setVolume] = useState<number>(0.3);
     const [selectedTrack, setSelectedTrack] = useState<string>(BGM_TRACKS[0].path);
     const [isPlaying, setIsPlaying] = useState<boolean>(false);

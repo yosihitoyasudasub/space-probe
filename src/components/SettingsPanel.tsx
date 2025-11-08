@@ -39,7 +39,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
     setPlanetOrbitsEnabled = () => {},
     predictionEnabled = true,
     setPredictionEnabled = () => {},
-    bgmEnabled = true,
+    bgmEnabled = false,
     setBgmEnabled = () => {},
     bgmVolume = 0.3,
     setBgmVolume = () => {},

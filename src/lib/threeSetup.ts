@@ -382,6 +382,9 @@ function loadGLBProbe(
             // Store orientation config on model for use in velocity tracking
             (model as any).orientationConfig = orientation;
 
+            // Store thruster materials for dynamic glow effect (to be manually configured)
+            const thrusterMaterials: any[] = [];
+
             // Brighten all materials in the model
             model.traverse((child: any) => {
                 if (child.isMesh && child.material) {
@@ -423,6 +426,23 @@ function loadGLBProbe(
                     });
                 }
             });
+
+            // TODO: Manually add thruster materials here by mesh name
+            // Example:
+            // model.traverse((child: any) => {
+            //     if (child.isMesh && child.name === 'thruster_mesh_name') {
+            //         const materials = Array.isArray(child.material) ? child.material : [child.material];
+            //         materials.forEach((mat: any) => {
+            //             if (mat.emissive !== undefined) {
+            //                 thrusterMaterials.push(mat);
+            //                 (mat as any).originalEmissive = mat.emissive.clone();
+            //             }
+            //         });
+            //     }
+            // });
+
+            // Store thruster materials on the model for later access
+            (model as any).thrusterMaterials = thrusterMaterials;
 
             console.log('GLB model loaded successfully:', modelPath);
             onLoad(model);

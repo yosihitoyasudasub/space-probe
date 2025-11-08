@@ -299,6 +299,29 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = CELESTIAL_CO
                             }
                         }
 
+                        // Update thruster glow based on input
+                        const isThrustingNow = (inputState.left || inputState.right || inputState.up || inputState.down) && state.fuel > 0;
+                        if (probe && (probe as any).thrusterMaterials) {
+                            const thrusterMats = (probe as any).thrusterMaterials;
+                            thrusterMats.forEach((mat: any) => {
+                                if (mat.emissive) {
+                                    if (isThrustingNow) {
+                                        // White glow when thrusting (intensity: 4.0)
+                                        mat.emissive.setHex(0xffffff);
+                                        mat.emissiveIntensity = 6.0;
+                                    } else {
+                                        // Restore original emissive color when not thrusting
+                                        if (mat.originalEmissive) {
+                                            mat.emissive.copy(mat.originalEmissive);
+                                        } else {
+                                            mat.emissive.setHex(0x000000);
+                                        }
+                                        mat.emissiveIntensity = 1.0;
+                                    }
+                                }
+                            });
+                        }
+
                         if (dv[0] !== 0 || dv[1] !== 0 || dv[2] !== 0) {
                             // Calculate fuel consumption based on delta-v magnitude
                             const dvMagnitude = Math.sqrt(dv[0] * dv[0] + dv[1] * dv[1] + dv[2] * dv[2]);
