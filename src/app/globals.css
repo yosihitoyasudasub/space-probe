@@ -861,28 +861,48 @@ body {
     transform: scale(0.95);
 }
 
-.touch-restart {
-    position: fixed;
-    top: 1px;
-    right: 1px;
-    pointer-events: auto;
-    z-index: 900;
+/* Mobile-only Reset button in Settings panel */
+.mobile-only-reset {
+    display: none; /* Hidden on desktop by default */
 }
 
-.touch-btn-restart {
-    width: auto;
-    min-width: 60px;
-    height: 30px;
-    padding: 0 10px;
+.reset-button {
+    width: 100%;
+    padding: 12px;
+    background: rgba(0, 20, 40, 0.98);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    font-family: var(--font-primary);
     font-size: 14px;
-    border-radius: 0px;
-    font-weight: normal;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.reset-button:hover {
+    background: rgba(0, 30, 60, 1);
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+.reset-button:active {
+    background: rgba(0, 10, 20, 1);
+    transform: scale(0.98);
+}
+
+/* Show Reset button in Settings panel on mobile only */
+@media (max-width: 768px) {
+    .mobile-only-reset {
+        display: block;
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
 }
 
 /* Hide touch controls on desktop (screens wider than 768px) */
 @media (min-width: 769px) {
-    .touch-arrows,
-    .touch-restart {
+    .touch-arrows {
         display: none;
     }
 }

@@ -100,6 +100,13 @@ const Page = () => {
         [setStatus, setVelocityWithHistory, setDistanceWithHistory, setFuel, setSlingshots, setDistanceFromSun, setOrbitTimes]
     );
 
+    // Reset handler for mobile Settings panel
+    const handleReset = () => {
+        if ((window as any).__restartSimulation) {
+            (window as any).__restartSimulation();
+        }
+    };
+
     return (
         <div>
             <GameCanvas hudSetters={hudSetters} probeSpeedMult={probeSpeedMult} gravityG={gravityG} starMass={starMass} cameraView={cameraView} gravityGridEnabled={gravityGridEnabled} setGravityGridEnabled={setGravityGridEnabled} gridEnabled={gridEnabled} setGridEnabled={setGridEnabled} planetOrbitsEnabled={planetOrbitsEnabled} setPlanetOrbitsEnabled={setPlanetOrbitsEnabled} predictionEnabled={predictionEnabled} setPredictionEnabled={setPredictionEnabled} selectedModel={selectedModel} isSimulationStarted={isSimulationStarted} />
@@ -133,6 +140,7 @@ const Page = () => {
                 completedMissionIds={completedMissionIds}
                 onMissionCompleted={handleMissionCompleted}
                 orbitTimes={orbitTimes}
+                onReset={handleReset}
             />
             <CameraControls cameraView={cameraView} setCameraView={setCameraView} />
             <TouchControls />

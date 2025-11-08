@@ -1,19 +1,12 @@
 import React from 'react';
 
 const TouchControls: React.FC = () => {
-    const handleTouchStart = (key: 'left' | 'right' | 'up' | 'down' | 'restart') => (e: React.TouchEvent | React.MouseEvent) => {
+    const handleTouchStart = (key: 'left' | 'right' | 'up' | 'down') => (e: React.TouchEvent | React.MouseEvent) => {
         e.preventDefault();
-        if (key === 'restart') {
-            // Call restart function
-            if ((window as any).__restartSimulation) {
-                (window as any).__restartSimulation();
-            }
-        } else {
-            // Set input state
-            const inputState = (window as any).__gameInputState;
-            if (inputState) {
-                inputState[key] = true;
-            }
+        // Set input state
+        const inputState = (window as any).__gameInputState;
+        if (inputState) {
+            inputState[key] = true;
         }
     };
 
@@ -73,17 +66,6 @@ const TouchControls: React.FC = () => {
                         →
                     </button>
                 </div>
-            </div>
-
-            {/* Top-right: Restart button */}
-            <div className="touch-restart">
-                <button
-                    className="touch-btn touch-btn-restart"
-                    onTouchStart={handleTouchStart('restart')}
-                    onMouseDown={handleTouchStart('restart')}
-                >
-                    Reset
-                </button>
             </div>
         </>
     );

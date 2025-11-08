@@ -15,6 +15,7 @@ interface SettingsPanelProps {
     setPlanetOrbitsEnabled?: (v: boolean) => void;
     predictionEnabled?: boolean;
     setPredictionEnabled?: (v: boolean) => void;
+    onReset?: () => void;
 }
 
 const SettingsPanel: React.FC<SettingsPanelProps> = ({
@@ -32,6 +33,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
     setPlanetOrbitsEnabled = () => {},
     predictionEnabled = true,
     setPredictionEnabled = () => {},
+    onReset,
 }) => {
     return (
         <div className="settings-panel">
@@ -109,6 +111,18 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         <span>Show prediction trajectory</span>
                     </label>
                 </div>
+
+                {/* Reset button - only visible on mobile */}
+                {onReset && (
+                    <div className="setting-item mobile-only-reset">
+                        <button
+                            className="reset-button"
+                            onClick={onReset}
+                        >
+                            Reset Simulation
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );

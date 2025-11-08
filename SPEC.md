@@ -2125,7 +2125,9 @@ Scene → RenderPass → UnrealBloomPass → 最終出力
 
 ### 3.15 タッチコントロール（スマホ対応）
 
-スマートフォンやタブレット端末で探査機を操作できるよう、タッチボタンを画面に配置する機能。矢印ボタンで推進操作、Rボタンでリスタート。
+スマートフォンやタブレット端末で探査機を操作できるよう、タッチボタンを画面に配置する機能。矢印ボタンで推進操作を行う。
+
+**注意:** バージョン2.6以降、右上のResetボタンは削除され、Settingsパネル内に移動しました（詳細は3.15.10参照）。
 
 #### 3.15.1 概要
 
@@ -2135,7 +2137,7 @@ Scene → RenderPass → UnrealBloomPass → 最終出力
 - モバイルファーストなUX提供
 
 **実装方式:**
-- 画面タッチボタン（矢印 + R）
+- 画面タッチボタン（矢印ボタンのみ）
 - タッチイベントとマウスイベント両対応
 - レスポンシブデザイン（PC画面では非表示）
 
@@ -2143,11 +2145,6 @@ Scene → RenderPass → UnrealBloomPass → 最終出力
 
 **レイアウト:**
 ```
-              [R]  ← 右端、中央高さ
-
-
-
-
                 ↑
               ← ↓ →  ← 右下
 ```
@@ -2155,24 +2152,17 @@ Scene → RenderPass → UnrealBloomPass → 最終出力
 **配置詳細:**
 | ボタン | 位置 | サイズ |
 |-------|------|--------|
-| 矢印ボタン | 右下（bottom: 20px, right: 20px） | 40px × 40px |
-| Rボタン | 右端中央（right: 20px, top: 50%） | 45px × 45px（円形） |
+| 矢印ボタン | 右下（bottom: 2px, right: 2px） | 30px × 30px |
 
 #### 3.15.3 デザイン仕様
 
 **矢印ボタン:**
-- サイズ: 40px × 40px
+- サイズ: 30px × 30px
 - フォント: 16px
 - ボーダー: 1px solid rgba(0, 255, 255, 0.6)
 - 背景: rgba(0, 0, 0, 0.7)
 - border-radius: 5px
-- ボタン間隔: 4px
-
-**Rボタン（リスタート）:**
-- サイズ: 45px × 45px
-- フォント: 18px
-- 形状: 円形（border-radius: 50%）
-- デザインは矢印ボタンと統一
+- ボタン間隔: 2px
 
 **視覚フィードバック:**
 ```css
@@ -2191,14 +2181,10 @@ Scene → RenderPass → UnrealBloomPass → 最終出力
 ```typescript
 // src/components/TouchControls.tsx
 const TouchControls: React.FC = () => {
-    const handleTouchStart = (key: 'left' | 'right' | 'up' | 'down' | 'restart') => {
-        if (key === 'restart') {
-            (window as any).__restartSimulation();
-        } else {
-            const inputState = (window as any).__gameInputState;
-            if (inputState) {
-                inputState[key] = true;
-            }
+    const handleTouchStart = (key: 'left' | 'right' | 'up' | 'down') => {
+        const inputState = (window as any).__gameInputState;
+        if (inputState) {
+            inputState[key] = true;
         }
     };
 
@@ -2276,9 +2262,6 @@ inputState.left = false;
 | ← | 左方向推進 |
 | → | 右方向推進 |
 
-**Rボタン:**
-- シミュレーションをリスタート（キーボードのRキーと同じ）
-
 #### 3.15.9 デザイン統一
 
 **カメラボタンとの統一:**
@@ -2290,6 +2273,92 @@ inputState.left = false;
 - シアン/グリーンカラー
 - 半透明背景
 - タップ時の発光エフェクト
+
+#### 3.15.10 モバイル用Resetボタン（バージョン2.6以降）
+
+**概要:**
+バージョン2.6で、右上のResetボタンを削除し、Settingsパネル内にモバイル専用のResetボタンを配置しました。
+
+**設計意図:**
+- 画面上の常設ボタンを減らし、3D空間の視認性を向上
+- 誤タップ防止（設定パネル内に配置することで意図的な操作が必要）
+- UIの一貫性（設定関連の操作を1箇所に集約）
+
+**実装詳細:**
+
+実装箇所: `src/components/SettingsPanel.tsx:115-125`
+
+```typescript
+{/* Reset button - only visible on mobile */}
+{onReset && (
+    <div className="setting-item mobile-only-reset">
+        <button
+            className="reset-button"
+            onClick={onReset}
+        >
+            Reset Simulation
+        </button>
+    </div>
+)}
+```
+
+**スタイリング:**
+
+実装箇所: `src/app/globals.css:864-907`
+
+```css
+.mobile-only-reset {
+    display: none; /* デスクトップでは非表示 */
+}
+
+.reset-button {
+    width: 100%;
+    padding: 12px;
+    background: rgba(0, 20, 40, 0.98); /* サイドバーと同じ背景色 */
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    font-family: var(--font-primary); /* Space Mono */
+    font-size: 14px;
+    font-weight: bold;
+}
+
+@media (max-width: 768px) {
+    .mobile-only-reset {
+        display: block;
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+}
+```
+
+**表示条件:**
+- **デスクトップ（769px以上）**: 非表示
+- **モバイル（768px以下）**: Settingsパネルの最下部に表示
+
+**操作方法:**
+1. ハンバーガーメニューを開く
+2. 「Settings」をタップ
+3. パネル最下部の「Reset Simulation」ボタンをタップ
+4. シミュレーションがリセットされる
+
+**デザイン特徴:**
+- サイドバーと同じダークブルー背景で統一感を維持
+- Space Monoフォントで他のUI要素と統一
+- ホバー時にシアンのグロー効果
+- 区切り線で他の設定項目と視覚的に分離
+
+**データフロー:**
+```
+page.tsx (handleReset)
+  ↓ onReset prop
+HUD.tsx
+  ↓ onReset prop
+SettingsPanel.tsx
+  ↓ onClick
+window.__restartSimulation()
+```
 
 ### 3.16 ミッション定義の分離（アーキテクチャ改善）
 
@@ -4508,6 +4577,7 @@ SOFTWARE.
 | 2025-11-04 | 2.3 | 軌道投入ミッション実装 - 3段階達成条件（軌道範囲・速度・滞在時間）、範囲内で常時速度チェック、条件不満足時の自動リセット、時間ベースUI表示、Jupiter軌道投入ミッション追加（5.20 AU、13±1 km/s、10秒滞在）、レンダリング中の状態更新エラー修正（useEffect使用） |
 | 2025-11-05 | 2.4 | 惑星視覚化の大幅改善 - 規約ベースの自動テクスチャ読み込み実装（全惑星対応、ファイル配置のみで自動適用）、テクスチャ使用時のcolor白リセット（氷などの白が正しく表示）、全惑星の自転実装（個別速度設定）、実測データに基づく地軸の傾き実装（Mercury 0.034°〜Uranus 97.8°）、金星の逆回転再現、木星・土星の高速回転再現、惑星影響圏（トーラス）非表示化、定数による一元管理（solarDefs配列）、Solar System Scope推奨リンク追加 |
 | 2025-11-08 | 2.5 | リアルタイムシャドウイング実装 - 太陽-惑星間の位置関係を反映した影生成、PointLightによる放射状太陽光シミュレーション（DirectionalLightから変更で影の方向が物理的に正確に）、超高解像度シャドウマップ（4096×4096、2048から倍増）、強力なコントラスト設定（Ambient 0.2、PointLight 1.2）、惑星は影を受け取るのみ（castShadow=false、惑星間日食なし）、太陽位置の動的追従、シャドウアクネ軽減バイアス微調整（-0.00005） |
+| 2025-11-08 | 2.6 | モバイルUI改善：Resetボタン移動 - 右上のResetボタンを削除（TouchControls）、SettingsパネルにReset Simulationボタンを追加（モバイルのみ表示、768px以下）、サイドバーと同じ背景色（rgba(0,20,40,0.98)）、Space Monoフォント統一、ホバー/アクティブ効果付き、区切り線で視覚的に分離 |
 
 ---
 
