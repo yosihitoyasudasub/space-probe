@@ -214,6 +214,20 @@ body {
 }
 
 /* チャートセクション - 独立パネル */
+.hud-credits-panel {
+    position: absolute;
+    top: 60px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 15px;
+    border-radius: 5px;
+    max-width: 400px;
+    max-height: 80vh;
+    overflow-y: auto;
+    z-index: 10;
+    animation: slideDown 0.3s ease;
+}
+
 .hud-charts-panel {
     position: absolute;
     top: 60px;
@@ -1096,4 +1110,197 @@ body {
     background: transparent;
     z-index: 9;
     cursor: pointer;
+}
+
+/* ====================================================================
+   Credits Panel Styles
+   ==================================================================== */
+
+.credits-panel {
+    color: #fff;
+    font-family: var(--font-primary);
+}
+
+.credits-header {
+    margin-bottom: 15px;
+    border-bottom: 1px solid #00ff88;
+    padding-bottom: 10px;
+}
+
+.credits-title {
+    color: #00ff88;
+    font-size: 16px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.credits-total {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+}
+
+.credits-amount {
+    font-size: 24px;
+    font-weight: bold;
+    color: #00ff88;
+    text-shadow: 0 0 8px rgba(0, 255, 136, 0.4);
+}
+
+.credits-label {
+    font-size: 14px;
+    color: #00ff88;
+    opacity: 0.8;
+}
+
+.credits-stats {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: rgba(0, 255, 136, 0.1);
+    border-radius: 5px;
+    border: 1px solid rgba(0, 255, 136, 0.3);
+}
+
+.credit-stat-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.credit-stat-item:last-child {
+    margin-bottom: 0;
+}
+
+.credit-stat-item .stat-label {
+    color: #00aaff;
+}
+
+.credit-stat-item .stat-value {
+    color: #fff;
+    font-weight: bold;
+}
+
+.recent-reward {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: rgba(255, 215, 0, 0.1);
+    border-radius: 5px;
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    animation: rewardGlow 2s ease-in-out;
+}
+
+@keyframes rewardGlow {
+    0%, 100% {
+        box-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+    }
+}
+
+.reward-header {
+    color: #ffd700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    opacity: 0.9;
+}
+
+.reward-mission {
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 12px;
+}
+
+.reward-breakdown {
+    font-size: 14px;
+}
+
+.reward-line {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    padding: 4px 0;
+}
+
+.reward-line.bonus {
+    color: #ffd700;
+}
+
+.reward-line.total {
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+    margin-top: 6px;
+    padding-top: 10px;
+    font-weight: bold;
+    font-size: 15px;
+}
+
+.reward-amount {
+    color: #00ff88;
+    font-weight: bold;
+}
+
+.reward-line.bonus .reward-amount {
+    color: #ffd700;
+}
+
+.credits-info {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.credits-info h3 {
+    color: #00aaff;
+    font-size: 14px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.credits-info ul {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 15px;
+}
+
+.credits-info ul:last-child {
+    margin-bottom: 0;
+}
+
+.credits-info li {
+    padding: 4px 0;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.credits-info .category {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-right: 8px;
+}
+
+.credits-info .category.beginner {
+    background: #00ff88;
+    color: #000;
+}
+
+.credits-info .category.intermediate {
+    background: #ffd700;
+    color: #000;
+}
+
+.credits-info .category.advanced {
+    background: #ff4444;
+    color: #fff;
 }

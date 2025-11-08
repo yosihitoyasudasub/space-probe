@@ -1,6 +1,6 @@
 # SPEC.md - 宇宙探査機シミュレーションゲーム 仕様書兼設計書
 
-バージョン: 2.5
+バージョン: 2.6.1
 最終更新日: 2025-11-08
 プロジェクト: space-probe-game-next
 
@@ -325,7 +325,7 @@ GAME_LOOP_CONSTANTS = {
 │ Space Probe     │ ← ヘッダー
 │ ─────────────── │
 │                 │
-│ 📊 Charts       │ ← メニュー項目
+│ 💰 Credits      │ ← メニュー項目
 │ 🎯 Missions     │
 │ ❓ Controls     │
 │ ⚙️  Settings    │
@@ -354,7 +354,111 @@ GAME_LOOP_CONSTANTS = {
 - `src/components/HUD.tsx` (122-219行目)
 - `src/app/globals.css` (771-1026行目)
 
-#### 3.4.4 展開パネル（Charts/Missions/Controls/Settings）
+#### 3.4.4 Creditsシステム（報酬パネル）
+
+**概要:**
+ミッション達成時にCredits（通貨）を獲得し、プレイヤーの進捗を可視化するシステム。Chartsパネルの代わりにCreditsパネルを表示。
+
+**報酬システム:**
+
+| ミッションカテゴリ | 基本報酬 | 燃料効率ボーナス |
+|------------------|---------|-----------------|
+| **Beginner** | 100 CR | 90%以上残存: +50 CR |
+| **Intermediate** | 300 CR | 80%以上残存: +100 CR |
+| **Advanced** | 500 CR | 70%以上残存: +200 CR |
+
+**追加ボーナス:**
+- **パーフェクト達成**（燃料95%以上残存）: +100 CR
+
+**Creditsパネル表示内容:**
+- **総Credits**: 獲得した総額を大きく表示
+- **達成ミッション数**: クリアしたミッションの総数
+- **総獲得額**: ミッションから得た総Credits
+- **最近の報酬**（次の報酬まで表示）:
+  - ミッション名
+  - 基本報酬
+  - ボーナス報酬（燃料効率）
+  - 合計獲得Credits
+
+**実装詳細:**
+
+*ファイル構成:*
+- `src/components/CreditsPanel.tsx`: Credits表示コンポーネント
+- `src/hooks/useMissionDetection.ts`: ミッション完了検出カスタムフック
+- `src/types/mission.ts`: MissionReward型定義
+- `src/data/missions.ts`: 報酬計算ロジック（calculateMissionReward関数）
+- `src/app/page.tsx`: Credits状態管理
+- `src/components/HUD.tsx`: useMissionDetectionフックの実行
+- `src/app/globals.css`: Creditsパネルスタイル（1105-1293行目）
+
+*Credits状態管理（page.tsx）:*
+```typescript
+const [totalCredits, setTotalCredits] = useState<number>(0);
+const [earnedCredits, setEarnedCredits] = useState<Record<string, number>>({});
+const [recentReward, setRecentReward] = useState<RewardInfo | null>(null);
+
+// ミッション達成時に報酬を計算・付与
+const handleMissionCompleted = (missionId: string, mission: Mission) => {
+    const reward = mission.calculateReward(stats);
+    setTotalCredits(prev => prev + reward.totalCredits);
+    setEarnedCredits(prev => ({ ...prev, [missionId]: reward.totalCredits }));
+    setRecentReward({ ...reward, missionTitle: mission.title });
+};
+```
+
+*報酬計算（missions.ts）:*
+```typescript
+function calculateMissionReward(category: MissionCategory, stats: GameStats): MissionReward {
+    const baseCredits = CATEGORY_REWARDS[category];
+    let bonusCredits = 0;
+
+    if (stats.fuel >= 95) {
+        bonusCredits += 100;  // Perfect bonus
+    } else if (stats.fuel >= 90 && category === 'beginner') {
+        bonusCredits += 50;
+    } else if (stats.fuel >= 80 && category === 'intermediate') {
+        bonusCredits += 100;
+    } else if (stats.fuel >= 70 && category === 'advanced') {
+        bonusCredits += 200;
+    }
+
+    return { baseCredits, bonusCredits, totalCredits: baseCredits + bonusCredits };
+}
+```
+
+*ミッション完了検出（useMissionDetection.ts）:*
+```typescript
+// カスタムフックとして実装し、HUDで常に実行
+// どのパネルが開いていても、ミッション完了を検出できるようにする
+export const useMissionDetection = ({ stats, completedMissionIds, onMissionCompleted }) => {
+    useEffect(() => {
+        ALL_MISSIONS.forEach(mission => {
+            if (!completedMissionIds.has(mission.id) && mission.checkCompleted(stats)) {
+                onMissionCompleted(mission.id, mission);
+            }
+        });
+    }, [stats, completedMissionIds, onMissionCompleted]);
+};
+```
+
+**重要な設計判断:**
+- ミッション完了検出ロジックは`useMissionDetection`カスタムフックとして抽出
+- `HUD.tsx`で常にこのフックを実行することで、どのパネルが開いていてもリアルタイムで検出
+- `MissionProgress.tsx`は表示ロジックのみに集中（検出ロジックは含まない）
+- これにより、Creditsパネルを開いたままミッションを達成しても即座に表示が更新される
+
+**UIデザイン:**
+- メインカラー: 緑（#00ff88）- Credits表示
+- アクセントカラー: 金（#ffd700）- ボーナス報酬
+- 最近の報酬は2秒間のグローアニメーション
+- スクロール対応（最大高さ80vh）
+- パネルスタイルは他のパネル（Missions、Settings等）と統一
+  - padding: 15px
+  - border-radius: 5px
+  - background: rgba(0, 0, 0, 0.8)
+  - 枠線なし
+
+#### 3.4.5 展開パネル（Credits/Missions/Controls/Settings）
 
 **パネル共通仕様:**
 - 配置: 画面左上（top: 60px, left: 20px）

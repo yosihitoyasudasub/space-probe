@@ -28,6 +28,15 @@ export interface GameStats {
 export type ProgressField = 'distance' | 'distanceFromSun' | 'velocity' | 'slingshots' | 'fuel';
 
 /**
+ * Mission reward structure
+ */
+export interface MissionReward {
+    baseCredits: number;        // Base credit reward
+    bonusCredits?: number;      // Bonus credits (calculated based on performance)
+    totalCredits: number;       // Total credits earned (base + bonus)
+}
+
+/**
  * Mission definition structure
  */
 export interface Mission {
@@ -42,6 +51,8 @@ export interface Mission {
     requiredDuration?: number;                       // Required duration in seconds for time-based missions (e.g., orbit missions)
     requiredVelocity?: number;                       // Required velocity in km/s for orbit insertion missions
     velocityTolerance?: number;                      // Velocity tolerance in km/s (±range)
+    baseReward: number;                              // Base credit reward for completing this mission
+    calculateReward?: (stats: GameStats) => MissionReward;  // Optional custom reward calculation
 }
 
 /**

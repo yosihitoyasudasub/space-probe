@@ -4,7 +4,9 @@ import MiniChart from './MiniChart';
 import MissionProgress from './MissionProgress';
 import ControlsHelp from './ControlsHelp';
 import SettingsPanel from './SettingsPanel';
+import CreditsPanel from './CreditsPanel';
 import { PHYSICS_SCALE, CELESTIAL_CONSTANTS } from '../lib/threeSetup';
+import { useMissionDetection } from '../hooks/useMissionDetection';
 
 interface HUDProps {
     status?: string;
@@ -40,8 +42,16 @@ interface HUDProps {
     isSimulationStarted?: boolean;
     setIsSimulationStarted?: (v: boolean) => void;
     completedMissionIds?: Set<string>;
-    onMissionCompleted?: (missionId: string) => void;
+    onMissionCompleted?: (missionId: string, mission: any) => void;
     orbitTimes?: Record<string, number>;
+    totalCredits?: number;
+    earnedCredits?: Record<string, number>;
+    recentReward?: {
+        missionTitle: string;
+        baseCredits: number;
+        bonusCredits: number;
+        totalCredits: number;
+    } | null;
     onReset?: () => void;
 }
 
@@ -81,17 +91,34 @@ const HUD: React.FC<HUDProps> = ({
     completedMissionIds = new Set(),
     onMissionCompleted = () => {},
     orbitTimes = {},
+    totalCredits = 0,
+    earnedCredits = {},
+    recentReward = null,
     onReset,
 }) => {
-    const [showCharts, setShowCharts] = useState(false);
+    const [showCredits, setShowCredits] = useState(false);
     const [showMissions, setShowMissions] = useState(false);
     const [showHelp, setShowHelp] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    const handleChartsToggle = () => {
-        setShowCharts(!showCharts);
-        if (!showCharts) {
+    // Always detect mission completions regardless of which panel is open
+    useMissionDetection({
+        stats: {
+            distance,
+            velocity,
+            slingshots,
+            fuel,
+            distanceFromSun,
+            orbitTimes,
+        },
+        completedMissionIds,
+        onMissionCompleted,
+    });
+
+    const handleCreditsToggle = () => {
+        setShowCredits(!showCredits);
+        if (!showCredits) {
             setShowMissions(false);
             setShowHelp(false);
             setShowSettings(false);
@@ -102,7 +129,7 @@ const HUD: React.FC<HUDProps> = ({
     const handleMissionsToggle = () => {
         setShowMissions(!showMissions);
         if (!showMissions) {
-            setShowCharts(false);
+            setShowCredits(false);
             setShowHelp(false);
             setShowSettings(false);
         }
@@ -112,7 +139,7 @@ const HUD: React.FC<HUDProps> = ({
     const handleHelpToggle = () => {
         setShowHelp(!showHelp);
         if (!showHelp) {
-            setShowCharts(false);
+            setShowCredits(false);
             setShowMissions(false);
             setShowSettings(false);
         }
@@ -122,7 +149,7 @@ const HUD: React.FC<HUDProps> = ({
     const handleSettingsToggle = () => {
         setShowSettings(!showSettings);
         if (!showSettings) {
-            setShowCharts(false);
+            setShowCredits(false);
             setShowMissions(false);
             setShowHelp(false);
         }
@@ -183,11 +210,11 @@ const HUD: React.FC<HUDProps> = ({
                     <div className="menu-drawer">
                         <div className="menu-items">
                             <button
-                                className={`menu-item ${showCharts ? 'active' : ''}`}
-                                onClick={handleChartsToggle}
+                                className={`menu-item ${showCredits ? 'active' : ''}`}
+                                onClick={handleCreditsToggle}
                             >
-                                <span className="menu-icon">📊</span>
-                                <span>Charts</span>
+                                <span className="menu-icon">💰</span>
+                                <span>Credits</span>
                             </button>
 
                             <button
@@ -248,29 +275,18 @@ const HUD: React.FC<HUDProps> = ({
                 </>
             )}
 
-            {showCharts && (
+            {showCredits && (
                 <>
                     <div
                         className="panel-overlay"
-                        onClick={() => setShowCharts(false)}
+                        onClick={() => setShowCredits(false)}
                     />
-                    <div className="hud-charts-panel">
-                        <MiniChart
-                        data={velocityHistory}
-                        color="#00ff88"
-                        label="Velocity"
-                        unit="km/s"
-                    />
-                    <MiniChart
-                        data={distanceHistory}
-                        color="#00aaff"
-                        label="Distance"
-                        unit="AU"
-                    />
-                    <div className="chart-slingshots">
-                        <span className="chart-label">Swing-by count:</span>
-                        <span className="chart-current" style={{ color: '#0f0' }}>{slingshots}</span>
-                    </div>
+                    <div className="hud-credits-panel">
+                        <CreditsPanel
+                            totalCredits={totalCredits}
+                            earnedCredits={earnedCredits}
+                            recentReward={recentReward}
+                        />
                     </div>
                 </>
             )}

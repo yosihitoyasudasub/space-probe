@@ -39,6 +39,16 @@ const Page = () => {
     const [completedMissionIds, setCompletedMissionIds] = useState<Set<string>>(new Set());
     const [orbitTimes, setOrbitTimes] = useState<Record<string, number>>({});
 
+    // Credits system
+    const [totalCredits, setTotalCredits] = useState<number>(0);
+    const [earnedCredits, setEarnedCredits] = useState<Record<string, number>>({});  // missionId -> credits
+    const [recentReward, setRecentReward] = useState<{
+        missionTitle: string;
+        baseCredits: number;
+        bonusCredits: number;
+        totalCredits: number;
+    } | null>(null);
+
     // Simulation control
     const [isSimulationStarted, setIsSimulationStarted] = useState<boolean>(false);
 
@@ -81,14 +91,48 @@ const Page = () => {
         });
     }, []);
 
-    // Mission completion callback
-    const handleMissionCompleted = useCallback((missionId: string) => {
+    // Mission completion callback with reward calculation
+    const handleMissionCompleted = useCallback((missionId: string, mission: any) => {
+        // Check if already completed (prevent duplicate rewards)
+        if (completedMissionIds.has(missionId)) {
+            return;
+        }
+
+        // Add to completed missions
         setCompletedMissionIds(prev => {
             const newSet = new Set(prev);
             newSet.add(missionId);
             return newSet;
         });
-    }, []);
+
+        // Calculate reward
+        if (mission.calculateReward) {
+            const stats = {
+                distance,
+                velocity,
+                slingshots,
+                fuel,
+                distanceFromSun,
+                orbitTimes,
+            };
+            const reward = mission.calculateReward(stats);
+
+            // Award credits
+            setTotalCredits(prev => prev + reward.totalCredits);
+            setEarnedCredits(prev => ({
+                ...prev,
+                [missionId]: reward.totalCredits,
+            }));
+
+            // Set recent reward for display (stays until next reward)
+            setRecentReward({
+                missionTitle: mission.title,
+                baseCredits: reward.baseCredits,
+                bonusCredits: reward.bonusCredits || 0,
+                totalCredits: reward.totalCredits,
+            });
+        }
+    }, [completedMissionIds, distance, velocity, slingshots, fuel, distanceFromSun, orbitTimes]);
 
     // stable setters object to pass down (memoized so reference is stable)
     const hudSetters = React.useMemo(
@@ -150,6 +194,9 @@ const Page = () => {
                 completedMissionIds={completedMissionIds}
                 onMissionCompleted={handleMissionCompleted}
                 orbitTimes={orbitTimes}
+                totalCredits={totalCredits}
+                earnedCredits={earnedCredits}
+                recentReward={recentReward}
                 onReset={handleReset}
             />
             <CameraControls cameraView={cameraView} setCameraView={setCameraView} />

@@ -5,8 +5,47 @@
  * Missions are organized by category (beginner, intermediate, advanced).
  */
 
-import { Mission, GameStats, MissionCategory } from '../types/mission';
+import { Mission, GameStats, MissionCategory, MissionReward } from '../types/mission';
 import { PLANET_ORBITS, PlanetName } from '../lib/threeSetup';
+
+// ====================================================================
+// Reward System - Credit Calculation
+// ====================================================================
+
+/**
+ * Base rewards by mission category
+ */
+const CATEGORY_REWARDS: Record<MissionCategory, number> = {
+    beginner: 100,
+    intermediate: 300,
+    advanced: 500,
+};
+
+/**
+ * Calculate mission reward based on performance
+ */
+function calculateMissionReward(category: MissionCategory, stats: GameStats): MissionReward {
+    const baseCredits = CATEGORY_REWARDS[category];
+    let bonusCredits = 0;
+
+    // Fuel efficiency bonus
+    if (stats.fuel >= 95) {
+        // Perfect: 95%+ fuel remaining
+        bonusCredits += 100;
+    } else if (stats.fuel >= 90 && category === 'beginner') {
+        bonusCredits += 50;
+    } else if (stats.fuel >= 80 && category === 'intermediate') {
+        bonusCredits += 100;
+    } else if (stats.fuel >= 70 && category === 'advanced') {
+        bonusCredits += 200;
+    }
+
+    return {
+        baseCredits,
+        bonusCredits,
+        totalCredits: baseCredits + bonusCredits,
+    };
+}
 
 // ====================================================================
 // Helper Functions - Mission Factories
@@ -31,6 +70,8 @@ function createDistanceMission(
         unit: 'AU',
         progressField: 'distanceFromSun',
         checkCompleted: (stats: GameStats) => stats.distanceFromSun >= target,
+        baseReward: CATEGORY_REWARDS[category],
+        calculateReward: (stats: GameStats) => calculateMissionReward(category, stats),
     };
 }
 
@@ -53,6 +94,8 @@ function createVelocityMission(
         unit: 'km/s',
         progressField: 'velocity',
         checkCompleted: (stats: GameStats) => stats.velocity >= target,
+        baseReward: CATEGORY_REWARDS[category],
+        calculateReward: (stats: GameStats) => calculateMissionReward(category, stats),
     };
 }
 
@@ -75,6 +118,8 @@ function createSlingshotMission(
         unit: '回',
         progressField: 'slingshots',
         checkCompleted: (stats: GameStats) => stats.slingshots >= target,
+        baseReward: CATEGORY_REWARDS[category],
+        calculateReward: (stats: GameStats) => calculateMissionReward(category, stats),
     };
 }
 
@@ -99,6 +144,8 @@ function createFuelEfficiencyMission(
         progressField: 'distanceFromSun',
         checkCompleted: (stats: GameStats) =>
             stats.distanceFromSun >= distanceTarget && stats.fuel >= fuelTarget,
+        baseReward: CATEGORY_REWARDS[category],
+        calculateReward: (stats: GameStats) => calculateMissionReward(category, stats),
     };
 }
 
@@ -147,6 +194,8 @@ function createOrbitReachMission(
             const timeInOrbit = stats.orbitTimes[id] || 0;
             return inRange && timeInOrbit >= requiredDuration;
         },
+        baseReward: CATEGORY_REWARDS[category],
+        calculateReward: (stats: GameStats) => calculateMissionReward(category, stats),
     };
 }
 

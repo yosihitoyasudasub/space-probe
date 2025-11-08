@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
 import { ALL_MISSIONS } from '../data/missions';
 import { MissionWithProgress, GameStats } from '../types/mission';
 
@@ -9,7 +9,7 @@ interface MissionProgressProps {
     fuel: number;
     distanceFromSun: number;
     completedMissionIds: Set<string>;
-    onMissionCompleted: (missionId: string) => void;
+    onMissionCompleted: (missionId: string, mission: any) => void;
     orbitTimes: Record<string, number>;
 }
 
@@ -33,13 +33,8 @@ const MissionProgress: React.FC<MissionProgressProps> = ({
         orbitTimes,
     };
 
-    // Track previous completed missions to detect new completions
-    const prevCompletedRef = useRef<Set<string>>(new Set());
-
-    // Track newly completed missions to notify in useEffect
-    const newlyCompletedRef = useRef<string[]>([]);
-
     // Map missions to include current progress and completion status
+    // Note: Mission completion detection is now handled by useMissionDetection hook in HUD
     const missions: MissionWithProgress[] = ALL_MISSIONS.map(mission => {
         // For time-based missions, show orbit time instead of distance
         let current: number;
@@ -51,33 +46,15 @@ const MissionProgress: React.FC<MissionProgressProps> = ({
             current = stats[mission.progressField];
         }
 
-        // Check if already completed (persisted state)
+        // Check if completed (from persisted state or current condition)
         const wasCompleted = completedMissionIds.has(mission.id);
-
-        // Check current condition
         const isCurrentlyCompleted = mission.checkCompleted(stats);
-
-        // If newly completed (not in persisted set, but condition met), mark for notification
-        if (isCurrentlyCompleted && !wasCompleted && !prevCompletedRef.current.has(mission.id)) {
-            newlyCompletedRef.current.push(mission.id);
-            prevCompletedRef.current.add(mission.id);
-        }
 
         return {
             ...mission,
             current,
             completed: wasCompleted || isCurrentlyCompleted,
         };
-    });
-
-    // Notify parent about newly completed missions in useEffect (after render)
-    useEffect(() => {
-        if (newlyCompletedRef.current.length > 0) {
-            newlyCompletedRef.current.forEach(missionId => {
-                onMissionCompleted(missionId);
-            });
-            newlyCompletedRef.current = [];
-        }
     });
 
     const completedCount = missions.filter(m => m.completed).length;
