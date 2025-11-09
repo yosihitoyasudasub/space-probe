@@ -25,13 +25,11 @@ export const useBGM = () => {
     const [selectedTrack, setSelectedTrack] = useState<string>(BGM_TRACKS[0].path);
     const [isPlaying, setIsPlaying] = useState<boolean>(false);
 
-    // Initialize audio element
+    // Initialize audio element (lazy initialization for Safari compatibility)
     useEffect(() => {
         if (typeof window !== 'undefined') {
-            audioRef.current = new Audio(selectedTrack);
-            audioRef.current.loop = true;
-            audioRef.current.volume = volume;
-
+            // Don't create Audio object immediately to avoid Safari issues
+            // It will be created when enabled is set to true
             return () => {
                 if (audioRef.current) {
                     audioRef.current.pause();
@@ -63,15 +61,28 @@ export const useBGM = () => {
 
     // Handle enabled/disabled state
     useEffect(() => {
-        if (audioRef.current) {
-            if (enabled) {
-                audioRef.current.play().then(() => {
-                    setIsPlaying(true);
-                }).catch(e => {
-                    console.warn('Failed to play BGM:', e);
+        if (enabled) {
+            // Lazy initialization: create Audio object only when user enables BGM
+            if (!audioRef.current) {
+                try {
+                    audioRef.current = new Audio(selectedTrack);
+                    audioRef.current.loop = true;
+                    audioRef.current.volume = volume;
+                } catch (e) {
+                    console.error('Failed to create Audio object:', e);
                     setIsPlaying(false);
-                });
-            } else {
+                    return;
+                }
+            }
+
+            audioRef.current.play().then(() => {
+                setIsPlaying(true);
+            }).catch(e => {
+                console.warn('Failed to play BGM:', e);
+                setIsPlaying(false);
+            });
+        } else {
+            if (audioRef.current) {
                 audioRef.current.pause();
                 setIsPlaying(false);
             }

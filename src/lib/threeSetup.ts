@@ -479,7 +479,8 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
 
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true }); // Enable antialiasing for all devices
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1 : CAMERA_CONSTANTS.MAX_PIXEL_RATIO));
+    // Use device pixel ratio on mobile for sharp rendering (limited to 2 to balance quality and performance)
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, CAMERA_CONSTANTS.MAX_PIXEL_RATIO));
 
     // Enable shadow mapping for realistic planet lighting
     renderer.shadowMap.enabled = true;
