@@ -491,13 +491,18 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     composer.addPass(renderPass);
 
     // Bloom pass for glowing sun (reduced to minimize spread and artifacts)
+    // Use half resolution on mobile to reduce GPU memory usage (75% reduction)
+    const bloomResolution = isMobile
+        ? new THREE.Vector2(window.innerWidth / 2, window.innerHeight / 2)
+        : new THREE.Vector2(window.innerWidth, window.innerHeight);
     const bloomPass = new UnrealBloomPass(
-        new THREE.Vector2(window.innerWidth, window.innerHeight),
-        0.8,   // strength: reduced to 0.8 for minimal glow
-        0.3,   // radius: small radius to keep glow tight around sun
-        0.9    // threshold: higher threshold (only very bright objects glow)
+        bloomResolution,
+        isMobile ? 0.5 : 0.8,   // strength: reduced on mobile for performance
+        isMobile ? 0.2 : 0.3,   // radius: tighter on mobile
+        isMobile ? 0.95 : 0.9   // threshold: higher on mobile (only brightest objects glow)
     );
     composer.addPass(bloomPass);
+    console.log(`Bloom resolution: ${bloomResolution.x}x${bloomResolution.y}`);
 
     // Film Grain effect for cinematic quality
     // FilmPass constructor: (noiseIntensity, grayscale)
