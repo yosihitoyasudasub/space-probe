@@ -477,7 +477,7 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
         CAMERA_CONSTANTS.INITIAL_POSITION.z
     );
 
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: !isMobile }); // Disable antialiasing on mobile
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true }); // Enable antialiasing for all devices
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1 : CAMERA_CONSTANTS.MAX_PIXEL_RATIO));
 
