@@ -460,6 +460,10 @@ function loadGLBProbe(
 }
 
 export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMult?: number; G?: number; starMass?: number; gravityGridEnabled?: boolean; gridEnabled?: boolean; planetOrbitsEnabled?: boolean; predictionEnabled?: boolean; probeModelPath?: string | null; orientation?: { autoAlign?: boolean; rotationY?: number; invertDirection?: boolean } }) {
+    // Detect mobile device for performance optimizations
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    console.log(`Device type: ${isMobile ? 'Mobile' : 'Desktop'}`);
+
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(
         CAMERA_CONSTANTS.FOV_DEGREES,
@@ -473,9 +477,9 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
         CAMERA_CONSTANTS.INITIAL_POSITION.z
     );
 
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: !isMobile }); // Disable antialiasing on mobile
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, CAMERA_CONSTANTS.MAX_PIXEL_RATIO));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1 : CAMERA_CONSTANTS.MAX_PIXEL_RATIO));
 
     // Enable shadow mapping for realistic planet lighting
     renderer.shadowMap.enabled = true;
@@ -545,12 +549,15 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     // Parameters: color, intensity, distance (0 = infinite), decay (0 = no decay for game visibility)
 
     // Configure shadow casting for the sun's light
+    // Use lower resolution on mobile to prevent crashes (1024x1024 vs 4096x4096)
+    const shadowMapSize = isMobile ? 1024 : 4096;
     sunLight.castShadow = true;
-    sunLight.shadow.mapSize.width = 4096;  // Very high resolution for sharp, detailed shadows
-    sunLight.shadow.mapSize.height = 4096;
+    sunLight.shadow.mapSize.width = shadowMapSize;
+    sunLight.shadow.mapSize.height = shadowMapSize;
     sunLight.shadow.camera.near = 0.5;
     sunLight.shadow.camera.far = 5000;     // Cover most of solar system (50 AU)
     sunLight.shadow.bias = -0.00005;       // Fine-tuned to reduce acne while maintaining shadow strength
+    console.log(`Shadow map resolution: ${shadowMapSize}x${shadowMapSize}`);
 
     // Position light at the sun (will be updated dynamically)
     sunLight.position.set(0, 0, 0);
