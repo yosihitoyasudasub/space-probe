@@ -144,6 +144,9 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = CELESTIAL_CO
     }, [selectedModel]);
 
     useEffect(() => {
+        // Don't initialize Three.js until simulation is started (lazy initialization for Safari compatibility)
+        if (!isSimulationStarted) return;
+
         const canvas = canvasRef.current;
         if (!canvas) return;
     const hudUpdateRef = { current: undefined as any } as React.MutableRefObject<any>;
@@ -587,9 +590,9 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = CELESTIAL_CO
             delete (window as any).__gameInputState;
             delete (window as any).__restartSimulation;
         };
-    }, [hudSetters, probeSpeedMult, gravityG, starMass]);
+    }, [hudSetters, probeSpeedMult, gravityG, starMass, isSimulationStarted]);
 
-    return <canvas ref={canvasRef} style={{ display: 'block', width: '100vw', height: '100vh' }} />;
+    return <canvas ref={canvasRef} style={{ display: 'block', width: '100vw', height: '100vh', visibility: isSimulationStarted ? 'visible' : 'hidden' }} />;
 };
 
 export default GameCanvas;
