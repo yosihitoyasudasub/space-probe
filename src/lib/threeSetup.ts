@@ -503,65 +503,57 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     composer.addPass(renderPass);
 
     // Bloom pass for glowing sun (reduced to minimize spread and artifacts)
-    // Use quarter resolution on Safari mobile to reduce GPU memory usage (93.75% reduction)
-    const bloomResolution = (isMobile && isSafari)
-        ? new THREE.Vector2(window.innerWidth / 4, window.innerHeight / 4)  // Safari: 1/4 resolution
-        : isMobile
-        ? new THREE.Vector2(window.innerWidth / 2, window.innerHeight / 2)  // Other mobile: 1/2 resolution
+    // Use half resolution on mobile to reduce GPU memory usage (75% reduction)
+    const bloomResolution = isMobile
+        ? new THREE.Vector2(window.innerWidth / 2, window.innerHeight / 2)  // Mobile: 1/2 resolution
         : new THREE.Vector2(window.innerWidth, window.innerHeight);         // Desktop: full resolution
     const bloomPass = new UnrealBloomPass(
         bloomResolution,
-        (isMobile && isSafari) ? 0.3 : isMobile ? 0.5 : 0.8,   // strength: minimal on Safari
-        (isMobile && isSafari) ? 0.1 : isMobile ? 0.2 : 0.3,   // radius: tightest on Safari
-        (isMobile && isSafari) ? 0.98 : isMobile ? 0.95 : 0.9  // threshold: highest on Safari (only sun glows)
+        isMobile ? 0.5 : 0.8,   // strength: reduced on mobile
+        isMobile ? 0.2 : 0.3,   // radius: tighter on mobile
+        isMobile ? 0.95 : 0.9   // threshold: higher on mobile (only brightest objects glow)
     );
     composer.addPass(bloomPass);
     console.log(`Bloom resolution: ${bloomResolution.x}x${bloomResolution.y}`);
 
-    // Skip Film and Vignette effects on mobile Safari to reduce memory usage
-    if (!(isMobile && isSafari)) {
-        // Film Grain effect for cinematic quality
-        // FilmPass constructor: (noiseIntensity, grayscale)
-        const filmPass = new FilmPass(
-            0.15,  // noise intensity (adds texture/grain)
-            false  // grayscale (false = keep colors)
-        );
-        composer.addPass(filmPass);
+    // Film Grain effect for cinematic quality
+    // FilmPass constructor: (noiseIntensity, grayscale)
+    const filmPass = new FilmPass(
+        0.15,  // noise intensity (adds texture/grain)
+        false  // grayscale (false = keep colors)
+    );
+    composer.addPass(filmPass);
 
-        // Vignette effect (darkens edges for focus)
-        const VignetteShader = {
-            uniforms: {
-                tDiffuse: { value: null },
-                offset: { value: 0.8 },    // 0.5-1.0 (lower = stronger)
-                darkness: { value: 1.2 }   // 1.0-2.0 (higher = darker)
-            },
-            vertexShader: `
-                varying vec2 vUv;
-                void main() {
-                    vUv = uv;
-                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-                }
-            `,
-            fragmentShader: `
-                uniform sampler2D tDiffuse;
-                uniform float offset;
-                uniform float darkness;
-                varying vec2 vUv;
+    // Vignette effect (darkens edges for focus)
+    const VignetteShader = {
+        uniforms: {
+            tDiffuse: { value: null },
+            offset: { value: 0.8 },    // 0.5-1.0 (lower = stronger)
+            darkness: { value: 1.2 }   // 1.0-2.0 (higher = darker)
+        },
+        vertexShader: `
+            varying vec2 vUv;
+            void main() {
+                vUv = uv;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+        `,
+        fragmentShader: `
+            uniform sampler2D tDiffuse;
+            uniform float offset;
+            uniform float darkness;
+            varying vec2 vUv;
 
-                void main() {
-                    vec4 color = texture2D(tDiffuse, vUv);
-                    vec2 uv = (vUv - vec2(0.5)) * vec2(offset);
-                    color.rgb = mix(color.rgb, vec3(0.0), dot(uv, uv) * darkness);
-                    gl_FragColor = color;
-                }
-            `
-        };
-        const vignettePass = new ShaderPass(VignetteShader);
-        composer.addPass(vignettePass);
-        console.log('Film and Vignette effects: enabled');
-    } else {
-        console.log('Film and Vignette effects: disabled (Safari mobile optimization)');
-    }
+            void main() {
+                vec4 color = texture2D(tDiffuse, vUv);
+                vec2 uv = (vUv - vec2(0.5)) * vec2(offset);
+                color.rgb = mix(color.rgb, vec3(0.0), dot(uv, uv) * darkness);
+                gl_FragColor = color;
+            }
+        `
+    };
+    const vignettePass = new ShaderPass(VignetteShader);
+    composer.addPass(vignettePass);
 
     // Ambient light with slight blue tint (scattered starlight in space)
     const ambient = new THREE.AmbientLight(0x0a0a1a, LIGHTING_CONSTANTS.AMBIENT_INTENSITY);
@@ -673,17 +665,24 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     const starMassScaled = starMass; // use starMass as mass scale
     // Reduce planet geometry detail on Safari mobile
     const planetSegments = (isMobile && isSafari) ? 8 : 16;
+
+    // Track textures to load sequentially on mobile Safari
+    const textureLoadQueue: Array<{material: THREE.MeshStandardMaterial, texturePath: string, planetId: string}> = [];
+
     for (const pd of solarDefs) {
         const pdR = pd.rAU * AU;
         const geom = new THREE.SphereGeometry(pd.radius, planetSegments, planetSegments);
 
         // Attempt to load texture for this planet (convention: /textures/{planetname}.jpg)
-        // Skip textures on Safari mobile to reduce memory usage
         const texturePath = `/textures/${pd.id.toLowerCase()}.jpg`;
         const mat = new THREE.MeshStandardMaterial({ color: pd.color }); // Default to solid color
 
-        // Try to load texture (skip on Safari mobile)
-        if (!(isMobile && isSafari)) {
+        // Queue texture loading for later (staggered loading on mobile Safari)
+        if (isMobile && isSafari) {
+            // On Safari mobile, queue textures for sequential loading
+            textureLoadQueue.push({ material: mat, texturePath, planetId: pd.id });
+        } else if (!isMobile || !isSafari) {
+            // On desktop and other mobile browsers, load immediately
             textureLoader.load(
                 texturePath,
                 (texture) => {
@@ -699,8 +698,6 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
                     console.log(`No texture for ${pd.id}, using solid color (${texturePath} not found)`);
                 }
             );
-        } else {
-            console.log(`Textures disabled on Safari mobile, using solid color for ${pd.id}`);
         }
 
         const mesh = new THREE.Mesh(geom, mat);
@@ -724,6 +721,46 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
         const vx = v * Math.cos(pd.phase);
         const vz = -v * Math.sin(pd.phase);
         bodies.push({ id: pd.id, mass: pd.mass, position: [x, 0, z], velocity: [vx, 0, vz], radius: pd.radius });
+    }
+
+    // Load planet textures sequentially on mobile Safari to prevent memory spike crashes
+    if (textureLoadQueue.length > 0) {
+        console.log(`Safari mobile: Loading ${textureLoadQueue.length} textures sequentially with 500ms delay`);
+        let loadIndex = 0;
+        const loadNextTexture = () => {
+            if (loadIndex >= textureLoadQueue.length) {
+                console.log('All planet textures loaded successfully on Safari mobile');
+                return;
+            }
+
+            const item = textureLoadQueue[loadIndex];
+            loadIndex++;
+
+            textureLoader.load(
+                item.texturePath,
+                (texture) => {
+                    // Success: texture loaded, apply it to the material
+                    item.material.map = texture;
+                    item.material.color.set(0xffffff); // Reset color to white to show texture correctly
+                    item.material.needsUpdate = true;
+                    console.log(`[${loadIndex}/${textureLoadQueue.length}] Texture loaded for ${item.planetId}`);
+
+                    // Load next texture after a delay to avoid memory spike
+                    setTimeout(loadNextTexture, 500);
+                },
+                undefined, // onProgress
+                (error) => {
+                    // Error: texture not found, keep using solid color
+                    console.log(`[${loadIndex}/${textureLoadQueue.length}] No texture for ${item.planetId}, using solid color`);
+
+                    // Continue to next texture even on error
+                    setTimeout(loadNextTexture, 500);
+                }
+            );
+        };
+
+        // Start loading first texture after a delay to let WebGL context stabilize
+        setTimeout(loadNextTexture, 1000);
     }
 
     // probe initial (starts at 1.0 AU - Earth orbit distance)
