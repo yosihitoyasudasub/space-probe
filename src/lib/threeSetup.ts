@@ -477,14 +477,25 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
         CAMERA_CONSTANTS.INITIAL_POSITION.z
     );
 
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true }); // Enable antialiasing for all devices
+    // Disable antialiasing on mobile Safari to reduce memory usage
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    const enableAA = !(isMobile && isSafari);
+    console.log(`Antialiasing: ${enableAA ? 'enabled' : 'disabled (Safari mobile optimization)'}`);
+
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: enableAA });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    // Use device pixel ratio on mobile for sharp rendering (limited to 2 to balance quality and performance)
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, CAMERA_CONSTANTS.MAX_PIXEL_RATIO));
+    // Use lower pixel ratio on mobile Safari to reduce memory pressure
+    const pixelRatio = (isMobile && isSafari)
+        ? Math.min(window.devicePixelRatio || 1, 1.5)  // Safari: max 1.5
+        : Math.min(window.devicePixelRatio || 1, CAMERA_CONSTANTS.MAX_PIXEL_RATIO);  // Others: max 2
+    renderer.setPixelRatio(pixelRatio);
+    console.log(`Pixel ratio: ${pixelRatio}`);
 
     // Enable shadow mapping for realistic planet lighting
-    renderer.shadowMap.enabled = true;
+    // Disable shadows on mobile Safari to reduce memory usage
+    renderer.shadowMap.enabled = !(isMobile && isSafari);
     renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Soft shadows for better visual quality
+    console.log(`Shadows: ${renderer.shadowMap.enabled ? 'enabled' : 'disabled (Safari mobile optimization)'}`);
 
     // Setup post-processing for bloom effect
     const composer = new EffectComposer(renderer);
@@ -492,57 +503,65 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     composer.addPass(renderPass);
 
     // Bloom pass for glowing sun (reduced to minimize spread and artifacts)
-    // Use half resolution on mobile to reduce GPU memory usage (75% reduction)
-    const bloomResolution = isMobile
-        ? new THREE.Vector2(window.innerWidth / 2, window.innerHeight / 2)
-        : new THREE.Vector2(window.innerWidth, window.innerHeight);
+    // Use quarter resolution on Safari mobile to reduce GPU memory usage (93.75% reduction)
+    const bloomResolution = (isMobile && isSafari)
+        ? new THREE.Vector2(window.innerWidth / 4, window.innerHeight / 4)  // Safari: 1/4 resolution
+        : isMobile
+        ? new THREE.Vector2(window.innerWidth / 2, window.innerHeight / 2)  // Other mobile: 1/2 resolution
+        : new THREE.Vector2(window.innerWidth, window.innerHeight);         // Desktop: full resolution
     const bloomPass = new UnrealBloomPass(
         bloomResolution,
-        isMobile ? 0.5 : 0.8,   // strength: reduced on mobile for performance
-        isMobile ? 0.2 : 0.3,   // radius: tighter on mobile
-        isMobile ? 0.95 : 0.9   // threshold: higher on mobile (only brightest objects glow)
+        (isMobile && isSafari) ? 0.3 : isMobile ? 0.5 : 0.8,   // strength: minimal on Safari
+        (isMobile && isSafari) ? 0.1 : isMobile ? 0.2 : 0.3,   // radius: tightest on Safari
+        (isMobile && isSafari) ? 0.98 : isMobile ? 0.95 : 0.9  // threshold: highest on Safari (only sun glows)
     );
     composer.addPass(bloomPass);
     console.log(`Bloom resolution: ${bloomResolution.x}x${bloomResolution.y}`);
 
-    // Film Grain effect for cinematic quality
-    // FilmPass constructor: (noiseIntensity, grayscale)
-    const filmPass = new FilmPass(
-        0.15,  // noise intensity (adds texture/grain)
-        false  // grayscale (false = keep colors)
-    );
-    composer.addPass(filmPass);
+    // Skip Film and Vignette effects on mobile Safari to reduce memory usage
+    if (!(isMobile && isSafari)) {
+        // Film Grain effect for cinematic quality
+        // FilmPass constructor: (noiseIntensity, grayscale)
+        const filmPass = new FilmPass(
+            0.15,  // noise intensity (adds texture/grain)
+            false  // grayscale (false = keep colors)
+        );
+        composer.addPass(filmPass);
 
-    // Vignette effect (darkens edges for focus)
-    const VignetteShader = {
-        uniforms: {
-            tDiffuse: { value: null },
-            offset: { value: 0.8 },    // 0.5-1.0 (lower = stronger)
-            darkness: { value: 1.2 }   // 1.0-2.0 (higher = darker)
-        },
-        vertexShader: `
-            varying vec2 vUv;
-            void main() {
-                vUv = uv;
-                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-            }
-        `,
-        fragmentShader: `
-            uniform sampler2D tDiffuse;
-            uniform float offset;
-            uniform float darkness;
-            varying vec2 vUv;
+        // Vignette effect (darkens edges for focus)
+        const VignetteShader = {
+            uniforms: {
+                tDiffuse: { value: null },
+                offset: { value: 0.8 },    // 0.5-1.0 (lower = stronger)
+                darkness: { value: 1.2 }   // 1.0-2.0 (higher = darker)
+            },
+            vertexShader: `
+                varying vec2 vUv;
+                void main() {
+                    vUv = uv;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `,
+            fragmentShader: `
+                uniform sampler2D tDiffuse;
+                uniform float offset;
+                uniform float darkness;
+                varying vec2 vUv;
 
-            void main() {
-                vec4 color = texture2D(tDiffuse, vUv);
-                vec2 uv = (vUv - vec2(0.5)) * vec2(offset);
-                color.rgb = mix(color.rgb, vec3(0.0), dot(uv, uv) * darkness);
-                gl_FragColor = color;
-            }
-        `
-    };
-    const vignettePass = new ShaderPass(VignetteShader);
-    composer.addPass(vignettePass);
+                void main() {
+                    vec4 color = texture2D(tDiffuse, vUv);
+                    vec2 uv = (vUv - vec2(0.5)) * vec2(offset);
+                    color.rgb = mix(color.rgb, vec3(0.0), dot(uv, uv) * darkness);
+                    gl_FragColor = color;
+                }
+            `
+        };
+        const vignettePass = new ShaderPass(VignetteShader);
+        composer.addPass(vignettePass);
+        console.log('Film and Vignette effects: enabled');
+    } else {
+        console.log('Film and Vignette effects: disabled (Safari mobile optimization)');
+    }
 
     // Ambient light with slight blue tint (scattered starlight in space)
     const ambient = new THREE.AmbientLight(0x0a0a1a, LIGHTING_CONSTANTS.AMBIENT_INTENSITY);
@@ -555,15 +574,17 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     // Parameters: color, intensity, distance (0 = infinite), decay (0 = no decay for game visibility)
 
     // Configure shadow casting for the sun's light
-    // Use lower resolution on mobile to prevent crashes (1024x1024 vs 4096x4096)
-    const shadowMapSize = isMobile ? 1024 : 4096;
-    sunLight.castShadow = true;
+    // Use much lower resolution on Safari mobile to prevent crashes
+    const shadowMapSize = (isMobile && isSafari) ? 512 : isMobile ? 1024 : 4096;
+    sunLight.castShadow = renderer.shadowMap.enabled;  // Only cast shadows if shadow mapping is enabled
     sunLight.shadow.mapSize.width = shadowMapSize;
     sunLight.shadow.mapSize.height = shadowMapSize;
     sunLight.shadow.camera.near = 0.5;
     sunLight.shadow.camera.far = 5000;     // Cover most of solar system (50 AU)
     sunLight.shadow.bias = -0.00005;       // Fine-tuned to reduce acne while maintaining shadow strength
-    console.log(`Shadow map resolution: ${shadowMapSize}x${shadowMapSize}`);
+    if (renderer.shadowMap.enabled) {
+        console.log(`Shadow map resolution: ${shadowMapSize}x${shadowMapSize}`);
+    }
 
     // Position light at the sun (will be updated dynamically)
     sunLight.position.set(0, 0, 0);
@@ -608,7 +629,9 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
 
     // central star at origin (can be overridden via options)
     const starMass = options?.starMass ?? PHYSICS_SCALE.SUN_MASS;
-    const starGeom = new THREE.SphereGeometry(CELESTIAL_CONSTANTS.STAR.RADIUS, 24, 24);
+    // Reduce geometry detail on Safari mobile to save memory
+    const starSegments = (isMobile && isSafari) ? 12 : 24;
+    const starGeom = new THREE.SphereGeometry(CELESTIAL_CONSTANTS.STAR.RADIUS, starSegments, starSegments);
     const starMat = new THREE.MeshStandardMaterial({
         color: CELESTIAL_CONSTANTS.STAR.COLOR,
         emissive: CELESTIAL_CONSTANTS.STAR.EMISSIVE,
@@ -648,31 +671,37 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     const textureLoader = new THREE.TextureLoader();
 
     const starMassScaled = starMass; // use starMass as mass scale
+    // Reduce planet geometry detail on Safari mobile
+    const planetSegments = (isMobile && isSafari) ? 8 : 16;
     for (const pd of solarDefs) {
         const pdR = pd.rAU * AU;
-        const geom = new THREE.SphereGeometry(pd.radius, 16, 16);
+        const geom = new THREE.SphereGeometry(pd.radius, planetSegments, planetSegments);
 
         // Attempt to load texture for this planet (convention: /textures/{planetname}.jpg)
-        // If texture doesn't exist, fall back to solid color material
+        // Skip textures on Safari mobile to reduce memory usage
         const texturePath = `/textures/${pd.id.toLowerCase()}.jpg`;
         const mat = new THREE.MeshStandardMaterial({ color: pd.color }); // Default to solid color
 
-        // Try to load texture
-        textureLoader.load(
-            texturePath,
-            (texture) => {
-                // Success: texture loaded, apply it to the material
-                mat.map = texture;
-                mat.color.set(0xffffff); // Reset color to white to show texture correctly
-                mat.needsUpdate = true;
-                console.log(`Texture loaded for ${pd.id}: ${texturePath}`);
-            },
-            undefined, // onProgress
-            (error) => {
-                // Error: texture not found, keep using solid color
-                console.log(`No texture for ${pd.id}, using solid color (${texturePath} not found)`);
-            }
-        );
+        // Try to load texture (skip on Safari mobile)
+        if (!(isMobile && isSafari)) {
+            textureLoader.load(
+                texturePath,
+                (texture) => {
+                    // Success: texture loaded, apply it to the material
+                    mat.map = texture;
+                    mat.color.set(0xffffff); // Reset color to white to show texture correctly
+                    mat.needsUpdate = true;
+                    console.log(`Texture loaded for ${pd.id}: ${texturePath}`);
+                },
+                undefined, // onProgress
+                (error) => {
+                    // Error: texture not found, keep using solid color
+                    console.log(`No texture for ${pd.id}, using solid color (${texturePath} not found)`);
+                }
+            );
+        } else {
+            console.log(`Textures disabled on Safari mobile, using solid color for ${pd.id}`);
+        }
 
         const mesh = new THREE.Mesh(geom, mat);
         const x = Math.sin(pd.phase) * pdR;
@@ -684,8 +713,9 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
 
         // Enable shadow receiving for realistic lighting from the sun
         // Planets only receive shadows, not cast them (no planet-to-planet shadows)
+        // Disable shadows on Safari mobile
         mesh.castShadow = false;
-        mesh.receiveShadow = true;
+        mesh.receiveShadow = renderer.shadowMap.enabled;
 
         scene.add(mesh);
         planetMeshes.push({ id: pd.id, mesh, rotationSpeed: pd.rotationSpeed });
