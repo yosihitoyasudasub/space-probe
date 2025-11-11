@@ -40,7 +40,9 @@ interface HUDProps {
     selectedModel?: string;
     setSelectedModel?: (v: string) => void;
     isSimulationStarted?: boolean;
-    setIsSimulationStarted?: (v: boolean) => void;
+    setIsSimulationStarted?: () => void;
+    isLoading?: boolean;
+    isInitialized?: boolean;
     completedMissionIds?: Set<string>;
     onMissionCompleted?: (missionId: string, mission: any) => void;
     orbitTimes?: Record<string, number>;
@@ -88,6 +90,8 @@ const HUD: React.FC<HUDProps> = ({
     setSelectedModel = () => {},
     isSimulationStarted = false,
     setIsSimulationStarted = () => {},
+    isLoading = false,
+    isInitialized = false,
     completedMissionIds = new Set(),
     onMissionCompleted = () => {},
     orbitTimes = {},
@@ -159,17 +163,28 @@ const HUD: React.FC<HUDProps> = ({
     return (
         <>
             {/* Start screen - shown only when simulation hasn't started */}
-            {!isSimulationStarted && (
+            {!isSimulationStarted && !isLoading && (
                 <div className="start-screen">
                     <div className="start-screen-stars"></div>
                     <div className="start-screen-content">
                         <h1 className="start-screen-title">ORBITAL LINES</h1>
                         <button
                             className="start-button"
-                            onClick={() => setIsSimulationStarted(true)}
+                            onClick={setIsSimulationStarted}
                         >
                             START
                         </button>
+                    </div>
+                </div>
+            )}
+            {/* Loading screen - shown while Three.js is initializing */}
+            {isLoading && !isInitialized && (
+                <div className="loading-screen">
+                    <div className="loading-content">
+                        <h1 className="loading-title">INITIALIZING</h1>
+                        <div className="loading-spinner"></div>
+                        <p className="loading-text">Loading resources...</p>
+                        <p className="loading-subtext">This may take a few moments on first launch</p>
                     </div>
                 </div>
             )}

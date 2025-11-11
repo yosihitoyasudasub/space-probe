@@ -80,9 +80,10 @@ interface Props {
     setPredictionEnabled?: (v: boolean) => void;
     selectedModel?: string;
     isSimulationStarted?: boolean;
+    onInitialized?: () => void;
 }
 
-const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = CELESTIAL_CONSTANTS.PROBE.DEFAULT_SPEED_MULTIPLIER, gravityG = PHYSICS_SCALE.G, starMass = PHYSICS_SCALE.SUN_MASS, cameraView = 'free', gravityGridEnabled = false, setGravityGridEnabled, gridEnabled = false, setGridEnabled, planetOrbitsEnabled = true, setPlanetOrbitsEnabled, predictionEnabled = true, setPredictionEnabled, selectedModel = 'space_fighter', isSimulationStarted = false }) => {
+const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = CELESTIAL_CONSTANTS.PROBE.DEFAULT_SPEED_MULTIPLIER, gravityG = PHYSICS_SCALE.G, starMass = PHYSICS_SCALE.SUN_MASS, cameraView = 'free', gravityGridEnabled = false, setGravityGridEnabled, gridEnabled = false, setGridEnabled, planetOrbitsEnabled = true, setPlanetOrbitsEnabled, predictionEnabled = true, setPredictionEnabled, selectedModel = 'space_fighter', isSimulationStarted = false, onInitialized }) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const rafRef = useRef<number | null>(null);
     const cameraViewRef = useRef<CameraView>(cameraView);
@@ -165,7 +166,7 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = CELESTIAL_CO
     const orientation = (modelData as any)?.orientation;
 
     // pass simulation tuning options to initThreeJS
-    let threeObj: any = (initThreeJS as any)(canvas, { probeSpeedMult, G: gravityG, starMass, gravityGridEnabled, gridEnabled, planetOrbitsEnabled, predictionEnabled, probeModelPath, orientation });
+    let threeObj: any = (initThreeJS as any)(canvas, { probeSpeedMult, G: gravityG, starMass, gravityGridEnabled, gridEnabled, planetOrbitsEnabled, predictionEnabled, probeModelPath, orientation, onInitialized });
     let { scene, camera, renderer, composer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid, updateGrid, updatePlanetOrbits, updatePrediction, switchProbeModel, planetMeshes } = threeObj;
     gravityGridRef.current = { updateGravityGrid };
     gridRef.current = { updateGrid };
@@ -191,7 +192,7 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = CELESTIAL_CO
         if (setGravityGridEnabled) setGravityGridEnabled(false);
         if (setGridEnabled) setGridEnabled(false);
         // Initialize with grids hidden, keep planet orbits and prediction as user configured
-        threeObj = (initThreeJS as any)(canvas, { probeSpeedMult, G: gravityG, starMass, gravityGridEnabled: false, gridEnabled: false, planetOrbitsEnabled, predictionEnabled, probeModelPath, orientation });
+        threeObj = (initThreeJS as any)(canvas, { probeSpeedMult, G: gravityG, starMass, gravityGridEnabled: false, gridEnabled: false, planetOrbitsEnabled, predictionEnabled, probeModelPath, orientation, onInitialized });
         ({ scene, camera, renderer, composer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid, updateGrid, updatePlanetOrbits, updatePrediction, switchProbeModel, planetMeshes } = threeObj);
         // Update refs after restart
         gravityGridRef.current = { updateGravityGrid };

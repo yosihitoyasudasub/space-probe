@@ -459,7 +459,7 @@ function loadGLBProbe(
     );
 }
 
-export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMult?: number; G?: number; starMass?: number; gravityGridEnabled?: boolean; gridEnabled?: boolean; planetOrbitsEnabled?: boolean; predictionEnabled?: boolean; probeModelPath?: string | null; orientation?: { autoAlign?: boolean; rotationY?: number; invertDirection?: boolean } }) {
+export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMult?: number; G?: number; starMass?: number; gravityGridEnabled?: boolean; gridEnabled?: boolean; planetOrbitsEnabled?: boolean; predictionEnabled?: boolean; probeModelPath?: string | null; orientation?: { autoAlign?: boolean; rotationY?: number; invertDirection?: boolean }; onInitialized?: () => void }) {
     // Detect mobile device for performance optimizations
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     console.log(`Device type: ${isMobile ? 'Mobile' : 'Desktop'}`);
@@ -730,6 +730,11 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
         const loadNextTexture = () => {
             if (loadIndex >= textureLoadQueue.length) {
                 console.log('All planet textures loaded successfully on Safari mobile');
+                // Call initialization complete callback
+                if (options?.onInitialized) {
+                    console.log('Initialization complete, calling onInitialized callback');
+                    options.onInitialized();
+                }
                 return;
             }
 
@@ -761,6 +766,15 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
 
         // Start loading first texture after a delay to let WebGL context stabilize
         setTimeout(loadNextTexture, 1000);
+    } else {
+        // For desktop and other browsers, textures load immediately
+        // Call onInitialized after a short delay to ensure scene is ready
+        if (options?.onInitialized) {
+            setTimeout(() => {
+                console.log('Initialization complete (desktop/other browsers), calling onInitialized callback');
+                options.onInitialized!();
+            }, 1000);
+        }
     }
 
     // probe initial (starts at 1.0 AU - Earth orbit distance)

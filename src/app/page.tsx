@@ -51,6 +51,8 @@ const Page = () => {
 
     // Simulation control
     const [isSimulationStarted, setIsSimulationStarted] = useState<boolean>(false);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [isInitialized, setIsInitialized] = useState<boolean>(false);
 
     // BGM control
     const { enabled: bgmEnabled, setEnabled: setBgmEnabled, volume: bgmVolume, setVolume: setBgmVolume, selectedTrack: bgmTrack, setSelectedTrack: setBgmTrack } = useBGM();
@@ -155,9 +157,38 @@ const Page = () => {
         }
     };
 
+    // Handle START button click
+    const handleStartClick = () => {
+        setIsLoading(true);
+        setIsSimulationStarted(true);
+    };
+
+    // Handle initialization complete from GameCanvas
+    const handleInitialized = () => {
+        setIsInitialized(true);
+        setIsLoading(false);
+    };
+
     return (
         <div>
-            <GameCanvas hudSetters={hudSetters} probeSpeedMult={probeSpeedMult} gravityG={gravityG} starMass={starMass} cameraView={cameraView} gravityGridEnabled={gravityGridEnabled} setGravityGridEnabled={setGravityGridEnabled} gridEnabled={gridEnabled} setGridEnabled={setGridEnabled} planetOrbitsEnabled={planetOrbitsEnabled} setPlanetOrbitsEnabled={setPlanetOrbitsEnabled} predictionEnabled={predictionEnabled} setPredictionEnabled={setPredictionEnabled} selectedModel={selectedModel} isSimulationStarted={isSimulationStarted} />
+            <GameCanvas
+                hudSetters={hudSetters}
+                probeSpeedMult={probeSpeedMult}
+                gravityG={gravityG}
+                starMass={starMass}
+                cameraView={cameraView}
+                gravityGridEnabled={gravityGridEnabled}
+                setGravityGridEnabled={setGravityGridEnabled}
+                gridEnabled={gridEnabled}
+                setGridEnabled={setGridEnabled}
+                planetOrbitsEnabled={planetOrbitsEnabled}
+                setPlanetOrbitsEnabled={setPlanetOrbitsEnabled}
+                predictionEnabled={predictionEnabled}
+                setPredictionEnabled={setPredictionEnabled}
+                selectedModel={selectedModel}
+                isSimulationStarted={isSimulationStarted}
+                onInitialized={handleInitialized}
+            />
             <HUD
                 status={status}
                 velocity={velocity}
@@ -190,7 +221,9 @@ const Page = () => {
                 selectedModel={selectedModel}
                 setSelectedModel={setSelectedModel}
                 isSimulationStarted={isSimulationStarted}
-                setIsSimulationStarted={setIsSimulationStarted}
+                setIsSimulationStarted={handleStartClick}
+                isLoading={isLoading}
+                isInitialized={isInitialized}
                 completedMissionIds={completedMissionIds}
                 onMissionCompleted={handleMissionCompleted}
                 orbitTimes={orbitTimes}
