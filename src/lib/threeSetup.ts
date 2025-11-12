@@ -74,8 +74,8 @@ export const CAMERA_CONSTANTS = {
 
 export const LIGHTING_CONSTANTS = {
     // Ambient light intensity (0-1 scale, unitless)
-    // Lower values make shadows more prominent by darkening non-illuminated areas
-    AMBIENT_INTENSITY: 0.2,  // Reduced from 0.6 to make shadows darker
+    // Higher values provide better overall visibility
+    AMBIENT_INTENSITY: 0.6,  // Increased from 0.2 for better visibility
 
     // Directional light intensity (0-1 scale, unitless)
     // Simulates sunlight with direction and shadows
@@ -243,16 +243,28 @@ export type ProbeState = {
 function createVoyagerProbe(): THREE.Group {
     const probe = new THREE.Group();
 
-    // Main body (10-sided cylinder approximation)
+    // Main body (10-sided cylinder approximation) - with emissive for visibility
     const bodyGeom = new THREE.CylinderGeometry(0.5, 0.5, 0.4, 10);
-    const bodyMat = new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 0.6, roughness: 0.4 });
+    const bodyMat = new THREE.MeshStandardMaterial({
+        color: 0xcccccc,
+        metalness: 0.6,
+        roughness: 0.4,
+        emissive: 0x444444,      // Add emissive glow for better visibility
+        emissiveIntensity: 0.3    // Subtle glow
+    });
     const body = new THREE.Mesh(bodyGeom, bodyMat);
     body.rotation.x = Math.PI / 2;
     probe.add(body);
 
-    // Parabolic antenna (dish)
+    // Parabolic antenna (dish) - brighter for visibility
     const dishGeom = new THREE.CylinderGeometry(1.2, 1.2, 0.1, 32);
-    const dishMat = new THREE.MeshStandardMaterial({ color: 0xeeeeee, metalness: 0.8, roughness: 0.2 });
+    const dishMat = new THREE.MeshStandardMaterial({
+        color: 0xeeeeee,
+        metalness: 0.8,
+        roughness: 0.2,
+        emissive: 0x666666,      // Add emissive glow
+        emissiveIntensity: 0.4    // Brighter glow for main visibility
+    });
     const dish = new THREE.Mesh(dishGeom, dishMat);
     dish.rotation.x = Math.PI / 2;
     dish.position.set(0, 0, 0.3);
@@ -260,7 +272,11 @@ function createVoyagerProbe(): THREE.Group {
 
     // Antenna feed (center of dish)
     const feedGeom = new THREE.ConeGeometry(0.15, 0.4, 8);
-    const feedMat = new THREE.MeshStandardMaterial({ color: 0x888888 });
+    const feedMat = new THREE.MeshStandardMaterial({
+        color: 0x888888,
+        emissive: 0x333333,      // Subtle emissive
+        emissiveIntensity: 0.2
+    });
     const feed = new THREE.Mesh(feedGeom, feedMat);
     feed.rotation.x = Math.PI / 2;
     feed.position.set(0, 0, 0.5);
@@ -268,37 +284,57 @@ function createVoyagerProbe(): THREE.Group {
 
     // RTG boom (Radioisotope Thermoelectric Generator)
     const rtgBoomGeom = new THREE.CylinderGeometry(0.05, 0.05, 3, 8);
-    const rtgBoomMat = new THREE.MeshStandardMaterial({ color: 0x666666 });
+    const rtgBoomMat = new THREE.MeshStandardMaterial({
+        color: 0x666666,
+        emissive: 0x222222,      // Subtle emissive
+        emissiveIntensity: 0.2
+    });
     const rtgBoom = new THREE.Mesh(rtgBoomGeom, rtgBoomMat);
     rtgBoom.rotation.z = Math.PI / 2;
     rtgBoom.position.set(-1.5, -0.3, 0);
     probe.add(rtgBoom);
 
-    // RTG power source (box at end of boom)
+    // RTG power source (box at end of boom) - already has emissive, increase it
     const rtgGeom = new THREE.BoxGeometry(0.2, 0.2, 0.3);
-    const rtgMat = new THREE.MeshStandardMaterial({ color: 0x444444, emissive: 0x330000 });
+    const rtgMat = new THREE.MeshStandardMaterial({
+        color: 0x444444,
+        emissive: 0xff3300,      // Bright red-orange glow (radioactive indicator)
+        emissiveIntensity: 0.6    // Strong glow for RTG
+    });
     const rtg = new THREE.Mesh(rtgGeom, rtgMat);
     rtg.position.set(-3, -0.3, 0);
     probe.add(rtg);
 
     // Magnetometer boom
     const magBoomGeom = new THREE.CylinderGeometry(0.03, 0.03, 4, 6);
-    const magBoomMat = new THREE.MeshStandardMaterial({ color: 0x888888 });
+    const magBoomMat = new THREE.MeshStandardMaterial({
+        color: 0x888888,
+        emissive: 0x333333,      // Subtle emissive
+        emissiveIntensity: 0.2
+    });
     const magBoom = new THREE.Mesh(magBoomGeom, magBoomMat);
     magBoom.rotation.z = Math.PI / 2;
     magBoom.position.set(2, 0.2, 0);
     probe.add(magBoom);
 
-    // Magnetometer sensor
+    // Magnetometer sensor - bright indicator light
     const magSensorGeom = new THREE.BoxGeometry(0.15, 0.15, 0.15);
-    const magSensorMat = new THREE.MeshStandardMaterial({ color: 0xffaa00 });
+    const magSensorMat = new THREE.MeshStandardMaterial({
+        color: 0xffaa00,
+        emissive: 0xffaa00,      // Bright orange glow (sensor active indicator)
+        emissiveIntensity: 0.8    // Strong glow for visibility
+    });
     const magSensor = new THREE.Mesh(magSensorGeom, magSensorMat);
     magSensor.position.set(4, 0.2, 0);
     probe.add(magSensor);
 
     // Science instruments platform
     const instrumentsGeom = new THREE.BoxGeometry(0.4, 0.3, 0.3);
-    const instrumentsMat = new THREE.MeshStandardMaterial({ color: 0x999999 });
+    const instrumentsMat = new THREE.MeshStandardMaterial({
+        color: 0x999999,
+        emissive: 0x333333,      // Subtle emissive
+        emissiveIntensity: 0.25
+    });
     const instruments = new THREE.Mesh(instrumentsGeom, instrumentsMat);
     instruments.position.set(0, 0.35, 0);
     probe.add(instruments);
@@ -406,10 +442,10 @@ function loadGLBProbe(
                             mat.color.multiplyScalar(1.1);
                         }
 
-                        // Add emissive color only for dark models for consistent brightness
-                        if (mat.emissive !== undefined && isDark) {
-                            // Set emissive to a fraction of the base color for self-illumination
-                            const emissiveColor = mat.color ? mat.color.clone().multiplyScalar(0.5) : new THREE.Color(0x333333);
+                        // Add emissive color for better visibility in dark areas
+                        if (mat.emissive !== undefined) {
+                            // Set emissive for self-illumination (increased for better visibility)
+                            const emissiveColor = mat.color ? mat.color.clone().multiplyScalar(isDark ? 0.7 : 0.4) : new THREE.Color(0x444444);
                             mat.emissive = emissiveColor;
                             console.log(`Applied emissive to dark material (L=${hsl.l.toFixed(2)})`);
                         } else if (mat.emissive !== undefined && !isDark) {
@@ -556,7 +592,8 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     composer.addPass(vignettePass);
 
     // Ambient light with slight blue tint (scattered starlight in space)
-    const ambient = new THREE.AmbientLight(0x0a0a1a, LIGHTING_CONSTANTS.AMBIENT_INTENSITY);
+    // Increased brightness for better overall visibility
+    const ambient = new THREE.AmbientLight(0x404060, LIGHTING_CONSTANTS.AMBIENT_INTENSITY);
     scene.add(ambient);
 
     // Sun light with realistic color temperature (5500K - slightly warm white/yellow)
