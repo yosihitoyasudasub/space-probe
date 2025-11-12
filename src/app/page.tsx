@@ -53,6 +53,7 @@ const Page = () => {
     const [isSimulationStarted, setIsSimulationStarted] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isInitialized, setIsInitialized] = useState<boolean>(false);
+    const [showInstructions, setShowInstructions] = useState<boolean>(false);
 
     // BGM control
     const { enabled: bgmEnabled, setEnabled: setBgmEnabled, volume: bgmVolume, setVolume: setBgmVolume, selectedTrack: bgmTrack, setSelectedTrack: setBgmTrack } = useBGM();
@@ -167,6 +168,12 @@ const Page = () => {
     const handleInitialized = () => {
         setIsInitialized(true);
         setIsLoading(false);
+        setShowInstructions(true); // Show instructions after loading completes
+    };
+
+    // Handle instructions close - start the simulation
+    const handleInstructionsClose = () => {
+        setShowInstructions(false);
     };
 
     return (
@@ -224,6 +231,8 @@ const Page = () => {
                 setIsSimulationStarted={handleStartClick}
                 isLoading={isLoading}
                 isInitialized={isInitialized}
+                showInstructions={showInstructions}
+                onInstructionsClose={handleInstructionsClose}
                 completedMissionIds={completedMissionIds}
                 onMissionCompleted={handleMissionCompleted}
                 orbitTimes={orbitTimes}

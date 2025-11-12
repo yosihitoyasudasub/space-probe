@@ -43,6 +43,8 @@ interface HUDProps {
     setIsSimulationStarted?: () => void;
     isLoading?: boolean;
     isInitialized?: boolean;
+    showInstructions?: boolean;
+    onInstructionsClose?: () => void;
     completedMissionIds?: Set<string>;
     onMissionCompleted?: (missionId: string, mission: any) => void;
     orbitTimes?: Record<string, number>;
@@ -92,6 +94,8 @@ const HUD: React.FC<HUDProps> = ({
     setIsSimulationStarted = () => {},
     isLoading = false,
     isInitialized = false,
+    showInstructions = false,
+    onInstructionsClose = () => {},
     completedMissionIds = new Set(),
     onMissionCompleted = () => {},
     orbitTimes = {},
@@ -185,6 +189,43 @@ const HUD: React.FC<HUDProps> = ({
                         <div className="loading-spinner"></div>
                         <p className="loading-text">Loading resources...</p>
                         <p className="loading-subtext">This may take a few moments on first launch</p>
+                    </div>
+                </div>
+            )}
+            {/* Instructions screen - shown after loading completes */}
+            {showInstructions && (
+                <div className="instructions-screen">
+                    <div className="instructions-content">
+                        <h1 className="instructions-title">HOW TO PLAY</h1>
+                        <div className="instructions-body">
+                            <div className="instruction-section">
+                                <h2>🎯 Objective</h2>
+                                <p>Navigate your spacecraft through the solar system using gravity assists to complete missions.</p>
+                            </div>
+                            <div className="instruction-section">
+                                <h2>🕹️ Controls</h2>
+                                <ul>
+                                    <li><strong>WASD</strong> or <strong>Arrow Keys</strong>: Apply thrust</li>
+                                    <li><strong>Mouse Drag</strong>: Rotate camera view</li>
+                                    <li><strong>Mouse Wheel</strong>: Zoom in/out</li>
+                                    <li><strong>Space</strong>: Pause/Resume simulation</li>
+                                </ul>
+                            </div>
+                            <div className="instruction-section">
+                                <h2>⚡ Tips</h2>
+                                <ul>
+                                    <li>Use gravity assists (swing-bys) to gain speed</li>
+                                    <li>Plan your trajectory carefully to save fuel</li>
+                                    <li>Watch your velocity and distance in the HUD</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <button
+                            className="instructions-start-button"
+                            onClick={onInstructionsClose}
+                        >
+                            START MISSION
+                        </button>
                     </div>
                 </div>
             )}
