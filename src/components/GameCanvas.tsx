@@ -36,7 +36,7 @@ const GAME_LOOP_CONSTANTS = {
     },
 
     COCKPIT_CAMERA: {
-        OFFSET_BACK: 5,         // Very close behind probe (cockpit position)
+        OFFSET_BACK: 3,         // Very close behind probe (cockpit position)
         OFFSET_UP: 2,           // Slightly above probe center
         LOOK_AHEAD: 100,        // Distance to look ahead in velocity direction
         MIN_SPEED: 0.1          // Minimum speed to use velocity-based positioning (scene units/s)
@@ -177,6 +177,9 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = CELESTIAL_CO
     // input state
     const inputState = { left: false, right: false, up: false, down: false } as any;
 
+    // Pause state for simulation
+    let isPaused = false;
+
     // Expose input state to window for touch controls
     (window as any).__gameInputState = inputState;
 
@@ -215,6 +218,11 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = CELESTIAL_CO
         if (e.key === 'r' || e.key === 'R') {
             restartSimulation();
         }
+        if (e.key === ' ' || e.key === 'Spacebar') {
+            e.preventDefault();
+            isPaused = !isPaused;
+            console.log(`Simulation ${isPaused ? 'PAUSED' : 'RESUMED'}`);
+        }
     };
 
     const onKeyUp = (e: KeyboardEvent) => {
@@ -241,8 +249,8 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = CELESTIAL_CO
             if (delta > GAME_LOOP_CONSTANTS.MAX_FRAME_DELTA_SECONDS) delta = GAME_LOOP_CONSTANTS.MAX_FRAME_DELTA_SECONDS;
 
             accumulator += delta;
-            // Only run physics simulation if simulation has started
-            if (isSimulationStartedRef.current) {
+            // Only run physics simulation if simulation has started and not paused
+            if (isSimulationStartedRef.current && !isPaused) {
                 while (accumulator >= fixedTimeStep) {
                     try {
                         // apply input-driven delta-v before stepping

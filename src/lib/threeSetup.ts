@@ -243,97 +243,111 @@ export type ProbeState = {
 function createVoyagerProbe(): THREE.Group {
     const probe = new THREE.Group();
 
-    // Main body (10-sided cylinder approximation) - with emissive for visibility
+    // Main body (10-sided cylinder approximation) - EMISSIVE TEMPORARILY DISABLED
     const bodyGeom = new THREE.CylinderGeometry(0.5, 0.5, 0.4, 10);
     const bodyMat = new THREE.MeshStandardMaterial({
         color: 0xcccccc,
         metalness: 0.6,
         roughness: 0.4,
-        emissive: 0x444444,      // Add emissive glow for better visibility
-        emissiveIntensity: 0.3    // Subtle glow
+        // emissive: 0x444444,      // Add emissive glow for better visibility - TEMPORARILY DISABLED
+        // emissiveIntensity: 0.3    // Subtle glow - TEMPORARILY DISABLED
     });
     const body = new THREE.Mesh(bodyGeom, bodyMat);
     body.rotation.x = Math.PI / 2;
     probe.add(body);
 
-    // Parabolic antenna (dish) - brighter for visibility
+    // Parabolic antenna (dish) - EMISSIVE TEMPORARILY DISABLED
     const dishGeom = new THREE.CylinderGeometry(1.2, 1.2, 0.1, 32);
     const dishMat = new THREE.MeshStandardMaterial({
         color: 0xeeeeee,
         metalness: 0.8,
         roughness: 0.2,
-        emissive: 0x666666,      // Add emissive glow
-        emissiveIntensity: 0.4    // Brighter glow for main visibility
+        // emissive: 0x666666,      // Add emissive glow - TEMPORARILY DISABLED
+        // emissiveIntensity: 0.4    // Brighter glow for main visibility - TEMPORARILY DISABLED
     });
     const dish = new THREE.Mesh(dishGeom, dishMat);
     dish.rotation.x = Math.PI / 2;
     dish.position.set(0, 0, 0.3);
     probe.add(dish);
 
-    // Antenna feed (center of dish)
+    // Antenna feed (center of dish) - EMISSIVE TEMPORARILY DISABLED
     const feedGeom = new THREE.ConeGeometry(0.15, 0.4, 8);
     const feedMat = new THREE.MeshStandardMaterial({
         color: 0x888888,
-        emissive: 0x333333,      // Subtle emissive
-        emissiveIntensity: 0.2
+        // emissive: 0x333333,      // Subtle emissive - TEMPORARILY DISABLED
+        // emissiveIntensity: 0.2 - TEMPORARILY DISABLED
     });
     const feed = new THREE.Mesh(feedGeom, feedMat);
     feed.rotation.x = Math.PI / 2;
     feed.position.set(0, 0, 0.5);
     probe.add(feed);
 
-    // RTG boom (Radioisotope Thermoelectric Generator)
+    // RTG boom (Radioisotope Thermoelectric Generator) - EMISSIVE TEMPORARILY DISABLED
     const rtgBoomGeom = new THREE.CylinderGeometry(0.05, 0.05, 3, 8);
     const rtgBoomMat = new THREE.MeshStandardMaterial({
         color: 0x666666,
-        emissive: 0x222222,      // Subtle emissive
-        emissiveIntensity: 0.2
+        // emissive: 0x222222,      // Subtle emissive - TEMPORARILY DISABLED
+        // emissiveIntensity: 0.2 - TEMPORARILY DISABLED
     });
     const rtgBoom = new THREE.Mesh(rtgBoomGeom, rtgBoomMat);
     rtgBoom.rotation.z = Math.PI / 2;
     rtgBoom.position.set(-1.5, -0.3, 0);
     probe.add(rtgBoom);
 
-    // RTG power source (box at end of boom) - already has emissive, increase it
-    const rtgGeom = new THREE.BoxGeometry(0.2, 0.2, 0.3);
-    const rtgMat = new THREE.MeshStandardMaterial({
-        color: 0x444444,
-        emissive: 0xff3300,      // Bright red-orange glow (radioactive indicator)
-        emissiveIntensity: 0.6    // Strong glow for RTG
-    });
-    const rtg = new THREE.Mesh(rtgGeom, rtgMat);
-    rtg.position.set(-3, -0.3, 0);
-    probe.add(rtg);
+    // RTG power source (box at end of boom) - TEMPORARILY COMMENTED OUT FOR TESTING
+    // const rtgGeom = new THREE.BoxGeometry(0.2, 0.2, 0.3);
+    // const rtgMat = new THREE.MeshStandardMaterial({
+    //     color: 0x444444,
+    //     emissive: 0xff0000,      // Bright pure RED glow (radioactive indicator) - changed for visibility test
+    //     emissiveIntensity: 0.6    // Strong glow for RTG
+    // });
+    // const rtg = new THREE.Mesh(rtgGeom, rtgMat);
+    // rtg.position.set(-3, -0.3, 0);
+    // probe.add(rtg);
 
-    // Magnetometer boom
+    // Add arrow indicator pointing backward from RTG - TEMPORARILY COMMENTED OUT
+    // const rtgArrowDir = new THREE.Vector3(1, 0, 0); // Point backward (opposite of boom direction)
+    // const rtgArrowOrigin = new THREE.Vector3(-3, -0.3, 0);
+    // const rtgArrowLength = 2;
+    // const rtgArrow = new THREE.ArrowHelper(rtgArrowDir, rtgArrowOrigin, rtgArrowLength, 0xff0000, 0.4, 0.3);
+    // probe.add(rtgArrow);
+
+    // Magnetometer boom - EMISSIVE TEMPORARILY DISABLED
     const magBoomGeom = new THREE.CylinderGeometry(0.03, 0.03, 4, 6);
     const magBoomMat = new THREE.MeshStandardMaterial({
         color: 0x888888,
-        emissive: 0x333333,      // Subtle emissive
-        emissiveIntensity: 0.2
+        // emissive: 0x333333,      // Subtle emissive - TEMPORARILY DISABLED
+        // emissiveIntensity: 0.2 - TEMPORARILY DISABLED
     });
     const magBoom = new THREE.Mesh(magBoomGeom, magBoomMat);
     magBoom.rotation.z = Math.PI / 2;
     magBoom.position.set(2, 0.2, 0);
     probe.add(magBoom);
 
-    // Magnetometer sensor - bright indicator light
-    const magSensorGeom = new THREE.BoxGeometry(0.15, 0.15, 0.15);
-    const magSensorMat = new THREE.MeshStandardMaterial({
-        color: 0xffaa00,
-        emissive: 0xffaa00,      // Bright orange glow (sensor active indicator)
-        emissiveIntensity: 0.8    // Strong glow for visibility
-    });
-    const magSensor = new THREE.Mesh(magSensorGeom, magSensorMat);
-    magSensor.position.set(4, 0.2, 0);
-    probe.add(magSensor);
+    // Magnetometer sensor - TEMPORARILY COMMENTED OUT FOR TESTING
+    // const magSensorGeom = new THREE.BoxGeometry(0.15, 0.15, 0.15);
+    // const magSensorMat = new THREE.MeshStandardMaterial({
+    //     color: 0x00ff00,
+    //     emissive: 0x00ff00,      // Bright pure GREEN glow (sensor active indicator) - changed for visibility test
+    //     emissiveIntensity: 0.8    // Strong glow for visibility
+    // });
+    // const magSensor = new THREE.Mesh(magSensorGeom, magSensorMat);
+    // magSensor.position.set(4, 0.2, 0);
+    // probe.add(magSensor);
 
-    // Science instruments platform
+    // Add arrow indicator pointing backward from Magnetometer - TEMPORARILY COMMENTED OUT
+    // const magArrowDir = new THREE.Vector3(-1, 0, 0); // Point backward (opposite of boom direction)
+    // const magArrowOrigin = new THREE.Vector3(4, 0.2, 0);
+    // const magArrowLength = 2;
+    // const magArrow = new THREE.ArrowHelper(magArrowDir, magArrowOrigin, magArrowLength, 0x00ff00, 0.4, 0.3);
+    // probe.add(magArrow);
+
+    // Science instruments platform - EMISSIVE TEMPORARILY DISABLED
     const instrumentsGeom = new THREE.BoxGeometry(0.4, 0.3, 0.3);
     const instrumentsMat = new THREE.MeshStandardMaterial({
         color: 0x999999,
-        emissive: 0x333333,      // Subtle emissive
-        emissiveIntensity: 0.25
+        // emissive: 0x333333,      // Subtle emissive - TEMPORARILY DISABLED
+        // emissiveIntensity: 0.25 - TEMPORARILY DISABLED
     });
     const instruments = new THREE.Mesh(instrumentsGeom, instrumentsMat);
     instruments.position.set(0, 0.35, 0);
@@ -438,26 +452,62 @@ function loadGLBProbe(
                             mat.color.getHSL(hsl);
                             isDark = hsl.l < 0.5; // Lightness < 0.5 = dark color
 
-                            // Increase color brightness
-                            mat.color.multiplyScalar(1.1);
+                            // Slightly increase brightness (original was 1.1)
+                            mat.color.multiplyScalar(1.15);
                         }
 
-                        // Add emissive color for better visibility in dark areas
+                        // TESTING: Maximize emissive intensity to see maximum brightness
                         if (mat.emissive !== undefined) {
-                            // Set emissive for self-illumination (increased for better visibility)
-                            const emissiveColor = mat.color ? mat.color.clone().multiplyScalar(isDark ? 0.7 : 0.4) : new THREE.Color(0x444444);
-                            mat.emissive = emissiveColor;
-                            console.log(`Applied emissive to dark material (L=${hsl.l.toFixed(2)})`);
-                        } else if (mat.emissive !== undefined && !isDark) {
-                            console.log(`Skipped emissive for bright material (L=${hsl.l.toFixed(2)})`);
+                            // Keep original color but maximize intensity
+                            mat.emissiveIntensity = 10.0; // Maximum test value (normal range: 0-2)
+                            console.log(`Maximized emissive intensity to 10.0`);
+
+                            // Add light trail from emissive parts
+                            if (child.isMesh && mat.emissive.getHex() !== 0x000000) {
+                                // Create a line that extends backward from this emissive mesh
+                                const lineLength = 50; // Length of the light trail (10x longer: 5 -> 50)
+                                const linePoints = [
+                                    new THREE.Vector3(0, 0, 0), // Start at mesh position (local)
+                                    new THREE.Vector3(0, lineLength, 0) // Extend backward (local Y-axis)
+                                ];
+
+                                const lineGeometry = new THREE.BufferGeometry().setFromPoints(linePoints);
+                                const lineMaterial = new THREE.LineBasicMaterial({
+                                    color: mat.emissive.getHex(),
+                                    transparent: true,
+                                    opacity: 0.3, // Lower opacity (0.8 -> 0.3)
+                                    linewidth: 1 // Thinner line (2 -> 1)
+                                });
+
+                                const lightTrail = new THREE.Line(lineGeometry, lineMaterial);
+                                child.add(lightTrail); // Add as child so it moves with the mesh
+
+                                console.log(`Added light trail to emissive mesh with color: ${mat.emissive.getHexString()}`);
+                            }
                         }
 
-                        // Adjust other properties for better visibility
+                        // TEMPORARY: Clear all existing emissive from GLB model - DISABLED, EMISSIVE RESTORED
+                        // if (mat.emissive !== undefined) {
+                        //     mat.emissive.setHex(0x000000); // Set to black (no emission)
+                        //     mat.emissiveIntensity = 0;
+                        //     console.log(`Cleared emissive from material (was: ${mat.emissive.getHexString()})`);
+                        // }
+
+                        // Also clear emissive map if it exists - DISABLED, EMISSIVE RESTORED
+                        // if (mat.emissiveMap !== undefined && mat.emissiveMap !== null) {
+                        //     console.log(`Found emissiveMap, clearing it`);
+                        //     mat.emissiveMap = null;
+                        //     mat.needsUpdate = true;
+                        // }
+
+                        // Adjust other properties for balanced appearance
                         if (mat.metalness !== undefined) {
-                            mat.metalness = Math.min(mat.metalness * 1.2, 1.0);
+                            // Keep closer to original metalness
+                            mat.metalness = Math.min(mat.metalness * 1.0, 1.0);
                         }
                         if (mat.roughness !== undefined) {
-                            mat.roughness = Math.max(mat.roughness * 0.7, 0.3);
+                            // Keep closer to original roughness
+                            mat.roughness = Math.max(mat.roughness * 0.9, 0.3);
                         }
                     });
                 }
@@ -1459,6 +1509,35 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
                     // Lower value = smoother/slower rotation, higher = faster
                     probe.quaternion.slerp(targetQuaternion, CELESTIAL_CONSTANTS.PROBE.ROTATION_SPEED);
                 }
+
+                // COMMENTED OUT: Update velocity-based light trails (reverted to fixed direction)
+                // if (speed > 0.01) { // Only update if moving
+                //     probe.traverse((child: any) => {
+                //         if (child.isVelocityTrail) {
+                //             // Get velocity direction (opposite for trail)
+                //             const velocityDir = state.velocity.clone().normalize().negate();
+                //
+                //             // Get world position of source mesh
+                //             const sourceWorldPos = new THREE.Vector3();
+                //             if (child.sourceMesh) {
+                //                 child.sourceMesh.getWorldPosition(sourceWorldPos);
+                //             } else {
+                //                 sourceWorldPos.copy(probe.position);
+                //             }
+                //
+                //             // Calculate end point of trail in velocity direction
+                //             const trailEnd = sourceWorldPos.clone().add(velocityDir.multiplyScalar(child.trailLength));
+                //
+                //             // Update line geometry
+                //             const positions = new Float32Array([
+                //                 sourceWorldPos.x, sourceWorldPos.y, sourceWorldPos.z,
+                //                 trailEnd.x, trailEnd.y, trailEnd.z
+                //             ]);
+                //             child.geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                //             child.geometry.attributes.position.needsUpdate = true;
+                //         }
+                //     });
+                // }
             }
             // update planet meshes (check if this body's id is in planetMeshes array)
             const pm = planetMeshes.find((p) => p.id === nb.id);

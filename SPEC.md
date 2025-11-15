@@ -141,6 +141,7 @@ User Input (Keyboard)
 | **← →** | 左右方向に推進（X軸） |
 | **↑** | 前進加速（-Z方向） |
 | **↓** | 減速（+Z方向） |
+| **スペースキー** | シミュレーション一時停止/再開（トグル） |
 | **R** | シミュレーションをリスタート |
 | **マウスドラッグ** | カメラの回転（OrbitControls） |
 | **マウスホイール** | カメラのズームイン/アウト |
@@ -1564,6 +1565,48 @@ if (probe && (probe as any).thrusterMaterials) {
 - 燃料切れ時は発光しない（推進できないため）
 - ブースターメッシュは手動で指定する必要がある（自動検出なし）
 - GLBモデルのマテリアルに `emissive` プロパティが必要
+
+**エミッシブ光のトレイル:**
+
+エミッシブパーツから後方に伸びる光のトレイルを表示します（実装: `threeSetup.ts:465-486`）。
+
+**仕様:**
+- **方向**: Y軸正方向（ローカル座標系）
+- **長さ**: 50単位（lineLength = 50）
+- **色**: エミッシブマテリアルの色と同じ
+- **透明度**: 30%（opacity: 0.3）
+- **線幅**: 1（linewidth: 1）
+- **対象**: エミッシブ色が黒（0x000000）でないメッシュ
+
+**実装例:**
+```typescript
+if (child.isMesh && mat.emissive.getHex() !== 0x000000) {
+    const lineLength = 50;
+    const linePoints = [
+        new THREE.Vector3(0, 0, 0),        // メッシュ位置（ローカル）
+        new THREE.Vector3(0, lineLength, 0) // Y軸正方向に伸びる
+    ];
+
+    const lineGeometry = new THREE.BufferGeometry().setFromPoints(linePoints);
+    const lineMaterial = new THREE.LineBasicMaterial({
+        color: mat.emissive.getHex(),
+        transparent: true,
+        opacity: 0.3,
+        linewidth: 1
+    });
+
+    const lightTrail = new THREE.Line(lineGeometry, lineMaterial);
+    child.add(lightTrail); // 子として追加（メッシュと一緒に移動）
+}
+```
+
+**カスタマイズ:**
+- **長さ調整**: `lineLength` の値を変更（推奨: 20〜100）
+- **透明度調整**: `opacity` の値を変更（推奨: 0.1〜0.5）
+- **方向変更**: `new THREE.Vector3(x, y, z)` で任意の方向に設定可能
+  - Y軸: `(0, lineLength, 0)`
+  - Z軸: `(0, 0, -lineLength)`
+  - X軸: `(lineLength, 0, 0)`
 
 ### 3.8 軌道可視化
 
