@@ -199,20 +199,19 @@ const HUD: React.FC<HUDProps> = ({
                         <h1 className="instructions-title">HOW TO PLAY</h1>
                         <div className="instructions-body">
                             <div className="instruction-section">
-                                <h2>🎯 Objective</h2>
+                                <h2>Objective</h2>
                                 <p>Navigate your spacecraft through the solar system using gravity assists to complete missions.</p>
                             </div>
                             <div className="instruction-section">
-                                <h2>🕹️ Controls</h2>
+                                <h2>Controls</h2>
                                 <ul>
-                                    <li><strong>WASD</strong> or <strong>Arrow Keys</strong>: Apply thrust</li>
+                                    <li><strong>Arrow Keys</strong>: Apply thrust</li>
                                     <li><strong>Mouse Drag</strong>: Rotate camera view</li>
                                     <li><strong>Mouse Wheel</strong>: Zoom in/out</li>
-                                    <li><strong>Space</strong>: Pause/Resume simulation</li>
                                 </ul>
                             </div>
                             <div className="instruction-section">
-                                <h2>⚡ Tips</h2>
+                                <h2>Tips</h2>
                                 <ul>
                                     <li>Use gravity assists (swing-bys) to gain speed</li>
                                     <li>Plan your trajectory carefully to save fuel</li>

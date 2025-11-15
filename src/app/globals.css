@@ -1005,22 +1005,102 @@ body {
 
 /* Mobile responsive */
 @media (max-width: 768px) {
+    .instructions-screen {
+        padding: 15px;
+    }
+
     .instructions-content {
-        padding: 30px 20px;
+        padding: 25px 15px;
+        max-width: 100%;
     }
 
     .instructions-title {
-        font-size: 32px;
-        letter-spacing: 4px;
+        font-size: 28px;
+        letter-spacing: 3px;
+        margin: 0 0 20px 0;
+    }
+
+    .instructions-body {
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .instruction-section {
+        margin-bottom: 20px;
     }
 
     .instruction-section h2 {
-        font-size: 18px;
+        font-size: 16px;
+        margin: 0 0 8px 0;
+        letter-spacing: 1.5px;
+    }
+
+    .instruction-section p {
+        font-size: 13px;
+        margin: 0 0 8px 0;
+    }
+
+    .instruction-section ul {
+        margin: 8px 0;
+        padding-left: 15px;
+    }
+
+    .instruction-section ul li {
+        margin: 6px 0;
+        padding-left: 12px;
+        font-size: 13px;
     }
 
     .instructions-start-button {
-        font-size: 20px;
-        padding: 15px 30px;
+        font-size: 18px;
+        padding: 14px 25px;
+        margin-top: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .instructions-screen {
+        padding: 10px;
+    }
+
+    .instructions-content {
+        padding: 20px 12px;
+    }
+
+    .instructions-title {
+        font-size: 22px;
+        letter-spacing: 2px;
+        margin: 0 0 15px 0;
+    }
+
+    .instructions-body {
+        font-size: 13px;
+    }
+
+    .instruction-section {
+        margin-bottom: 15px;
+    }
+
+    .instruction-section h2 {
+        font-size: 15px;
+        margin: 0 0 6px 0;
+    }
+
+    .instruction-section p {
+        font-size: 12px;
+        margin: 0 0 6px 0;
+    }
+
+    .instruction-section ul li {
+        margin: 5px 0;
+        font-size: 12px;
+        line-height: 1.4;
+    }
+
+    .instructions-start-button {
+        font-size: 16px;
+        padding: 12px 20px;
+        margin-top: 15px;
     }
 }
 
