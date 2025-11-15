@@ -760,6 +760,70 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
         bodies.push({ id: pd.id, mass: pd.mass, position: [x, 0, z], velocity: [vx, 0, vz], radius: pd.radius });
     }
 
+    // probe initial (starts at 1.0 AU - Earth orbit distance)
+    // Create Voyager-style probe (will be replaced by GLB model if loading succeeds)
+    let probe = createVoyagerProbe();
+
+    const probeR = CELESTIAL_CONSTANTS.PROBE.INITIAL_RADIUS_AU * PHYSICS_SCALE.AU;
+    probe.position.set(0, 0, probeR);
+
+    // Store orientation config on built-in Voyager probe
+    (probe as any).orientationConfig = options?.orientation;
+
+    // Attempt to load GLB model from public/models/ directory
+    // If loading fails or probeModelPath is null, use the Voyager probe
+    const modelPath = options?.probeModelPath;
+    if (modelPath) {
+        // Hide Voyager while loading GLB model
+        probe.visible = false;
+    }
+    scene.add(probe);
+
+    // Helper function to load GLB model after textures are done (Safari mobile optimization)
+    const loadProbeModel = (callback?: () => void) => {
+        if (modelPath) {
+            loadGLBProbe(
+                modelPath,
+                (loadedModel) => {
+                    // Success: replace the probe with the loaded GLB model
+                    console.log('GLB model loaded, replacing probe');
+
+                    // Copy position from current probe to loaded model
+                    loadedModel.position.copy(probe.position);
+
+                    // Remove old probe from scene
+                    scene.remove(probe);
+
+                    // Add loaded model to scene
+                    scene.add(loadedModel);
+
+                    // Update probe reference to point to loaded model
+                    probe = loadedModel;
+
+                    console.log('Probe replaced with GLB model successfully');
+
+                    // Call completion callback
+                    if (callback) callback();
+                },
+                (error) => {
+                    // Error: keep using the Voyager probe as fallback
+                    console.log('Failed to load GLB model, using Voyager probe as fallback');
+                    console.error('GLB loading error:', error);
+                    // Show Voyager probe on loading failure
+                    probe.visible = true;
+
+                    // Call completion callback even on error
+                    if (callback) callback();
+                },
+                options?.orientation
+            );
+        } else {
+            console.log('Using built-in Voyager probe (no GLB model specified)');
+            // Call completion callback immediately if no model to load
+            if (callback) callback();
+        }
+    };
+
     // Load planet textures sequentially on mobile Safari to prevent memory spike crashes
     if (textureLoadQueue.length > 0) {
         console.log(`Safari mobile: Loading ${textureLoadQueue.length} textures sequentially with 500ms delay`);
@@ -767,11 +831,18 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
         const loadNextTexture = () => {
             if (loadIndex >= textureLoadQueue.length) {
                 console.log('All planet textures loaded successfully on Safari mobile');
-                // Call initialization complete callback
-                if (options?.onInitialized) {
-                    console.log('Initialization complete, calling onInitialized callback');
-                    options.onInitialized();
-                }
+
+                // Load probe model AFTER all textures are loaded (Safari mobile optimization)
+                console.log('Safari mobile: Starting probe model loading after texture completion');
+                setTimeout(() => {
+                    loadProbeModel(() => {
+                        // Call initialization complete callback after probe model is loaded
+                        if (options?.onInitialized) {
+                            console.log('Initialization complete (Safari mobile), calling onInitialized callback');
+                            setTimeout(() => options.onInitialized!(), 500);
+                        }
+                    });
+                }, 1000); // Wait 1 second after textures before loading probe model
                 return;
             }
 
@@ -804,67 +875,16 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
         // Start loading first texture after a delay to let WebGL context stabilize
         setTimeout(loadNextTexture, 1000);
     } else {
-        // For desktop and other browsers, textures load immediately
-        // Call onInitialized after a short delay to ensure scene is ready
-        if (options?.onInitialized) {
-            setTimeout(() => {
-                console.log('Initialization complete (desktop/other browsers), calling onInitialized callback');
-                options.onInitialized!();
-            }, 1000);
-        }
-    }
-
-    // probe initial (starts at 1.0 AU - Earth orbit distance)
-    // Create Voyager-style probe (will be replaced by GLB model if loading succeeds)
-    let probe = createVoyagerProbe();
-
-    const probeR = CELESTIAL_CONSTANTS.PROBE.INITIAL_RADIUS_AU * PHYSICS_SCALE.AU;
-    probe.position.set(0, 0, probeR);
-
-    // Store orientation config on built-in Voyager probe
-    (probe as any).orientationConfig = options?.orientation;
-
-    // Attempt to load GLB model from public/models/ directory
-    // If loading fails or probeModelPath is null, use the Voyager probe
-    const modelPath = options?.probeModelPath;
-    if (modelPath) {
-        // Hide Voyager while loading GLB model
-        probe.visible = false;
-    }
-    scene.add(probe);
-
-    if (modelPath) {
-        loadGLBProbe(
-            modelPath,
-            (loadedModel) => {
-                // Success: replace the probe with the loaded GLB model
-                console.log('GLB model loaded, replacing probe');
-
-                // Copy position from current probe to loaded model
-                loadedModel.position.copy(probe.position);
-
-                // Remove old probe from scene
-                scene.remove(probe);
-
-                // Add loaded model to scene
-                scene.add(loadedModel);
-
-                // Update probe reference to point to loaded model
-                probe = loadedModel;
-
-                console.log('Probe replaced with GLB model successfully');
-            },
-            (error) => {
-                // Error: keep using the Voyager probe as fallback
-                console.log('Failed to load GLB model, using Voyager probe as fallback');
-                console.error('GLB loading error:', error);
-                // Show Voyager probe on loading failure
-                probe.visible = true;
-            },
-            options?.orientation
-        );
-    } else {
-        console.log('Using built-in Voyager probe (no GLB model specified)');
+        // For desktop and other browsers, load probe model immediately
+        loadProbeModel(() => {
+            // Call onInitialized after probe model is loaded
+            if (options?.onInitialized) {
+                setTimeout(() => {
+                    console.log('Initialization complete (desktop/other browsers), calling onInitialized callback');
+                    options.onInitialized!();
+                }, 1000);
+            }
+        });
     }
 
     const gVal = options?.G ?? DEFAULT_G;
