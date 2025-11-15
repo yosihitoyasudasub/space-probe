@@ -838,6 +838,59 @@ body {
     opacity: 0.6;
 }
 
+/* Mobile responsive font sizes for loading screen */
+@media (max-width: 768px) {
+    .loading-title {
+        font-size: 32px;
+        letter-spacing: 4px;
+    }
+
+    .loading-text {
+        font-size: 16px;
+        letter-spacing: 1.5px;
+    }
+
+    .loading-subtext {
+        font-size: 12px;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+    }
+
+    .loading-content {
+        gap: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .loading-title {
+        font-size: 24px;
+        letter-spacing: 3px;
+    }
+
+    .loading-text {
+        font-size: 14px;
+        letter-spacing: 1px;
+    }
+
+    .loading-subtext {
+        font-size: 11px;
+    }
+
+    .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border-width: 3px;
+    }
+
+    .loading-content {
+        gap: 15px;
+        padding: 0 20px;
+    }
+}
+
 /* Instructions Screen */
 .instructions-screen {
     position: fixed;
