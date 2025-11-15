@@ -564,8 +564,8 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
     const VignetteShader = {
         uniforms: {
             tDiffuse: { value: null },
-            offset: { value: 0.8 },    // 0.5-1.0 (lower = stronger)
-            darkness: { value: 1.2 }   // 1.0-2.0 (higher = darker)
+            offset: { value: 0.9 },    // 0.5-1.0 (lower = stronger) - weakened for better visibility
+            darkness: { value: 0.8 }   // 1.0-2.0 (higher = darker) - reduced for brighter screen
         },
         vertexShader: `
             varying vec2 vUv;
