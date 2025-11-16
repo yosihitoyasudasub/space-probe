@@ -785,7 +785,7 @@ const sound = new Howl({
     volume: 0.4 * masterVolume,
     loop: true,        // ループ再生
     rate: 1.0,         // 初期ピッチ
-    preload: false,    // 遅延ロード（初回再生時にロード、モバイル最適化）
+    preload: true,     // 初期化時に事前ロード
     html5: true,       // HTML5 Audio使用（モバイルSafari互換性）
 });
 ```
@@ -836,7 +836,7 @@ iOS Safariでは、音声再生に制限があり、ユーザーインタラク�
 ```typescript
 const sound = new Howl({
     html5: true,  // HTML5 Audio使用
-    preload: false,  // 遅延ロード
+    preload: true,  // 初期化時に事前ロード
     // ...
 });
 ```
@@ -847,37 +847,61 @@ HTML5 Audioバックエンド（`html5: true`）を使用することで、ユ�
 1. ユーザーがSTARTボタンをタップ
 2. `initializeSounds()`が呼ばれてHowlインスタンスを作成
 3. ユーザーインタラクション内で初期化されたため、音声再生が有効化
-4. 上矢印キー押下時に初めて音声ファイルをロード（`preload: false`）
-5. 音声が再生される
+4. `preload: true`により音声ファイルが事前ロードされる
+5. 上矢印キー押下時に即座に音声が再生される
 
-*再生時の詳細ログ（SoundEffectsManager.tsx Lines 66-97）:*
+*再生状態の手動追跡（SoundEffectsManager.tsx）:*
+
+モバイルSafariでHowler.jsの`playing()`メソッドが正しく動作しない問題があるため、再生状態を自前で追跡します：
+
 ```typescript
+const playingRef = useRef<Set<SoundEffectName>>(new Set());
+
 const play = useCallback((name: SoundEffectName) => {
+    if (!enabled) return;
+
+    // 既に再生中なら何もしない（重複再生を防止）
+    if (playingRef.current.has(name)) {
+        console.log(`${name} is already playing`);
+        return;
+    }
+
     const sound = soundsRef.current.get(name);
     if (sound) {
-        const soundId = sound.play();
-        console.log(`Playing ${name}, sound ID: ${soundId}`);
-
-        sound.once('play', () => {
-            console.log(`${name} started playing successfully`);
-        });
-
-        sound.once('loaderror', (id, error) => {
-            console.error(`Failed to load ${name}:`, error);
-        });
-
-        sound.once('playerror', (id, error) => {
-            console.error(`Failed to play ${name}:`, error);
-        });
+        sound.play();
+        playingRef.current.add(name);  // 再生状態を記録
+        console.log(`Playing ${name}`);
     }
 }, [enabled]);
+
+const stop = useCallback((name: SoundEffectName) => {
+    const sound = soundsRef.current.get(name);
+    if (sound) {
+        sound.stop();
+        playingRef.current.delete(name);  // 再生状態をクリア
+        console.log(`Stopped ${name}`);
+    }
+}, []);
+
+const isPlaying = useCallback((name: SoundEffectName): boolean => {
+    return playingRef.current.has(name);  // Howler.jsの代わりに自前の状態を参照
+}, []);
 ```
 
+この実装により、モバイルSafariでループ音が断続的に再生される問題（「ボッボッボッ」という再生）を防止します。
+
+*再生状態の管理:*
+- `play()`: `playingRef.current.add(name)` で再生状態を記録
+- `stop()`: `playingRef.current.delete(name)` で状態をクリア
+- `pause()`: `playingRef.current.delete(name)` で状態をクリア
+- `resume()`: `playingRef.current.add(name)` で状態を記録
+- `stopAll()`: `playingRef.current.clear()` で全ての状態をクリア
+- クリーンアップ時: `playingRef.current.clear()` で全ての状態をクリア
+
 *デバッグログ:*
-- `Playing ENGINE_THRUST, sound ID: 1` - 再生開始
-- `ENGINE_THRUST started playing successfully` - 再生成功
-- `Failed to load ENGINE_THRUST: xxx` - ロードエラー
-- `Failed to play ENGINE_THRUST: xxx` - 再生エラー
+- `Playing ENGINE_THRUST` - 再生開始
+- `Stopped ENGINE_THRUST` - 再生停止
+- `ENGINE_THRUST is already playing` - 既に再生中（重複防止）
 
 *初期化チェック（GameCanvas.tsx Line 353）:*
 ```typescript
@@ -892,7 +916,8 @@ if (soundEffects && soundEffects.isInitialized) {
 
 - 初期化完了チェック（`isInitialized`）
 - try-catchによるエラーハンドリング
-- 詳細なイベントログでモバイルデバッグをサポート
+- `playingRef`による再生状態追跡でモバイルSafariの重複再生を防止
+- 詳細なコンソールログでモバイルデバッグをサポート
 
 **追加方法:**
 
@@ -3192,8 +3217,21 @@ const TouchControls: React.FC = () => {
 #### 3.15.6 イベント処理
 
 **対応イベント:**
-- `touchstart` / `touchend` - タッチデバイス用
+- `touchstart` / `touchend` / `touchcancel` - タッチデバイス用
 - `mousedown` / `mouseup` / `mouseleave` - マウス用（PCでのテスト用）
+
+**`onTouchCancel`の重要性:**
+モバイルデバイスでタッチ操作が中断された場合（例：画面スクロール、通知表示など）、`touchcancel`イベントが発火します。このイベントを処理しないと、`inputState`がtrueのまま残り、効果音の再生が不安定になる可能性があります。
+
+```typescript
+// src/components/TouchControls.tsx
+<button
+    onTouchStart={handleTouchStart('up')}
+    onTouchEnd={handleTouchEnd('up')}
+    onTouchCancel={handleTouchEnd('up')}  // タッチキャンセル時も状態をクリア
+    // ...
+>
+```
 
 **入力状態管理:**
 ```typescript
@@ -5548,6 +5586,7 @@ SOFTWARE.
 | 2025-11-11 | 2.8 | モバイルSafariクラッシュ対策（4段階の改善） - (1) Three.js初期化の遅延（STARTボタン押下まで初期化しない）、(2) Safari特有の最適化（アンチエイリアス無効、ピクセル比1.5、シャドウ無効、Bloom 1/4解像度、Film/Vignette無効、ジオメトリ簡素化、テクスチャ無効）、(3) メモリスパイクの真因発見（初回アクセス時の8惑星テクスチャ同時読み込み）と段階的テクスチャローディング実装（500ms間隔で順次ロード）、(4) ローディング画面追加（初期化完了まで確実に待機、"INITIALIZING..."表示、スピナーアニメーション）、デバイス別読み込み時間（Safari mobile初回5-6秒/2回目以降1秒、Desktop/Other 1秒） |
 | 2025-11-12 | 2.9 | 照明とビジュアル品質の改善 - アンビエントライト強度3倍増（0.2→0.6）、アンビエントライト色明度化（0x0a0a1a→0x404060）、全画面視認性向上、探査機視認性向上（Voyagerプローブ全パーツに発光追加：メインボディ0.3、パラボラアンテナ0.4、RTG電源0.6赤オレンジ、磁力計センサー0.8オレンジ）、GLBモデル発光強化（暗い部分70%/明るい部分40%発光）、リアルな発光表現（RTG放射性同位体、アクティブセンサー）、暗い宇宙でも探査機が常に視認可能 |
 | 2025-11-12 | 2.10 | ゲーム説明画面の追加 - ローディング完了後に"HOW TO PLAY"画面を自動表示（START画面→LOADING→説明画面→シミュレーション開始の4段階フロー）、目的・操作方法・ヒントの3セクション構成、青い光るボーダーとグラデーションボタン（#0066cc→#00ccff）のSF風デザイン、"START MISSION"ボタンでゲーム開始、モバイルレスポンシブ対応、初心者に優しいUX、背景に太陽系が微かに見える半透明デザインで没入感維持 |
+| 2025-11-16 | 2.11 | 効果音システム実装とモバイルSafari対応 - Howler.js使用の効果音システム実装（8種類定義、ENGINE_THRUST実装済み）、エンジン噴射音のループ再生（上矢印キー押下中）、速度に応じた動的ピッチ調整（1.0x-1.5x）、HTML5 Audio使用でモバイルSafari完全対応、事前ロード（preload: true）で確実な再生、再生状態の手動追跡（playingRef）でモバイルSafariの断続的再生問題を解決、TouchControlsに`onTouchCancel`イベント追加で入力状態の安定化、光跡色を青白色（0xAADDFF）に変更、詳細なコンソールログでモバイルデバッグサポート |
 
 ---
 

@@ -12,6 +12,7 @@ import { SOUND_EFFECTS, SoundEffectName } from '../lib/soundConstants';
  */
 export const useSoundEffects = () => {
     const soundsRef = useRef<Map<SoundEffectName, Howl>>(new Map());
+    const playingRef = useRef<Set<SoundEffectName>>(new Set());  // Track which sounds are playing
     const [enabled, setEnabled] = useState<boolean>(true);  // Default: enabled
     const [masterVolume, setMasterVolume] = useState<number>(0.5);
     const [isInitialized, setIsInitialized] = useState<boolean>(false);
@@ -49,6 +50,7 @@ export const useSoundEffects = () => {
                 sound.unload();
             });
             soundsRef.current.clear();
+            playingRef.current.clear();
         };
     }, []);
 
@@ -67,10 +69,17 @@ export const useSoundEffects = () => {
             return;
         }
 
+        // Check if already playing
+        if (playingRef.current.has(name)) {
+            console.log(`${name} is already playing`);
+            return;
+        }
+
         const sound = soundsRef.current.get(name);
         if (sound) {
             try {
                 sound.play();
+                playingRef.current.add(name);
                 console.log(`Playing ${name}`);
             } catch (error) {
                 console.error(`Error playing ${name}:`, error);
@@ -85,6 +94,7 @@ export const useSoundEffects = () => {
         const sound = soundsRef.current.get(name);
         if (sound) {
             sound.stop();
+            playingRef.current.delete(name);
             console.log(`Stopped ${name}`);
         }
     }, []);
@@ -94,6 +104,7 @@ export const useSoundEffects = () => {
         const sound = soundsRef.current.get(name);
         if (sound) {
             sound.pause();
+            playingRef.current.delete(name);
         }
     }, []);
 
@@ -104,6 +115,7 @@ export const useSoundEffects = () => {
         const sound = soundsRef.current.get(name);
         if (sound) {
             sound.play();
+            playingRef.current.add(name);
         }
     }, [enabled]);
 
@@ -125,8 +137,7 @@ export const useSoundEffects = () => {
 
     // Check if a sound is currently playing
     const isPlaying = useCallback((name: SoundEffectName): boolean => {
-        const sound = soundsRef.current.get(name);
-        return sound ? sound.playing() : false;
+        return playingRef.current.has(name);
     }, []);
 
     // Stop all sounds
@@ -134,6 +145,7 @@ export const useSoundEffects = () => {
         soundsRef.current.forEach((sound) => {
             sound.stop();
         });
+        playingRef.current.clear();
     }, []);
 
     return {
