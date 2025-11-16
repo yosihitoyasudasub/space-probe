@@ -8,6 +8,15 @@ const TouchControls: React.FC = () => {
         if (inputState) {
             inputState[key] = true;
         }
+
+        // Play engine sound directly in touch event handler (mobile audio policy requirement)
+        if (key === 'up') {
+            const soundEffects = (window as any).__soundEffects;
+            if (soundEffects && soundEffects.isInitialized) {
+                soundEffects.play('ENGINE_THRUST');
+                console.log('Touch: Playing ENGINE_THRUST');
+            }
+        }
     };
 
     const handleTouchEnd = (key: 'left' | 'right' | 'up' | 'down') => (e: React.TouchEvent | React.MouseEvent) => {
@@ -15,6 +24,15 @@ const TouchControls: React.FC = () => {
         const inputState = (window as any).__gameInputState;
         if (inputState) {
             inputState[key] = false;
+        }
+
+        // Stop engine sound directly in touch event handler
+        if (key === 'up') {
+            const soundEffects = (window as any).__soundEffects;
+            if (soundEffects && soundEffects.isInitialized) {
+                soundEffects.stop('ENGINE_THRUST');
+                console.log('Touch: Stopped ENGINE_THRUST');
+            }
         }
     };
 

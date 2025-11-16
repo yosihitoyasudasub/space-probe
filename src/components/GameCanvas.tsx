@@ -217,6 +217,11 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = CELESTIAL_CO
         if (e.key === 'ArrowUp') {
             e.preventDefault();
             inputState.up = true;
+            // Play engine sound directly in keyboard event handler
+            if (soundEffects && soundEffects.isInitialized) {
+                soundEffects.play('ENGINE_THRUST');
+                console.log('Keyboard: Playing ENGINE_THRUST');
+            }
         }
         if (e.key === 'ArrowDown') {
             e.preventDefault();
@@ -235,7 +240,14 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = CELESTIAL_CO
     const onKeyUp = (e: KeyboardEvent) => {
         if (e.key === 'ArrowLeft') inputState.left = false;
         if (e.key === 'ArrowRight') inputState.right = false;
-        if (e.key === 'ArrowUp') inputState.up = false;
+        if (e.key === 'ArrowUp') {
+            inputState.up = false;
+            // Stop engine sound directly in keyboard event handler
+            if (soundEffects && soundEffects.isInitialized) {
+                soundEffects.stop('ENGINE_THRUST');
+                console.log('Keyboard: Stopped ENGINE_THRUST');
+            }
+        }
         if (e.key === 'ArrowDown') inputState.down = false;
     };
 
@@ -349,28 +361,17 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = CELESTIAL_CO
                                 trail.visible = isForwardThrusting;
                             });
 
-                            // Play engine sound when thrusting
-                            if (soundEffects && soundEffects.isInitialized) {
+                            // Adjust engine sound pitch based on velocity
+                            // Note: Play/stop is handled in TouchControls for mobile compatibility
+                            if (soundEffects && soundEffects.isInitialized && isForwardThrusting) {
                                 try {
-                                    if (isForwardThrusting) {
-                                        // Play engine thrust sound if not already playing
-                                        if (!soundEffects.isPlaying('ENGINE_THRUST')) {
-                                            soundEffects.play('ENGINE_THRUST');
-                                            console.log('Playing ENGINE_THRUST');
-                                        }
-                                        // Adjust pitch based on velocity (1.0 at low speed, 1.5 at high speed)
-                                        const velocityMagnitude = state.velocity.length();
-                                        const maxVelocity = 50; // Approximate max velocity for pitch scaling
-                                        const pitchRate = 1.0 + Math.min(velocityMagnitude / maxVelocity, 1.0) * 0.5;
-                                        soundEffects.setRate('ENGINE_THRUST', pitchRate);
-                                    } else {
-                                        // Stop engine sound when not thrusting
-                                        if (soundEffects.isPlaying('ENGINE_THRUST')) {
-                                            soundEffects.stop('ENGINE_THRUST');
-                                        }
-                                    }
+                                    // Adjust pitch based on velocity (1.0 at low speed, 1.5 at high speed)
+                                    const velocityMagnitude = state.velocity.length();
+                                    const maxVelocity = 50; // Approximate max velocity for pitch scaling
+                                    const pitchRate = 1.0 + Math.min(velocityMagnitude / maxVelocity, 1.0) * 0.5;
+                                    soundEffects.setRate('ENGINE_THRUST', pitchRate);
                                 } catch (error) {
-                                    console.error('Error playing sound effect:', error);
+                                    console.error('Error adjusting sound pitch:', error);
                                 }
                             }
                         }

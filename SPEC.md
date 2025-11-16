@@ -771,11 +771,15 @@ src/
   - `isPlaying(name)`: 再生中かチェック
 
 *統合:*
-- `page.tsx`: `useSoundEffects`フックで状態管理、STARTボタンで初期化
-- `GameCanvas.tsx`: エンジン噴射音の再生制御（Lines 352-370）
-  - 上矢印キー押下中にループ再生
-  - 速度に応じて動的にピッチ調整: `pitchRate = 1.0 + (velocity / maxVelocity) * 0.5`
-  - 燃料切れで自動停止
+- `page.tsx`: `useSoundEffects`フックで状態管理、STARTボタンで初期化、`window.__soundEffects`に公開
+- `GameCanvas.tsx`: キーボード入力でのエンジン噴射音制御とピッチ調整
+  - `onKeyDown`（Line 217-224）: 上矢印キー押下時にイベントハンドラ内で直接`play()`
+  - `onKeyUp`（Line 243-249）: 上矢印キー解放時にイベントハンドラ内で直接`stop()`
+  - アニメーションループ（Line 352-364）: 速度に応じてピッチ調整のみ（`setRate()`）
+- `TouchControls.tsx`: タッチ入力でのエンジン噴射音制御
+  - `handleTouchStart`（Line 12-19）: 上矢印タッチ時にイベントハンドラ内で直接`play()`
+  - `handleTouchEnd`（Line 29-36）: 上矢印解放時にイベントハンドラ内で直接`stop()`
+  - `window.__soundEffects`経由でsoundEffectsにアクセス
 
 **Howler.jsの設定:**
 
@@ -792,24 +796,70 @@ const sound = new Howl({
 
 **エンジン噴射音の動的制御:**
 
+*イベントハンドラでの再生/停止（モバイル音声ポリシー対応）:*
+
+モバイルブラウザの音声ポリシー要件により、音声の再生開始/停止はユーザーインタラクションのイベントハンドラ内で直接呼ぶ必要があります。
+
 ```typescript
-// GameCanvas.tsx (Lines 352-370)
+// GameCanvas.tsx - キーボード入力
+const onKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'ArrowUp') {
+        inputState.up = true;
+        // イベントハンドラ内で直接再生（モバイルで許可される）
+        if (soundEffects && soundEffects.isInitialized) {
+            soundEffects.play('ENGINE_THRUST');
+        }
+    }
+};
+
+const onKeyUp = (e: KeyboardEvent) => {
+    if (e.key === 'ArrowUp') {
+        inputState.up = false;
+        // イベントハンドラ内で直接停止
+        if (soundEffects && soundEffects.isInitialized) {
+            soundEffects.stop('ENGINE_THRUST');
+        }
+    }
+};
+
+// TouchControls.tsx - タッチ入力
+const handleTouchStart = (key: string) => (e: Event) => {
+    if (key === 'up') {
+        inputState.up = true;
+        // イベントハンドラ内で直接再生（モバイルで許可される）
+        const soundEffects = (window as any).__soundEffects;
+        if (soundEffects && soundEffects.isInitialized) {
+            soundEffects.play('ENGINE_THRUST');
+        }
+    }
+};
+
+const handleTouchEnd = (key: string) => (e: Event) => {
+    if (key === 'up') {
+        inputState.up = false;
+        // イベントハンドラ内で直接停止
+        const soundEffects = (window as any).__soundEffects;
+        if (soundEffects && soundEffects.isInitialized) {
+            soundEffects.stop('ENGINE_THRUST');
+        }
+    }
+};
+```
+
+*アニメーションループでのピッチ調整:*
+
+ピッチ調整（setRate）はユーザーインタラクション外でも許可されるため、アニメーションループ内で速度に応じて動的に変更できます。
+
+```typescript
+// GameCanvas.tsx アニメーションループ内
 const isForwardThrusting = inputState.up && state.fuel > 0;
 
-if (isForwardThrusting) {
-    // エンジン音を再生（まだ再生していない場合）
-    if (!soundEffects.isPlaying('ENGINE_THRUST')) {
-        soundEffects.play('ENGINE_THRUST');
-    }
-
+if (soundEffects && soundEffects.isInitialized && isForwardThrusting) {
     // 速度に応じてピッチを調整
     const velocityMagnitude = state.velocity.length();
     const maxVelocity = 50;
     const pitchRate = 1.0 + Math.min(velocityMagnitude / maxVelocity, 1.0) * 0.5;
     soundEffects.setRate('ENGINE_THRUST', pitchRate);
-} else {
-    // エンジン音を停止
-    soundEffects.stop('ENGINE_THRUST');
 }
 ```
 
@@ -826,7 +876,10 @@ if (isForwardThrusting) {
 - 自動音声アンロック: STARTボタンクリック時に初期化
 - HTML5 Audio: モバイルSafari完全対応（iOS/Android）
 - ピッチ調整（rate）とループ再生をサポート
-- ユーザーインタラクション後に確実に再生開始
+- **イベントハンドラ内での直接再生**: モバイル音声ポリシー準拠
+  - 再生開始/停止はユーザーインタラクション（タップ/キー押下）のイベントハンドラ内で直接呼ぶ
+  - アニメーションループ（requestAnimationFrame）からの再生は拒否される
+  - BGMと同じパターンで確実に動作
 
 **モバイルSafariオーディオアンロック機構:**
 
@@ -846,9 +899,13 @@ HTML5 Audioバックエンド（`html5: true`）を使用することで、ユ�
 *動作フロー:*
 1. ユーザーがSTARTボタンをタップ
 2. `initializeSounds()`が呼ばれてHowlインスタンスを作成
-3. ユーザーインタラクション内で初期化されたため、音声再生が有効化
-4. `preload: true`により音声ファイルが事前ロードされる
-5. 上矢印キー押下時に即座に音声が再生される
+3. `soundEffects`を`window.__soundEffects`に公開
+4. ユーザーインタラクション内で初期化されたため、音声再生が有効化
+5. `preload: true`により音声ファイルが事前ロードされる
+6. 上矢印キー/ボタン押下時、**イベントハンドラ内で直接**`soundEffects.play()`が呼ばれる
+7. ループ音が再生開始（モバイルブラウザで許可される）
+8. アニメーションループ内でピッチ調整（`setRate()`）が継続的に実行される
+9. 上矢印キー/ボタン解放時、**イベントハンドラ内で直接**`soundEffects.stop()`が呼ばれる
 
 *再生状態の手動追跡（SoundEffectsManager.tsx）:*
 
@@ -903,16 +960,27 @@ const isPlaying = useCallback((name: SoundEffectName): boolean => {
 - `Stopped ENGINE_THRUST` - 再生停止
 - `ENGINE_THRUST is already playing` - 既に再生中（重複防止）
 
-*初期化チェック（GameCanvas.tsx Line 353）:*
-```typescript
-if (soundEffects && soundEffects.isInitialized) {
-    try {
-        soundEffects.play('ENGINE_THRUST');
-    } catch (error) {
-        console.error('Error playing sound effect:', error);
-    }
-}
-```
+*モバイル音声ポリシーへの対応:*
+
+**問題の背景:**
+モバイルブラウザ（Safari/Chrome）では、音声の再生開始がユーザーインタラクションのイベントハンドラ内で直接呼ばれることを要求します。アニメーションループ（`requestAnimationFrame`、React Threeの`useFrame`）内での再生開始は拒否されます。
+
+**BGMと効果音の違い:**
+
+| 項目 | BGM | 効果音（旧実装） | 効果音（新実装） |
+|-----|-----|------------------|------------------|
+| 再生トリガー | STARTボタンのイベントハンドラ内 | useFrame（アニメーションループ）内 | イベントハンドラ内 |
+| ユーザーインタラクション | ✅ イベントハンドラ内で直接再生 | ❌ inputState経由で間接的 | ✅ イベントハンドラ内で直接再生 |
+| モバイル動作 | ✅ 動作する | ❌ 拒否される | ✅ 動作する |
+
+**解決策:**
+- キーボード: `onKeyDown`/`onKeyUp`イベントハンドラ内で直接`play()`/`stop()`
+- タッチ: `handleTouchStart`/`handleTouchEnd`イベントハンドラ内で直接`play()`/`stop()`
+- アニメーションループ: ピッチ調整（`setRate()`）のみ実行（再生開始は行わない）
+
+**共有方法:**
+- `window.__soundEffects`を使用してTouchControlsとsoundEffectsを共有
+- 既存の`__gameInputState`、`__restartSimulation`と同じパターン
 
 - 初期化完了チェック（`isInitialized`）
 - try-catchによるエラーハンドリング
@@ -5586,7 +5654,7 @@ SOFTWARE.
 | 2025-11-11 | 2.8 | モバイルSafariクラッシュ対策（4段階の改善） - (1) Three.js初期化の遅延（STARTボタン押下まで初期化しない）、(2) Safari特有の最適化（アンチエイリアス無効、ピクセル比1.5、シャドウ無効、Bloom 1/4解像度、Film/Vignette無効、ジオメトリ簡素化、テクスチャ無効）、(3) メモリスパイクの真因発見（初回アクセス時の8惑星テクスチャ同時読み込み）と段階的テクスチャローディング実装（500ms間隔で順次ロード）、(4) ローディング画面追加（初期化完了まで確実に待機、"INITIALIZING..."表示、スピナーアニメーション）、デバイス別読み込み時間（Safari mobile初回5-6秒/2回目以降1秒、Desktop/Other 1秒） |
 | 2025-11-12 | 2.9 | 照明とビジュアル品質の改善 - アンビエントライト強度3倍増（0.2→0.6）、アンビエントライト色明度化（0x0a0a1a→0x404060）、全画面視認性向上、探査機視認性向上（Voyagerプローブ全パーツに発光追加：メインボディ0.3、パラボラアンテナ0.4、RTG電源0.6赤オレンジ、磁力計センサー0.8オレンジ）、GLBモデル発光強化（暗い部分70%/明るい部分40%発光）、リアルな発光表現（RTG放射性同位体、アクティブセンサー）、暗い宇宙でも探査機が常に視認可能 |
 | 2025-11-12 | 2.10 | ゲーム説明画面の追加 - ローディング完了後に"HOW TO PLAY"画面を自動表示（START画面→LOADING→説明画面→シミュレーション開始の4段階フロー）、目的・操作方法・ヒントの3セクション構成、青い光るボーダーとグラデーションボタン（#0066cc→#00ccff）のSF風デザイン、"START MISSION"ボタンでゲーム開始、モバイルレスポンシブ対応、初心者に優しいUX、背景に太陽系が微かに見える半透明デザインで没入感維持 |
-| 2025-11-16 | 2.11 | 効果音システム実装とモバイルSafari対応 - Howler.js使用の効果音システム実装（8種類定義、ENGINE_THRUST実装済み）、エンジン噴射音のループ再生（上矢印キー押下中）、速度に応じた動的ピッチ調整（1.0x-1.5x）、HTML5 Audio使用でモバイルSafari完全対応、事前ロード（preload: true）で確実な再生、再生状態の手動追跡（playingRef）でモバイルSafariの断続的再生問題を解決、TouchControlsに`onTouchCancel`イベント追加で入力状態の安定化、光跡色を青白色（0xAADDFF）に変更、詳細なコンソールログでモバイルデバッグサポート |
+| 2025-11-16 | 2.11 | 効果音システム実装とモバイルSafari対応 - Howler.js使用の効果音システム実装（8種類定義、ENGINE_THRUST実装済み）、エンジン噴射音のループ再生（上矢印キー押下中）、速度に応じた動的ピッチ調整（1.0x-1.5x）、HTML5 Audio使用でモバイルSafari完全対応、事前ロード（preload: true）で確実な再生、再生状態の手動追跡（playingRef）でモバイルSafariの断続的再生問題を解決、TouchControlsに`onTouchCancel`イベント追加で入力状態の安定化、**イベントハンドラ内での直接再生/停止実装**（キーボード: onKeyDown/onKeyUp、タッチ: handleTouchStart/handleTouchEnd）でモバイル音声ポリシー準拠、アニメーションループからの再生削除（ピッチ調整のみ残す）、`window.__soundEffects`経由でTouchControlsへの共有、光跡色を青白色（0xAADDFF）に変更、詳細なコンソールログでモバイルデバッグサポート |
 
 ---
 

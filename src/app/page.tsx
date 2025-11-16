@@ -168,6 +168,8 @@ const Page = () => {
         if (!soundEffects.isInitialized) {
             soundEffects.initializeSounds();
         }
+        // Expose soundEffects to window for TouchControls
+        (window as any).__soundEffects = soundEffects;
     };
 
     // Handle initialization complete from GameCanvas
