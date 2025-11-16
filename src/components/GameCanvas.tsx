@@ -28,8 +28,8 @@ const GAME_LOOP_CONSTANTS = {
     },
 
     PROBE_FOLLOW_CAMERA: {
-        OFFSET_BACK: 70,        // Units behind probe
-        OFFSET_UP: 80,          // Units above probe
+        OFFSET_BACK: 40,        // Units behind probe
+        OFFSET_UP: 20,          // Units above probe
         STATIC_OFFSET_UP: 80,   // Offset when probe is stationary
         STATIC_OFFSET_FORWARD: 150,  // Forward offset when stationary
         MIN_SPEED: 0.1          // Minimum speed to use velocity-based positioning (scene units/s)

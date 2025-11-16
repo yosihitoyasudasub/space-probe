@@ -467,7 +467,7 @@ function loadGLBProbe(
                             // Add light trail from emissive parts
                             if (child.isMesh && mat.emissive.getHex() !== 0x000000) {
                                 // Create a tube-shaped light trail with gradient shader
-                                const trailLength = 100; // Length of the light trail (doubled from 50)
+                                const trailLength = 1000; // Length of the light trail (5x increased from 100)
                                 const trailRadius = 0.15; // Radius of the tube
                                 const radialSegments = 8; // Circular segments for the tube
                                 const tubularSegments = 32; // Length segments for smooth gradient
