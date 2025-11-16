@@ -1522,6 +1522,13 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
         }
     })();
 
+    // Save initial state after COM corrections for reset functionality
+    const initialBodyStates = bodies.map(b => ({
+        id: b.id,
+        position: [...b.position] as [number, number, number],
+        velocity: [...b.velocity] as [number, number, number]
+    }));
+
     function onResize() {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
@@ -1916,7 +1923,69 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
         }
     }
 
-    return { scene, camera, renderer, composer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid, updateGrid, updatePlanetOrbits, updatePrediction, switchProbeModel, planetMeshes };
+    // Reset simulation to initial state without reloading models/textures
+    function resetSimulation() {
+        // Restore all bodies to their initial positions and velocities
+        for (const initState of initialBodyStates) {
+            const body = bodies.find(b => b.id === initState.id);
+            if (body) {
+                body.position = [...initState.position];
+                body.velocity = [...initState.velocity];
+            }
+        }
+
+        // Update visual meshes to match reset positions
+        try {
+            const starBody = bodies.find(b => b.id === 'star');
+            if (starBody) {
+                starMesh.position.set(starBody.position[0], starBody.position[1], starBody.position[2]);
+            }
+
+            for (const pm of planetMeshes) {
+                const planetBody = bodies.find(b => b.id === pm.id);
+                if (planetBody) {
+                    pm.mesh.position.set(planetBody.position[0], planetBody.position[1], planetBody.position[2]);
+                }
+            }
+
+            // Reset probe
+            const probeBodyReset = bodies.find(b => b.id === 'probe');
+            if (probeBodyReset) {
+                probe.position.set(probeBodyReset.position[0], probeBodyReset.position[1], probeBodyReset.position[2]);
+                probe.rotation.set(0, 0, 0);
+                probe.quaternion.identity();
+            }
+        } catch (e) {
+            console.error('Error resetting visual meshes:', e);
+        }
+
+        // Reset state
+        state.position.copy(probe.position);
+        const probeBodyState = bodies.find(b => b.id === 'probe');
+        if (probeBodyState) {
+            state.velocity.set(probeBodyState.velocity[0], probeBodyState.velocity[1], probeBodyState.velocity[2]);
+        }
+        state.distance = 0;
+        state.fuel = 100;
+        state.slingshots = 0;
+        state.status = 'Idle';
+
+        // Clear trail
+        trailPoints.length = 0;
+        trailGeometry.setFromPoints([]);
+
+        // Hide light trails
+        if ((probe as any).lightTrails) {
+            const lightTrails = (probe as any).lightTrails;
+            lightTrails.forEach((trail: any) => {
+                trail.visible = false;
+            });
+        }
+
+        console.log('Simulation reset to initial state (no model reload)');
+    }
+
+    return { scene, camera, renderer, composer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid, updateGrid, updatePlanetOrbits, updatePrediction, switchProbeModel, planetMeshes, resetSimulation };
 }
 
 // small helper to allow external callers to apply delta-v to the probe

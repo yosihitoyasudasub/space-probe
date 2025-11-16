@@ -167,7 +167,7 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = CELESTIAL_CO
 
     // pass simulation tuning options to initThreeJS
     let threeObj: any = (initThreeJS as any)(canvas, { probeSpeedMult, G: gravityG, starMass, gravityGridEnabled, gridEnabled, planetOrbitsEnabled, predictionEnabled, probeModelPath, orientation, onInitialized });
-    let { scene, camera, renderer, composer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid, updateGrid, updatePlanetOrbits, updatePrediction, switchProbeModel, planetMeshes } = threeObj;
+    let { scene, camera, renderer, composer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid, updateGrid, updatePlanetOrbits, updatePrediction, switchProbeModel, planetMeshes, resetSimulation } = threeObj;
     gravityGridRef.current = { updateGravityGrid };
     gridRef.current = { updateGrid };
     planetOrbitsRef.current = { updatePlanetOrbits };
@@ -188,28 +188,18 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = CELESTIAL_CO
         // Keep simulation started (don't show "How to Play" screen)
         isSimulationStartedRef.current = true;
 
-        try {
-            if (rafRef.current) cancelAnimationFrame(rafRef.current);
-        } catch (e) {}
-        try {
-            dispose();
-        } catch (e) {}
         // Reset grid states to hidden
         if (setGravityGridEnabled) setGravityGridEnabled(false);
         if (setGridEnabled) setGridEnabled(false);
-        // Initialize with grids hidden, keep planet orbits and prediction as user configured
-        threeObj = (initThreeJS as any)(canvas, { probeSpeedMult, G: gravityG, starMass, gravityGridEnabled: false, gridEnabled: false, planetOrbitsEnabled, predictionEnabled, probeModelPath, orientation, onInitialized });
-        ({ scene, camera, renderer, composer, dispose, state, probe, controls, addTrailPoint, stepSimulation, updateGravityGrid, updateGrid, updatePlanetOrbits, updatePrediction, switchProbeModel, planetMeshes } = threeObj);
-        // Update refs after restart
-        gravityGridRef.current = { updateGravityGrid };
-        gridRef.current = { updateGrid };
-        planetOrbitsRef.current = { updatePlanetOrbits };
-        predictionRef.current = { updatePrediction };
-        switchProbeModelRef.current = { switchProbeModel };
-        // Restart animation loop
+
+        // Call resetSimulation from threeSetup (no model reload)
+        if (resetSimulation) {
+            resetSimulation();
+        }
+
+        // Reset animation loop timing
         lastTime = performance.now() / 1000;
         accumulator = 0;
-        rafRef.current = requestAnimationFrame(animate);
     };
     (window as any).__restartSimulation = restartSimulation;
 

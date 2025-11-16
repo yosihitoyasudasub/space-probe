@@ -51,6 +51,7 @@ const Page = () => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isInitialized, setIsInitialized] = useState<boolean>(false);
     const [showInstructions, setShowInstructions] = useState<boolean>(false);
+    const isFirstLoadRef = useRef<boolean>(true); // Track if this is the first load
 
     // BGM control
     const { enabled: bgmEnabled, setEnabled: setBgmEnabled, volume: bgmVolume, setVolume: setBgmVolume, selectedTrack: bgmTrack, setSelectedTrack: setBgmTrack } = useBGM();
@@ -165,9 +166,10 @@ const Page = () => {
     const handleInitialized = () => {
         setIsInitialized(true);
         setIsLoading(false);
-        // Only show instructions on first initialization, not on restart
-        if (!isSimulationStarted) {
+        // Only show instructions on first load, not on restart
+        if (isFirstLoadRef.current) {
             setShowInstructions(true);
+            isFirstLoadRef.current = false; // Mark as no longer first load
         }
     };
 
