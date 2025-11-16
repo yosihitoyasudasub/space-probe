@@ -486,8 +486,8 @@ function loadGLBProbe(
                                     false
                                 );
 
-                                // Get the emissive color
-                                const emissiveColor = new THREE.Color(mat.emissive.getHex());
+                                // Use bright blue-white color for light trails (plasma engine effect)
+                                const emissiveColor = new THREE.Color(0xAADDFF); // Bright blue-white
 
                                 // Create gradient shader material
                                 const trailMaterial = new THREE.ShaderMaterial({
