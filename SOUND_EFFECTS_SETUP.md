@@ -116,9 +116,9 @@ setMasterVolume(0.7); // 0.0 - 1.0
 Howler.jsは、ユーザーの最初のタップ（STARTボタン）で音声を自動的にアンロックします。
 
 ### 最適化
-- **遅延ロード**: 効果音は最初の再生時にロードされます
-- **HTML5 Audio**: ループ音はHTML5 Audioを使用（モバイルで効率的）
-- **Web Audio API**: 単発音はWeb Audio APIを使用（低遅延）
+- **HTML5 Audio**: 全ての効果音でHTML5 Audioを使用（モバイルSafari完全対応）
+- **ピッチ調整**: HTML5 Audioでもrate()メソッドでピッチ変更可能
+- **事前ロード**: STARTボタンクリック時に効果音をプリロード
 
 ## 🛠️ トラブルシューティング
 

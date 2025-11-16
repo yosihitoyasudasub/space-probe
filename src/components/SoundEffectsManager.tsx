@@ -29,7 +29,7 @@ export const useSoundEffects = () => {
                     loop: config.loop,
                     rate: config.rate || 1.0,
                     preload: true,  // Preload files for smooth playback
-                    html5: false,  // Use Web Audio API for better performance and streaming
+                    html5: true,  // Use HTML5 Audio for better mobile Safari compatibility
                 });
 
                 soundsRef.current.set(name as SoundEffectName, sound);

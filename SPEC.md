@@ -786,7 +786,7 @@ const sound = new Howl({
     loop: true,        // ループ再生
     rate: 1.0,         // 初期ピッチ
     preload: true,     // 事前ロード
-    html5: false,      // Web Audio API使用（ストリーミング対応）
+    html5: true,       // HTML5 Audio使用（モバイルSafari互換性）
 });
 ```
 
@@ -824,8 +824,9 @@ if (isForwardThrusting) {
 
 **モバイル対応:**
 - 自動音声アンロック: STARTボタンクリック時に初期化
-- 遅延ロード: 初回再生時にファイルをロード
-- Web Audio API: 低遅延再生とストリーミング
+- HTML5 Audio: モバイルSafari完全対応（iOS/Android）
+- ピッチ調整（rate）とループ再生をサポート
+- ユーザーインタラクション後に確実に再生開始
 
 **追加方法:**
 
