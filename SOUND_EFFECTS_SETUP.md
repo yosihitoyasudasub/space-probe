@@ -115,28 +115,15 @@ setMasterVolume(0.7); // 0.0 - 1.0
 ### 自動アンロック機能
 
 **モバイルSafari対応:**
-iOS Safariでは、ユーザーインタラクション内で明示的に音声をアンロックする処理が必要です：
+HTML5 Audioバックエンドを使用することで、iOS Safariでも自動的に音声がアンロックされます。ユーザーがSTARTボタンをクリックすると、以降の音声再生が確実に動作します。
 
-```typescript
-// STARTボタンクリック時に実行
-const firstSound = soundsRef.current.values().next().value;
-if (firstSound) {
-    firstSound.volume(0);    // 無音で再生
-    firstSound.play();       // オーディオをアンロック
-    setTimeout(() => {
-        firstSound.stop();
-        firstSound.volume(originalVolume);  // 元に戻す
-    }, 100);
-}
-```
-
-この処理により、以降の音声再生が確実に動作します。
+手動でのダミー再生は不要です。HTML5 Audioは最初のユーザーインタラクション（タップ、クリック）で自動的にアンロックされます。
 
 ### 最適化
 - **HTML5 Audio**: 全ての効果音でHTML5 Audioを使用（モバイルSafari完全対応）
-- **ダミー再生**: 初期化時に無音でダミー再生（iOS Safari対策）
+- **遅延ロード**: `preload: false` で音声ファイルを初回再生時にロード（モバイル最適化）
 - **ピッチ調整**: HTML5 Audioでもrate()メソッドでピッチ変更可能
-- **事前ロード**: STARTボタンクリック時に効果音をプリロード
+- **イベントログ**: play, loaderror, playerrorイベントで詳細なデバッグ情報を出力
 - **エラーハンドリング**: 再生失敗時のエラーをキャッチ
 
 ## 🛠️ トラブルシューティング
@@ -155,9 +142,10 @@ if (firstSound) {
    - モバイルでは、STARTボタンをタップした後でないと音が鳴りません
 
 4. **モバイルSafari固有の確認（iOS）**
-   - コンソールに "Audio unlocked for mobile Safari" が表示されているか
-   - コンソールに "Playing ENGINE_THRUST" が表示されているか（上矢印押下時）
-   - エラーメッセージがないか確認
+   - コンソールに "Sound effects initialized" が表示されているか
+   - コンソールに "Playing ENGINE_THRUST, sound ID: X" が表示されているか（上矢印押下時）
+   - コンソールに "ENGINE_THRUST started playing successfully" が表示されているか
+   - loaderrorまたはplayerrorのエラーメッセージがないか確認
    - Safariのリモートデバッグ機能を使用してログを確認:
      - Mac: Safari → 開発 → [デバイス名]
      - Windows: 不可（実機確認が必要）

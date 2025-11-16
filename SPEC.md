@@ -785,7 +785,7 @@ const sound = new Howl({
     volume: 0.4 * masterVolume,
     loop: true,        // ループ再生
     rate: 1.0,         // 初期ピッチ
-    preload: true,     // 事前ロード
+    preload: false,    // 遅延ロード（初回再生時にロード、モバイル最適化）
     html5: true,       // HTML5 Audio使用（モバイルSafari互換性）
 });
 ```
@@ -830,32 +830,56 @@ if (isForwardThrusting) {
 
 **モバイルSafariオーディオアンロック機構:**
 
-iOS Safariでは、音声再生に制限があり、ユーザーインタラクション内で明示的にオーディオをアンロックする必要があります。
+iOS Safariでは、音声再生に制限があり、ユーザーインタラクション後に音声が再生可能になります。
 
-*実装方法（SoundEffectsManager.tsx Lines 42-54）:*
+*HTML5 Audioによる自動アンロック:*
 ```typescript
-// STARTボタンクリック時（ユーザーインタラクション内）に実行
-const firstSound = soundsRef.current.values().next().value;
-if (firstSound) {
-    const originalVolume = firstSound.volume();
-    firstSound.volume(0);    // 音量0に設定（無音）
-    firstSound.play();       // 再生してオーディオをアンロック
-    setTimeout(() => {
-        firstSound.stop();
-        firstSound.volume(originalVolume);  // 元の音量に戻す
-    }, 100);
-    console.log('Audio unlocked for mobile Safari');
-}
+const sound = new Howl({
+    html5: true,  // HTML5 Audio使用
+    preload: false,  // 遅延ロード
+    // ...
+});
 ```
+
+HTML5 Audioバックエンド（`html5: true`）を使用することで、ユーザーインタラクション（STARTボタンのタップ）時に自動的にオーディオが有効化されます。ダミー再生などの追加処理は不要です。
 
 *動作フロー:*
 1. ユーザーがSTARTボタンをタップ
-2. `initializeSounds()`が呼ばれる
-3. 音量0でダミー音を0.1秒再生
-4. オーディオコンテキストがアンロックされる
-5. 以降、通常の音声再生が可能になる
+2. `initializeSounds()`が呼ばれてHowlインスタンスを作成
+3. ユーザーインタラクション内で初期化されたため、音声再生が有効化
+4. 上矢印キー押下時に初めて音声ファイルをロード（`preload: false`）
+5. 音声が再生される
 
-*再生時のチェック（GameCanvas.tsx Line 353）:*
+*再生時の詳細ログ（SoundEffectsManager.tsx Lines 66-97）:*
+```typescript
+const play = useCallback((name: SoundEffectName) => {
+    const sound = soundsRef.current.get(name);
+    if (sound) {
+        const soundId = sound.play();
+        console.log(`Playing ${name}, sound ID: ${soundId}`);
+
+        sound.once('play', () => {
+            console.log(`${name} started playing successfully`);
+        });
+
+        sound.once('loaderror', (id, error) => {
+            console.error(`Failed to load ${name}:`, error);
+        });
+
+        sound.once('playerror', (id, error) => {
+            console.error(`Failed to play ${name}:`, error);
+        });
+    }
+}, [enabled]);
+```
+
+*デバッグログ:*
+- `Playing ENGINE_THRUST, sound ID: 1` - 再生開始
+- `ENGINE_THRUST started playing successfully` - 再生成功
+- `Failed to load ENGINE_THRUST: xxx` - ロードエラー
+- `Failed to play ENGINE_THRUST: xxx` - 再生エラー
+
+*初期化チェック（GameCanvas.tsx Line 353）:*
 ```typescript
 if (soundEffects && soundEffects.isInitialized) {
     try {
@@ -867,7 +891,8 @@ if (soundEffects && soundEffects.isInitialized) {
 ```
 
 - 初期化完了チェック（`isInitialized`）
-- エラーハンドリングで予期しないエラーをキャッチ
+- try-catchによるエラーハンドリング
+- 詳細なイベントログでモバイルデバッグをサポート
 
 **追加方法:**
 

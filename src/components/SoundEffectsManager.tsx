@@ -28,7 +28,7 @@ export const useSoundEffects = () => {
                     volume: config.volume * masterVolume,
                     loop: config.loop,
                     rate: config.rate || 1.0,
-                    preload: true,  // Preload files for smooth playback
+                    preload: false,  // Load on first play (better for mobile)
                     html5: true,  // Use HTML5 Audio for better mobile Safari compatibility
                 });
 
@@ -38,19 +38,8 @@ export const useSoundEffects = () => {
             setIsInitialized(true);
             console.log('Sound effects initialized');
 
-            // Unlock audio on mobile Safari by playing a dummy sound
-            // This must be done within a user interaction (e.g., START button click)
-            const firstSound = soundsRef.current.values().next().value;
-            if (firstSound) {
-                const originalVolume = firstSound.volume();
-                firstSound.volume(0);  // Mute
-                firstSound.play();     // Play to unlock
-                setTimeout(() => {
-                    firstSound.stop();
-                    firstSound.volume(originalVolume);  // Restore volume
-                }, 100);
-                console.log('Audio unlocked for mobile Safari');
-            }
+            // HTML5 Audio automatically unlocks on user interaction
+            // No need for manual dummy playback with HTML5 backend
         } catch (error) {
             console.error('Failed to initialize sound effects:', error);
         }
@@ -76,11 +65,34 @@ export const useSoundEffects = () => {
 
     // Play a sound effect
     const play = useCallback((name: SoundEffectName) => {
-        if (!enabled) return;
+        if (!enabled) {
+            console.log('Sound effects disabled');
+            return;
+        }
 
         const sound = soundsRef.current.get(name);
         if (sound) {
-            sound.play();
+            try {
+                const soundId = sound.play();
+                console.log(`Playing ${name}, sound ID: ${soundId}`);
+
+                // Check if sound is actually playing
+                sound.once('play', () => {
+                    console.log(`${name} started playing successfully`);
+                });
+
+                sound.once('loaderror', (id, error) => {
+                    console.error(`Failed to load ${name}:`, error);
+                });
+
+                sound.once('playerror', (id, error) => {
+                    console.error(`Failed to play ${name}:`, error);
+                });
+            } catch (error) {
+                console.error(`Error playing ${name}:`, error);
+            }
+        } else {
+            console.error(`Sound ${name} not found in soundsRef`);
         }
     }, [enabled]);
 
