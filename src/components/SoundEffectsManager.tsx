@@ -16,7 +16,7 @@ export const useSoundEffects = () => {
     const [masterVolume, setMasterVolume] = useState<number>(0.5);
     const [isInitialized, setIsInitialized] = useState<boolean>(false);
 
-    // Initialize sound objects (lazy initialization for mobile compatibility)
+    // Initialize sound objects
     const initializeSounds = useCallback(() => {
         if (isInitialized) return;
 
@@ -28,7 +28,7 @@ export const useSoundEffects = () => {
                     volume: config.volume * masterVolume,
                     loop: config.loop,
                     rate: config.rate || 1.0,
-                    preload: true,  // Preload on initialization for reliable playback
+                    preload: true,  // Preload all sounds on initialization
                     html5: true,  // Use HTML5 Audio for better mobile Safari compatibility
                 });
 
@@ -37,9 +37,6 @@ export const useSoundEffects = () => {
 
             setIsInitialized(true);
             console.log('Sound effects initialized');
-
-            // HTML5 Audio automatically unlocks on user interaction
-            // No need for manual dummy playback with HTML5 backend
         } catch (error) {
             console.error('Failed to initialize sound effects:', error);
         }
@@ -73,50 +70,13 @@ export const useSoundEffects = () => {
         const sound = soundsRef.current.get(name);
         if (sound) {
             try {
-                // Check if sound is loaded
-                const state = sound.state();
-                console.log(`${name} load state: ${state}`);
-
-                if (state === 'loaded') {
-                    // Sound is ready, play immediately
-                    const soundId = sound.play();
-                    console.log(`Playing ${name}, sound ID: ${soundId}`);
-                } else if (state === 'loading') {
-                    // Wait for load to complete
-                    console.log(`Waiting for ${name} to finish loading...`);
-                    sound.once('load', () => {
-                        console.log(`${name} loaded, now playing`);
-                        const soundId = sound.play();
-                        console.log(`Playing ${name}, sound ID: ${soundId}`);
-                    });
-                } else {
-                    // Unloaded, trigger load and play
-                    console.log(`${name} not loaded, loading now...`);
-                    sound.load();
-                    sound.once('load', () => {
-                        console.log(`${name} loaded, now playing`);
-                        const soundId = sound.play();
-                        console.log(`Playing ${name}, sound ID: ${soundId}`);
-                    });
-                }
-
-                // Check if sound is actually playing
-                sound.once('play', () => {
-                    console.log(`${name} started playing successfully`);
-                });
-
-                sound.once('loaderror', (id, error) => {
-                    console.error(`Failed to load ${name}:`, error);
-                });
-
-                sound.once('playerror', (id, error) => {
-                    console.error(`Failed to play ${name}:`, error);
-                });
+                sound.play();
+                console.log(`Playing ${name}`);
             } catch (error) {
                 console.error(`Error playing ${name}:`, error);
             }
         } else {
-            console.error(`Sound ${name} not found in soundsRef`);
+            console.error(`Sound ${name} not found`);
         }
     }, [enabled]);
 
@@ -125,6 +85,7 @@ export const useSoundEffects = () => {
         const sound = soundsRef.current.get(name);
         if (sound) {
             sound.stop();
+            console.log(`Stopped ${name}`);
         }
     }, []);
 

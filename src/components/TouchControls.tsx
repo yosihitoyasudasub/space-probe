@@ -27,6 +27,7 @@ const TouchControls: React.FC = () => {
                         className="touch-btn touch-btn-up"
                         onTouchStart={handleTouchStart('up')}
                         onTouchEnd={handleTouchEnd('up')}
+                        onTouchCancel={handleTouchEnd('up')}
                         onMouseDown={handleTouchStart('up')}
                         onMouseUp={handleTouchEnd('up')}
                         onMouseLeave={handleTouchEnd('up')}
@@ -39,6 +40,7 @@ const TouchControls: React.FC = () => {
                         className="touch-btn touch-btn-left"
                         onTouchStart={handleTouchStart('left')}
                         onTouchEnd={handleTouchEnd('left')}
+                        onTouchCancel={handleTouchEnd('left')}
                         onMouseDown={handleTouchStart('left')}
                         onMouseUp={handleTouchEnd('left')}
                         onMouseLeave={handleTouchEnd('left')}
@@ -49,6 +51,7 @@ const TouchControls: React.FC = () => {
                         className="touch-btn touch-btn-down"
                         onTouchStart={handleTouchStart('down')}
                         onTouchEnd={handleTouchEnd('down')}
+                        onTouchCancel={handleTouchEnd('down')}
                         onMouseDown={handleTouchStart('down')}
                         onMouseUp={handleTouchEnd('down')}
                         onMouseLeave={handleTouchEnd('down')}
@@ -59,6 +62,7 @@ const TouchControls: React.FC = () => {
                         className="touch-btn touch-btn-right"
                         onTouchStart={handleTouchStart('right')}
                         onTouchEnd={handleTouchEnd('right')}
+                        onTouchCancel={handleTouchEnd('right')}
                         onMouseDown={handleTouchStart('right')}
                         onMouseUp={handleTouchEnd('right')}
                         onMouseLeave={handleTouchEnd('right')}
