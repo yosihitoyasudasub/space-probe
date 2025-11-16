@@ -8,6 +8,7 @@ import CameraControls from '../components/CameraControls';
 import TouchControls from '../components/TouchControls';
 import { PHYSICS_SCALE, CELESTIAL_CONSTANTS } from '../lib/threeSetup';
 import { useBGM } from '../components/BGMManager';
+import { useSoundEffects } from '../components/SoundEffectsManager';
 
 export interface DataPoint {
     time: number;
@@ -55,6 +56,9 @@ const Page = () => {
 
     // BGM control
     const { enabled: bgmEnabled, setEnabled: setBgmEnabled, volume: bgmVolume, setVolume: setBgmVolume, selectedTrack: bgmTrack, setSelectedTrack: setBgmTrack } = useBGM();
+
+    // Sound effects control
+    const soundEffects = useSoundEffects();
 
     // 履歴データの保存（最大100ポイント）
     const [velocityHistory, setVelocityHistory] = useState<DataPoint[]>([]);
@@ -160,6 +164,10 @@ const Page = () => {
     const handleStartClick = () => {
         setIsLoading(true);
         setIsSimulationStarted(true);
+        // Initialize sound effects on START (user interaction allows audio unlock on mobile)
+        if (!soundEffects.isInitialized) {
+            soundEffects.initializeSounds();
+        }
     };
 
     // Handle initialization complete from GameCanvas
@@ -197,6 +205,7 @@ const Page = () => {
                 selectedModel={selectedModel}
                 isSimulationStarted={isSimulationStarted}
                 onInitialized={handleInitialized}
+                soundEffects={soundEffects}
             />
             <HUD
                 status={status}

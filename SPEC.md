@@ -1,7 +1,7 @@
 # SPEC.md - 宇宙探査機シミュレーションゲーム 仕様書兼設計書
 
-バージョン: 2.10.0
-最終更新日: 2025-11-12
+バージョン: 2.11.0
+最終更新日: 2025-01-16
 プロジェクト: space-probe-game-next
 
 ---
@@ -39,6 +39,7 @@
 - **軌跡可視化**: 探査機の移動経路をCatmull-Rom曲線で滑らかに表示
 - **カメラ操作**: OrbitControlsによる自由視点移動
 - **BGMシステム**: 複数トラックの背景音楽再生、音量調整、ON/OFF切り替え
+- **効果音システム**: Howler.jsによるエンジン噴射音、イベント音、環境音の再生
 
 ### 1.4 使用技術スタック
 
@@ -47,6 +48,7 @@
 | フレームワーク | Next.js | latest | Reactベースのフルスタックフレームワーク（App Router） |
 | UIライブラリ | React | latest | コンポーネントベースUI構築 |
 | 3Dレンダリング | Three.js | 0.160.0 | WebGL抽象化、3Dシーン管理 |
+| オーディオ | Howler.js | latest | 効果音・音声再生ライブラリ（Web Audio API/HTML5 Audio） |
 | 言語 | TypeScript | latest | 型安全性とコード品質向上 |
 | テスト | Vitest | 3.2.4 | 単体テストランナー |
 | リンター | ESLint | latest | コード品質チェック |
@@ -701,6 +703,159 @@ src/components/
 - ブラウザの自動再生ポリシーにより、ユーザー操作（クリックなど）後に再生が開始される場合があります
 - 音声ファイルは静的アセットとして配信されるため、ファイルサイズに注意
 - 現在の実装では、実行時にファイルシステムをスキャンして自動検出する機能はありません（手動でコード追加が必要）
+
+### 3.5.2 効果音システム
+
+ゲームプレイ中にインタラクティブな効果音を再生する機能を提供。Howler.jsを使用した高度なオーディオ管理。
+
+**機能概要:**
+- エンジン噴射音のリアルタイム再生（上矢印キー押下時）
+- 速度に応じた動的ピッチ調整（低速: 1.0x、高速: 1.5x）
+- 複数音の同時再生サポート
+- ループ再生とワンショット再生
+- マスターボリューム調整
+- クロスブラウザ対応（PC/スマホ）
+
+**現在実装されている効果音:**
+
+| 効果音 | トリガー | 動作 | ファイル |
+|-------|---------|------|---------|
+| **ENGINE_THRUST** | 上矢印キー（↑）押下中 + 燃料あり | ループ再生、速度でピッチ変化 | `/sounds/engine/thrust-loop.mp3` |
+
+**定義済み（未実装）の効果音:**
+
+| 効果音名 | 用途 | デフォルト音量 | ループ |
+|---------|------|--------------|-------|
+| ENGINE_IDLE | アイドリング音 | 0.2 | ✓ |
+| SLINGSHOT | スリングショット通過音 | 0.6 | - |
+| FUEL_LOW | 燃料警告音 | 0.5 | - |
+| MISSION_COMPLETE | ミッション達成音 | 0.7 | - |
+| SPACE_AMBIENCE | 宇宙環境音 | 0.15 | ✓ |
+| UI_CLICK | UIクリック音 | 0.3 | - |
+| UI_HOVER | UIホバー音 | 0.2 | - |
+
+**ファイル構成:**
+
+```
+public/sounds/
+  ├── engine/
+  │   ├── thrust-loop.mp3       # エンジン噴射音（実装済み）
+  │   └── idle-loop.mp3         # アイドリング音（未配置）
+  ├── events/
+  │   ├── slingshot.mp3         # スリングショット音
+  │   ├── fuel-low.mp3          # 燃料警告音
+  │   └── mission-complete.mp3  # ミッション達成音
+  ├── ambient/
+  │   └── space-ambience.mp3    # 環境音
+  └── ui/
+      ├── click.mp3             # クリック音
+      └── hover.mp3             # ホバー音
+
+src/
+  ├── lib/
+  │   └── soundConstants.ts     # 効果音定義と設定
+  └── components/
+      └── SoundEffectsManager.tsx  # Howler.js管理フック（useSoundEffects）
+```
+
+**実装詳細:**
+
+*コンポーネント:*
+- **SoundEffectsManager.tsx**: `useSoundEffects`カスタムフックを提供
+  - Howler.jsインスタンスの管理
+  - `enabled`: 効果音有効/無効状態
+  - `masterVolume`: 全体音量（0.0-1.0）
+  - `play(name)`: 効果音再生
+  - `stop(name)`: 効果音停止
+  - `setRate(name, rate)`: ピッチ調整（1.0 = 通常、1.5 = 1.5倍速）
+  - `isPlaying(name)`: 再生中かチェック
+
+*統合:*
+- `page.tsx`: `useSoundEffects`フックで状態管理、STARTボタンで初期化
+- `GameCanvas.tsx`: エンジン噴射音の再生制御（Lines 352-370）
+  - 上矢印キー押下中にループ再生
+  - 速度に応じて動的にピッチ調整: `pitchRate = 1.0 + (velocity / maxVelocity) * 0.5`
+  - 燃料切れで自動停止
+
+**Howler.jsの設定:**
+
+```typescript
+const sound = new Howl({
+    src: ['/sounds/engine/thrust-loop.mp3'],
+    volume: 0.4 * masterVolume,
+    loop: true,        // ループ再生
+    rate: 1.0,         // 初期ピッチ
+    preload: true,     // 事前ロード
+    html5: false,      // Web Audio API使用（ストリーミング対応）
+});
+```
+
+**エンジン噴射音の動的制御:**
+
+```typescript
+// GameCanvas.tsx (Lines 352-370)
+const isForwardThrusting = inputState.up && state.fuel > 0;
+
+if (isForwardThrusting) {
+    // エンジン音を再生（まだ再生していない場合）
+    if (!soundEffects.isPlaying('ENGINE_THRUST')) {
+        soundEffects.play('ENGINE_THRUST');
+    }
+
+    // 速度に応じてピッチを調整
+    const velocityMagnitude = state.velocity.length();
+    const maxVelocity = 50;
+    const pitchRate = 1.0 + Math.min(velocityMagnitude / maxVelocity, 1.0) * 0.5;
+    soundEffects.setRate('ENGINE_THRUST', pitchRate);
+} else {
+    // エンジン音を停止
+    soundEffects.stop('ENGINE_THRUST');
+}
+```
+
+**対応フォーマット:**
+- MP3（推奨・互換性高い）
+- WAV（非圧縮・高品質・ファイルサイズ大）
+- WebM（高圧縮・軽量）
+
+**ファイルサイズ推奨:**
+- ループ音（エンジン音、環境音）: MP3で1-3MB程度
+- ワンショット音（UI音、イベント音）: MP3で100KB以下
+
+**モバイル対応:**
+- 自動音声アンロック: STARTボタンクリック時に初期化
+- 遅延ロード: 初回再生時にファイルをロード
+- Web Audio API: 低遅延再生とストリーミング
+
+**追加方法:**
+
+新しい効果音を追加する場合：
+
+1. 音声ファイルを `public/sounds/` の適切なディレクトリに配置
+2. `src/lib/soundConstants.ts` に定義を追加:
+   ```typescript
+   export const SOUND_EFFECTS = {
+       NEW_SOUND: {
+           src: ['/sounds/category/new-sound.mp3'],
+           volume: 0.5,
+           loop: false
+       } as SoundConfig,
+       // ...
+   };
+   ```
+3. ゲームロジック内で再生:
+   ```typescript
+   soundEffects.play('NEW_SOUND');
+   ```
+
+**注意事項:**
+- STARTボタンクリック後に初期化されるため、それ以前は音が鳴りません
+- 10MB以上の大きなファイルは避ける（ロード遅延やカクつきの原因）
+- ループ音はMP3で2-3MB以下を推奨
+- モバイルSafariでは初回タップ後に音声がアンロックされます
+
+**詳細ドキュメント:**
+- セットアップ手順: `SOUND_EFFECTS_SETUP.md`
 
 ### 3.6 UI全体の配置
 

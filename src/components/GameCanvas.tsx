@@ -5,6 +5,7 @@ import { initThreeJS, PHYSICS_SCALE, PLANET_ORBITS, CELESTIAL_CONSTANTS } from '
 import { CameraView } from './Controls';
 import { PROBE_MODELS } from '../app/page';
 import { ALL_MISSIONS } from '../data/missions';
+import { SoundEffectsContextType } from './SoundEffectsManager';
 
 // ====================================================================
 // Game Loop Constants
@@ -81,9 +82,10 @@ interface Props {
     selectedModel?: string;
     isSimulationStarted?: boolean;
     onInitialized?: () => void;
+    soundEffects?: SoundEffectsContextType;
 }
 
-const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = CELESTIAL_CONSTANTS.PROBE.DEFAULT_SPEED_MULTIPLIER, gravityG = PHYSICS_SCALE.G, starMass = PHYSICS_SCALE.SUN_MASS, cameraView = 'free', gravityGridEnabled = false, setGravityGridEnabled, gridEnabled = false, setGridEnabled, planetOrbitsEnabled = true, setPlanetOrbitsEnabled, predictionEnabled = true, setPredictionEnabled, selectedModel = 'space_fighter', isSimulationStarted = false, onInitialized }) => {
+const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = CELESTIAL_CONSTANTS.PROBE.DEFAULT_SPEED_MULTIPLIER, gravityG = PHYSICS_SCALE.G, starMass = PHYSICS_SCALE.SUN_MASS, cameraView = 'free', gravityGridEnabled = false, setGravityGridEnabled, gridEnabled = false, setGridEnabled, planetOrbitsEnabled = true, setPlanetOrbitsEnabled, predictionEnabled = true, setPredictionEnabled, selectedModel = 'space_fighter', isSimulationStarted = false, onInitialized, soundEffects }) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const rafRef = useRef<number | null>(null);
     const cameraViewRef = useRef<CameraView>(cameraView);
@@ -346,6 +348,26 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = CELESTIAL_CO
                             lightTrails.forEach((trail: any) => {
                                 trail.visible = isForwardThrusting;
                             });
+
+                            // Play engine sound when thrusting
+                            if (soundEffects) {
+                                if (isForwardThrusting) {
+                                    // Play engine thrust sound if not already playing
+                                    if (!soundEffects.isPlaying('ENGINE_THRUST')) {
+                                        soundEffects.play('ENGINE_THRUST');
+                                    }
+                                    // Adjust pitch based on velocity (1.0 at low speed, 1.5 at high speed)
+                                    const velocityMagnitude = state.velocity.length();
+                                    const maxVelocity = 50; // Approximate max velocity for pitch scaling
+                                    const pitchRate = 1.0 + Math.min(velocityMagnitude / maxVelocity, 1.0) * 0.5;
+                                    soundEffects.setRate('ENGINE_THRUST', pitchRate);
+                                } else {
+                                    // Stop engine sound when not thrusting
+                                    if (soundEffects.isPlaying('ENGINE_THRUST')) {
+                                        soundEffects.stop('ENGINE_THRUST');
+                                    }
+                                }
+                            }
                         }
 
                         if (dv[0] !== 0 || dv[1] !== 0 || dv[2] !== 0) {
