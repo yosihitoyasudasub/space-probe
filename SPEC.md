@@ -873,39 +873,51 @@ if (soundEffects && soundEffects.isInitialized && isForwardThrusting) {
 - ワンショット音（UI音、イベント音）: MP3で100KB以下
 
 **モバイル対応:**
-- 自動音声アンロック: STARTボタンクリック時に初期化
-- HTML5 Audio: モバイルSafari完全対応（iOS/Android）
+- **AudioContext.resume()による明示的なアンロック**: STARTボタンクリック時に`Howler.ctx.resume()`を呼び出し（必須）
+- **Web Audio API**: デフォルトのWeb Audio APIでバッファ化（`html5: false`）
 - ピッチ調整（rate）とループ再生をサポート
 - **イベントハンドラ内での直接再生**: モバイル音声ポリシー準拠
   - 再生開始/停止はユーザーインタラクション（タップ/キー押下）のイベントハンドラ内で直接呼ぶ
   - アニメーションループ（requestAnimationFrame）からの再生は拒否される
   - BGMと同じパターンで確実に動作
 
-**モバイルSafariオーディオアンロック機構:**
+**モバイルSafari/Chromeオーディオアンロック機構:**
 
-iOS Safariでは、音声再生に制限があり、ユーザーインタラクション後に音声が再生可能になります。
+iOS Safari/Chromeでは、音声再生に厳しい制限があり、以下の対応が必須です：
 
-*HTML5 Audioによる自動アンロック:*
+*Web Audio APIによるバッファ化とAudioContext.resume():*
 ```typescript
+// 1. Web Audio APIでHowlインスタンスを作成（html5: false = デフォルト）
 const sound = new Howl({
-    html5: true,  // HTML5 Audio使用
-    preload: true,  // 初期化時に事前ロード
-    // ...
+    src: ['/sounds/engine/thrust-loop.mp3'],
+    preload: true,  // 音声ファイルをバッファとして事前ロード
+    loop: true,
+    // html5: false (デフォルト) - Web Audio APIを使用
 });
+
+// 2. 音声ファイルのロード完了を待つ
+await new Promise((resolve) => sound.once('load', resolve));
+
+// 3. AudioContextを明示的にリジューム（重要！）
+if (Howler.ctx && Howler.ctx.state === 'suspended') {
+    await Howler.ctx.resume();
+    console.log('AudioContext resumed');
+}
 ```
 
-HTML5 Audioバックエンド（`html5: true`）を使用することで、ユーザーインタラクション（STARTボタンのタップ）時に自動的にオーディオが有効化されます。ダミー再生などの追加処理は不要です。
+**重要:** `html5: true`だけでは不十分です。モバイルブラウザでは`AudioContext.resume()`を明示的にユーザーイベント内で呼ぶ必要があります。
 
 *動作フロー:*
-1. ユーザーがSTARTボタンをタップ
-2. `initializeSounds()`が呼ばれてHowlインスタンスを作成
-3. `soundEffects`を`window.__soundEffects`に公開
-4. ユーザーインタラクション内で初期化されたため、音声再生が有効化
-5. `preload: true`により音声ファイルが事前ロードされる
-6. 上矢印キー/ボタン押下時、**イベントハンドラ内で直接**`soundEffects.play()`が呼ばれる
-7. ループ音が再生開始（モバイルブラウザで許可される）
-8. アニメーションループ内でピッチ調整（`setRate()`）が継続的に実行される
-9. 上矢印キー/ボタン解放時、**イベントハンドラ内で直接**`soundEffects.stop()`が呼ばれる
+1. ユーザーがSTARTボタンをタップ（ユーザーイベント）
+2. `initializeSounds()`が呼ばれてHowlインスタンスを作成（Web Audio API）
+3. 各音声ファイルのロード完了を待つ（`load`イベント）
+4. **`Howler.ctx.resume()`でAudioContextをアンロック**（最重要！）
+5. `soundEffects`を`window.__soundEffects`に公開
+6. `isInitialized = true`に設定
+7. 上矢印キー/ボタン押下時、**イベントハンドラ内で直接**`soundEffects.play()`が呼ばれる
+8. ループ音が再生開始（AudioContextがresumedなので許可される）
+9. アニメーションループ内でピッチ調整（`setRate()`）が継続的に実行される
+10. 上矢印キー/ボタン解放時、**イベントハンドラ内で直接**`soundEffects.stop()`が呼ばれる
 
 *再生状態の手動追跡（SoundEffectsManager.tsx）:*
 

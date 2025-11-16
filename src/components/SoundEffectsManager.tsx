@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { Howl } from 'howler';
+import { Howl, Howler } from 'howler';
 import { SOUND_EFFECTS, SoundEffectName } from '../lib/soundConstants';
 
 /**
@@ -18,26 +18,56 @@ export const useSoundEffects = () => {
     const [isInitialized, setIsInitialized] = useState<boolean>(false);
 
     // Initialize sound objects
-    const initializeSounds = useCallback(() => {
+    const initializeSounds = useCallback(async () => {
         if (isInitialized) return;
 
         try {
-            // Create Howl instances for all sound effects
+            console.log('Initializing sound effects with Web Audio API...');
+
+            // Create Howl instances for all sound effects (Web Audio API with buffer)
+            const loadPromises: Promise<void>[] = [];
+
             Object.entries(SOUND_EFFECTS).forEach(([name, config]) => {
                 const sound = new Howl({
                     src: config.src,
                     volume: config.volume * masterVolume,
                     loop: config.loop,
                     rate: config.rate || 1.0,
-                    preload: true,  // Preload all sounds on initialization
-                    html5: true,  // Use HTML5 Audio for better mobile Safari compatibility
+                    preload: true,  // Preload and buffer sounds
+                    // html5: false (default) - Use Web Audio API for stability on mobile
                 });
 
+                // Wait for sound to load
+                const loadPromise = new Promise<void>((resolve) => {
+                    sound.once('load', () => {
+                        console.log(`Loaded sound: ${name}`);
+                        resolve();
+                    });
+                    sound.once('loaderror', (id, error) => {
+                        console.error(`Failed to load sound ${name}:`, error);
+                        resolve(); // Continue even if one sound fails
+                    });
+                });
+
+                loadPromises.push(loadPromise);
                 soundsRef.current.set(name as SoundEffectName, sound);
             });
 
+            // Wait for all sounds to load
+            await Promise.all(loadPromises);
+            console.log('All sounds loaded');
+
+            // Resume AudioContext (CRITICAL for mobile browsers)
+            if (Howler.ctx) {
+                console.log('AudioContext state:', Howler.ctx.state);
+                if (Howler.ctx.state === 'suspended') {
+                    await Howler.ctx.resume();
+                    console.log('AudioContext resumed successfully');
+                }
+            }
+
             setIsInitialized(true);
-            console.log('Sound effects initialized');
+            console.log('Sound effects fully initialized and ready');
         } catch (error) {
             console.error('Failed to initialize sound effects:', error);
         }

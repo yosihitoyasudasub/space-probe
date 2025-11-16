@@ -112,19 +112,43 @@ setMasterVolume(0.7); // 0.0 - 1.0
 
 ## 📱 モバイル対応
 
-### 自動アンロック機能
+### AudioContextの自動アンロック（重要）
 
-**モバイルSafari対応:**
-HTML5 Audioバックエンドを使用することで、iOS Safariでも自動的に音声がアンロックされます。ユーザーがSTARTボタンをクリックすると、以降の音声再生が確実に動作します。
+**モバイルSafari/Chrome対応の仕組み:**
 
-手動でのダミー再生は不要です。HTML5 Audioは最初のユーザーインタラクション（タップ、クリック）で自動的にアンロックされます。
+モバイルブラウザでは、音声再生に厳しい制限があります。以下の対応が必須です：
+
+1. **AudioContextの作成とリジュームはユーザーイベント内で実行**
+   - STARTボタンのクリック/タップイベント内で`initializeSounds()`を呼び出す
+   - `Howler.ctx.resume()`を明示的に呼び出す（自動ではアンロックされない）
+
+2. **Web Audio APIでバッファ化**
+   - `html5: false`（デフォルト）でWeb Audio APIを使用
+   - 音声ファイルをバッファとして事前ロード
+   - HTML5 Audioよりも安定した再生が可能
+
+3. **再生開始はイベントハンドラ内で直接呼ぶ**
+   - `onTouchStart`/`onMouseDown`イベントハンドラ内で`soundEffects.play()`を直接呼ぶ
+   - アニメーションループ（`useFrame`、`requestAnimationFrame`）内での再生開始は拒否される
+
+**実装の流れ:**
+```
+1. ユーザーがSTARTボタンをタップ（ユーザーイベント）
+2. initializeSounds()が呼ばれる
+3. Howlインスタンス作成（Web Audio API）
+4. 音声ファイルのロード完了を待つ
+5. Howler.ctx.resume()でAudioContextをアンロック ← 重要！
+6. isInitialized = true
+7. タッチボタン押下時、イベントハンドラ内で直接play()を呼ぶ
+8. 音声が再生される
+```
 
 ### 最適化
-- **HTML5 Audio**: 全ての効果音でHTML5 Audioを使用（モバイルSafari完全対応）
-- **遅延ロード**: `preload: false` で音声ファイルを初回再生時にロード（モバイル最適化）
-- **ピッチ調整**: HTML5 Audioでもrate()メソッドでピッチ変更可能
-- **イベントログ**: play, loaderror, playerrorイベントで詳細なデバッグ情報を出力
-- **エラーハンドリング**: 再生失敗時のエラーをキャッチ
+- **Web Audio API**: デフォルトのWeb Audio APIを使用（`html5: false`）
+- **バッファ化**: `preload: true` で音声ファイルを事前にバッファ化
+- **AudioContext.resume()**: ユーザーイベント内で明示的に呼び出し（モバイル必須）
+- **ロード完了待機**: `load`イベントで各音声ファイルのロード完了を確認
+- **エラーハンドリング**: `loaderror`、`playerror`イベントで詳細なデバッグ情報を出力
 
 ## 🛠️ トラブルシューティング
 
