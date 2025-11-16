@@ -113,12 +113,31 @@ setMasterVolume(0.7); // 0.0 - 1.0
 ## 📱 モバイル対応
 
 ### 自動アンロック機能
-Howler.jsは、ユーザーの最初のタップ（STARTボタン）で音声を自動的にアンロックします。
+
+**モバイルSafari対応:**
+iOS Safariでは、ユーザーインタラクション内で明示的に音声をアンロックする処理が必要です：
+
+```typescript
+// STARTボタンクリック時に実行
+const firstSound = soundsRef.current.values().next().value;
+if (firstSound) {
+    firstSound.volume(0);    // 無音で再生
+    firstSound.play();       // オーディオをアンロック
+    setTimeout(() => {
+        firstSound.stop();
+        firstSound.volume(originalVolume);  // 元に戻す
+    }, 100);
+}
+```
+
+この処理により、以降の音声再生が確実に動作します。
 
 ### 最適化
 - **HTML5 Audio**: 全ての効果音でHTML5 Audioを使用（モバイルSafari完全対応）
+- **ダミー再生**: 初期化時に無音でダミー再生（iOS Safari対策）
 - **ピッチ調整**: HTML5 Audioでもrate()メソッドでピッチ変更可能
 - **事前ロード**: STARTボタンクリック時に効果音をプリロード
+- **エラーハンドリング**: 再生失敗時のエラーをキャッチ
 
 ## 🛠️ トラブルシューティング
 
@@ -135,8 +154,18 @@ Howler.jsは、ユーザーの最初のタップ（STARTボタン）で音声を
 3. **ユーザーインタラクションを確認**
    - モバイルでは、STARTボタンをタップした後でないと音が鳴りません
 
-4. **ブラウザのミュート設定を確認**
+4. **モバイルSafari固有の確認（iOS）**
+   - コンソールに "Audio unlocked for mobile Safari" が表示されているか
+   - コンソールに "Playing ENGINE_THRUST" が表示されているか（上矢印押下時）
+   - エラーメッセージがないか確認
+   - Safariのリモートデバッグ機能を使用してログを確認:
+     - Mac: Safari → 開発 → [デバイス名]
+     - Windows: 不可（実機確認が必要）
+
+5. **ブラウザのミュート設定を確認**
    - タブがミュートされていないか
+   - デバイスの音量が0でないか
+   - デバイスのサイレントモードがオフか（iPhone）
 
 ### 音声ファイルがない場合
 

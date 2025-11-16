@@ -37,6 +37,20 @@ export const useSoundEffects = () => {
 
             setIsInitialized(true);
             console.log('Sound effects initialized');
+
+            // Unlock audio on mobile Safari by playing a dummy sound
+            // This must be done within a user interaction (e.g., START button click)
+            const firstSound = soundsRef.current.values().next().value;
+            if (firstSound) {
+                const originalVolume = firstSound.volume();
+                firstSound.volume(0);  // Mute
+                firstSound.play();     // Play to unlock
+                setTimeout(() => {
+                    firstSound.stop();
+                    firstSound.volume(originalVolume);  // Restore volume
+                }, 100);
+                console.log('Audio unlocked for mobile Safari');
+            }
         } catch (error) {
             console.error('Failed to initialize sound effects:', error);
         }

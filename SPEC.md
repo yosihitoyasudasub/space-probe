@@ -828,6 +828,47 @@ if (isForwardThrusting) {
 - ピッチ調整（rate）とループ再生をサポート
 - ユーザーインタラクション後に確実に再生開始
 
+**モバイルSafariオーディオアンロック機構:**
+
+iOS Safariでは、音声再生に制限があり、ユーザーインタラクション内で明示的にオーディオをアンロックする必要があります。
+
+*実装方法（SoundEffectsManager.tsx Lines 42-54）:*
+```typescript
+// STARTボタンクリック時（ユーザーインタラクション内）に実行
+const firstSound = soundsRef.current.values().next().value;
+if (firstSound) {
+    const originalVolume = firstSound.volume();
+    firstSound.volume(0);    // 音量0に設定（無音）
+    firstSound.play();       // 再生してオーディオをアンロック
+    setTimeout(() => {
+        firstSound.stop();
+        firstSound.volume(originalVolume);  // 元の音量に戻す
+    }, 100);
+    console.log('Audio unlocked for mobile Safari');
+}
+```
+
+*動作フロー:*
+1. ユーザーがSTARTボタンをタップ
+2. `initializeSounds()`が呼ばれる
+3. 音量0でダミー音を0.1秒再生
+4. オーディオコンテキストがアンロックされる
+5. 以降、通常の音声再生が可能になる
+
+*再生時のチェック（GameCanvas.tsx Line 353）:*
+```typescript
+if (soundEffects && soundEffects.isInitialized) {
+    try {
+        soundEffects.play('ENGINE_THRUST');
+    } catch (error) {
+        console.error('Error playing sound effect:', error);
+    }
+}
+```
+
+- 初期化完了チェック（`isInitialized`）
+- エラーハンドリングで予期しないエラーをキャッチ
+
 **追加方法:**
 
 新しい効果音を追加する場合：

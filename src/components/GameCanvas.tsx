@@ -350,22 +350,27 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = CELESTIAL_CO
                             });
 
                             // Play engine sound when thrusting
-                            if (soundEffects) {
-                                if (isForwardThrusting) {
-                                    // Play engine thrust sound if not already playing
-                                    if (!soundEffects.isPlaying('ENGINE_THRUST')) {
-                                        soundEffects.play('ENGINE_THRUST');
+                            if (soundEffects && soundEffects.isInitialized) {
+                                try {
+                                    if (isForwardThrusting) {
+                                        // Play engine thrust sound if not already playing
+                                        if (!soundEffects.isPlaying('ENGINE_THRUST')) {
+                                            soundEffects.play('ENGINE_THRUST');
+                                            console.log('Playing ENGINE_THRUST');
+                                        }
+                                        // Adjust pitch based on velocity (1.0 at low speed, 1.5 at high speed)
+                                        const velocityMagnitude = state.velocity.length();
+                                        const maxVelocity = 50; // Approximate max velocity for pitch scaling
+                                        const pitchRate = 1.0 + Math.min(velocityMagnitude / maxVelocity, 1.0) * 0.5;
+                                        soundEffects.setRate('ENGINE_THRUST', pitchRate);
+                                    } else {
+                                        // Stop engine sound when not thrusting
+                                        if (soundEffects.isPlaying('ENGINE_THRUST')) {
+                                            soundEffects.stop('ENGINE_THRUST');
+                                        }
                                     }
-                                    // Adjust pitch based on velocity (1.0 at low speed, 1.5 at high speed)
-                                    const velocityMagnitude = state.velocity.length();
-                                    const maxVelocity = 50; // Approximate max velocity for pitch scaling
-                                    const pitchRate = 1.0 + Math.min(velocityMagnitude / maxVelocity, 1.0) * 0.5;
-                                    soundEffects.setRate('ENGINE_THRUST', pitchRate);
-                                } else {
-                                    // Stop engine sound when not thrusting
-                                    if (soundEffects.isPlaying('ENGINE_THRUST')) {
-                                        soundEffects.stop('ENGINE_THRUST');
-                                    }
+                                } catch (error) {
+                                    console.error('Error playing sound effect:', error);
                                 }
                             }
                         }
