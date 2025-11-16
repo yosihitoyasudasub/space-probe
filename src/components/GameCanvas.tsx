@@ -185,6 +185,9 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = CELESTIAL_CO
 
     // Expose restart function for touch controls
     const restartSimulation = () => {
+        // Keep simulation started (don't show "How to Play" screen)
+        isSimulationStartedRef.current = true;
+
         try {
             if (rafRef.current) cancelAnimationFrame(rafRef.current);
         } catch (e) {}

@@ -165,7 +165,10 @@ const Page = () => {
     const handleInitialized = () => {
         setIsInitialized(true);
         setIsLoading(false);
-        setShowInstructions(true); // Show instructions after loading completes
+        // Only show instructions on first initialization, not on restart
+        if (!isSimulationStarted) {
+            setShowInstructions(true);
+        }
     };
 
     // Handle instructions close - start the simulation
