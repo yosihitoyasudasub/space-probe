@@ -28,7 +28,7 @@ export const useSoundEffects = () => {
                     volume: config.volume * masterVolume,
                     loop: config.loop,
                     rate: config.rate || 1.0,
-                    preload: false,  // Load on first play (better for mobile)
+                    preload: true,  // Preload on initialization for reliable playback
                     html5: true,  // Use HTML5 Audio for better mobile Safari compatibility
                 });
 
@@ -73,8 +73,32 @@ export const useSoundEffects = () => {
         const sound = soundsRef.current.get(name);
         if (sound) {
             try {
-                const soundId = sound.play();
-                console.log(`Playing ${name}, sound ID: ${soundId}`);
+                // Check if sound is loaded
+                const state = sound.state();
+                console.log(`${name} load state: ${state}`);
+
+                if (state === 'loaded') {
+                    // Sound is ready, play immediately
+                    const soundId = sound.play();
+                    console.log(`Playing ${name}, sound ID: ${soundId}`);
+                } else if (state === 'loading') {
+                    // Wait for load to complete
+                    console.log(`Waiting for ${name} to finish loading...`);
+                    sound.once('load', () => {
+                        console.log(`${name} loaded, now playing`);
+                        const soundId = sound.play();
+                        console.log(`Playing ${name}, sound ID: ${soundId}`);
+                    });
+                } else {
+                    // Unloaded, trigger load and play
+                    console.log(`${name} not loaded, loading now...`);
+                    sound.load();
+                    sound.once('load', () => {
+                        console.log(`${name} loaded, now playing`);
+                        const soundId = sound.play();
+                        console.log(`Playing ${name}, sound ID: ${soundId}`);
+                    });
+                }
 
                 // Check if sound is actually playing
                 sound.once('play', () => {
