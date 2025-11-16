@@ -434,6 +434,8 @@ function loadGLBProbe(
 
             // Store thruster materials for dynamic glow effect (to be manually configured)
             const thrusterMaterials: any[] = [];
+            // Store light trail meshes for visibility toggling
+            const lightTrails: any[] = [];
 
             // Brighten all materials in the model
             model.traverse((child: any) => {
@@ -464,23 +466,117 @@ function loadGLBProbe(
 
                             // Add light trail from emissive parts
                             if (child.isMesh && mat.emissive.getHex() !== 0x000000) {
-                                // Create a line that extends backward from this emissive mesh
-                                const lineLength = 50; // Length of the light trail (10x longer: 5 -> 50)
-                                const linePoints = [
-                                    new THREE.Vector3(0, 0, 0), // Start at mesh position (local)
-                                    new THREE.Vector3(0, lineLength, 0) // Extend backward (local Y-axis)
-                                ];
+                                // Create a tube-shaped light trail with gradient shader
+                                const trailLength = 100; // Length of the light trail (doubled from 50)
+                                const trailRadius = 0.15; // Radius of the tube
+                                const radialSegments = 8; // Circular segments for the tube
+                                const tubularSegments = 32; // Length segments for smooth gradient
 
-                                const lineGeometry = new THREE.BufferGeometry().setFromPoints(linePoints);
-                                const lineMaterial = new THREE.LineBasicMaterial({
-                                    color: mat.emissive.getHex(),
+                                // Create a curve for the tube (straight line along Y-axis)
+                                const curve = new THREE.LineCurve3(
+                                    new THREE.Vector3(0, 0, 0),
+                                    new THREE.Vector3(0, trailLength, 0)
+                                );
+
+                                const tubeGeometry = new THREE.TubeGeometry(
+                                    curve,
+                                    tubularSegments,
+                                    trailRadius,
+                                    radialSegments,
+                                    false
+                                );
+
+                                // Get the emissive color
+                                const emissiveColor = new THREE.Color(mat.emissive.getHex());
+
+                                // Create gradient shader material
+                                const trailMaterial = new THREE.ShaderMaterial({
+                                    uniforms: {
+                                        color: { value: emissiveColor },
+                                        glowIntensity: { value: 2.0 }
+                                    },
+                                    vertexShader: `
+                                        varying float vDistance;
+                                        void main() {
+                                            // Calculate distance along the tube (0 at probe, 1 at end)
+                                            vDistance = uv.x;
+                                            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                                        }
+                                    `,
+                                    fragmentShader: `
+                                        uniform vec3 color;
+                                        uniform float glowIntensity;
+                                        varying float vDistance;
+
+                                        void main() {
+                                            // Fade out as distance increases (bright at probe, transparent at end)
+                                            float alpha = 1.0 - vDistance;
+                                            alpha = pow(alpha, 2.0); // Exponential falloff for smoother fade
+
+                                            // Brighter at the start
+                                            float brightness = 1.0 + (1.0 - vDistance) * glowIntensity;
+
+                                            gl_FragColor = vec4(color * brightness, alpha * 0.6);
+                                        }
+                                    `,
                                     transparent: true,
-                                    opacity: 0.3, // Lower opacity (0.8 -> 0.3)
-                                    linewidth: 1 // Thinner line (2 -> 1)
+                                    blending: THREE.AdditiveBlending, // Additive blending for glow effect
+                                    depthWrite: false,
+                                    side: THREE.DoubleSide
                                 });
 
-                                const lightTrail = new THREE.Line(lineGeometry, lineMaterial);
+                                const lightTrail = new THREE.Mesh(tubeGeometry, trailMaterial);
+                                lightTrail.visible = false; // Initially hidden - only visible when thrusting
                                 child.add(lightTrail); // Add as child so it moves with the mesh
+
+                                // Add outer glow layer for enhanced No Man's Sky effect
+                                const outerTubeGeometry = new THREE.TubeGeometry(
+                                    curve,
+                                    tubularSegments,
+                                    trailRadius * 2.5, // Wider outer tube
+                                    radialSegments,
+                                    false
+                                );
+
+                                const outerTrailMaterial = new THREE.ShaderMaterial({
+                                    uniforms: {
+                                        color: { value: emissiveColor },
+                                        glowIntensity: { value: 1.0 }
+                                    },
+                                    vertexShader: `
+                                        varying float vDistance;
+                                        void main() {
+                                            vDistance = uv.x;
+                                            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                                        }
+                                    `,
+                                    fragmentShader: `
+                                        uniform vec3 color;
+                                        uniform float glowIntensity;
+                                        varying float vDistance;
+
+                                        void main() {
+                                            // More aggressive fade for outer glow
+                                            float alpha = 1.0 - vDistance;
+                                            alpha = pow(alpha, 3.0); // Faster falloff
+
+                                            float brightness = 0.5 + (1.0 - vDistance) * glowIntensity;
+
+                                            gl_FragColor = vec4(color * brightness, alpha * 0.2);
+                                        }
+                                    `,
+                                    transparent: true,
+                                    blending: THREE.AdditiveBlending,
+                                    depthWrite: false,
+                                    side: THREE.DoubleSide
+                                });
+
+                                const outerLightTrail = new THREE.Mesh(outerTubeGeometry, outerTrailMaterial);
+                                outerLightTrail.visible = false; // Initially hidden - only visible when thrusting
+                                child.add(outerLightTrail);
+
+                                // Store light trail references for toggling visibility
+                                lightTrails.push(lightTrail, outerLightTrail);
 
                                 console.log(`Added light trail to emissive mesh with color: ${mat.emissive.getHexString()}`);
                             }
@@ -529,6 +625,9 @@ function loadGLBProbe(
 
             // Store thruster materials on the model for later access
             (model as any).thrusterMaterials = thrusterMaterials;
+
+            // Store light trails on the model for visibility toggling
+            (model as any).lightTrails = lightTrails;
 
             console.log('GLB model loaded successfully:', modelPath);
             onLoad(model);
@@ -838,17 +937,28 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: { probeSpeedMul
                     // Success: replace the probe with the loaded GLB model
                     console.log('GLB model loaded, replacing probe');
 
-                    // Copy position from current probe to loaded model
-                    loadedModel.position.copy(probe.position);
+                    // IMPORTANT: Copy all children and properties from loadedModel to probe
+                    // This preserves the external reference to 'probe' object
 
-                    // Remove old probe from scene
-                    scene.remove(probe);
+                    // Clear existing children from probe
+                    while (probe.children.length > 0) {
+                        probe.remove(probe.children[0]);
+                    }
 
-                    // Add loaded model to scene
-                    scene.add(loadedModel);
+                    // Copy all children from loadedModel to probe
+                    while (loadedModel.children.length > 0) {
+                        const child = loadedModel.children[0];
+                        loadedModel.remove(child);
+                        probe.add(child);
+                    }
 
-                    // Update probe reference to point to loaded model
-                    probe = loadedModel;
+                    // Copy critical properties from loadedModel to probe
+                    probe.rotation.copy(loadedModel.rotation);
+                    probe.scale.copy(loadedModel.scale);
+                    probe.visible = true; // Make sure probe is visible
+                    (probe as any).thrusterMaterials = (loadedModel as any).thrusterMaterials;
+                    (probe as any).lightTrails = (loadedModel as any).lightTrails;
+                    (probe as any).orientationConfig = (loadedModel as any).orientationConfig;
 
                     console.log('Probe replaced with GLB model successfully');
 

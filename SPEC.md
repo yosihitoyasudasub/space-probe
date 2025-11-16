@@ -1566,47 +1566,257 @@ if (probe && (probe as any).thrusterMaterials) {
 - ブースターメッシュは手動で指定する必要がある（自動検出なし）
 - GLBモデルのマテリアルに `emissive` プロパティが必要
 
-**エミッシブ光のトレイル:**
+**エミッシブ光のトレイル（推進エフェクト）:**
 
-エミッシブパーツから後方に伸びる光のトレイルを表示します（実装: `threeSetup.ts:465-486`）。
+エミッシブパーツから後方に伸びる高度な3Dライトトレイルを表示します（実装: `threeSetup.ts:467-582`, `GameCanvas.tsx:349-356`）。
 
-**仕様:**
+**概要:**
+探査機の推進器から美しい光の軌跡を生成するシステム。上矢印キー（前進推進）を押している間のみ表示され、グラデーション効果、チューブ形状、グロー効果を組み合わせた映画的なビジュアルを実現します。
+
+**主な特徴:**
+1. **チューブ形状の3Dトレイル** - 平面的な線ではなく、立体的な円柱状の光跡
+2. **2層構造** - 内側の明るいコアと外側の柔らかいオーラで深みのある表現
+3. **グラデーション効果** - カスタムシェーダーによる滑らかなフェードアウト
+4. **Bloomエフェクト連携** - AdditiveBlendingで既存のポストプロセッシングと統合
+5. **入力連動表示** - 上矢印キー押下時のみ表示（燃料残量も考慮）
+
+**技術仕様:**
+
+**ジオメトリ:**
+- **形状**: TubeGeometry（円柱状）
+- **長さ**: 100単位（探査機から後方へ伸びる）
 - **方向**: Y軸正方向（ローカル座標系）
-- **長さ**: 50単位（lineLength = 50）
-- **色**: エミッシブマテリアルの色と同じ
-- **透明度**: 30%（opacity: 0.3）
-- **線幅**: 1（linewidth: 1）
-- **対象**: エミッシブ色が黒（0x000000）でないメッシュ
+- **内側コアの半径**: 0.15単位
+- **外側オーラの半径**: 0.375単位（内側の2.5倍）
+- **円周セグメント**: 8（滑らかな円形）
+- **長さ方向セグメント**: 32（グラデーション用）
 
-**実装例:**
-```typescript
-if (child.isMesh && mat.emissive.getHex() !== 0x000000) {
-    const lineLength = 50;
-    const linePoints = [
-        new THREE.Vector3(0, 0, 0),        // メッシュ位置（ローカル）
-        new THREE.Vector3(0, lineLength, 0) // Y軸正方向に伸びる
-    ];
+**マテリアル:**
+- **タイプ**: ShaderMaterial（カスタムシェーダー）
+- **色**: エミッシブマテリアルの色を継承
+- **ブレンディング**: THREE.AdditiveBlending（光の加算合成）
+- **透明度**: 動的（グラデーションで変化）
+- **depthWrite**: false（透明度の正しいレンダリング）
+- **side**: THREE.DoubleSide（どの角度からも見える）
 
-    const lineGeometry = new THREE.BufferGeometry().setFromPoints(linePoints);
-    const lineMaterial = new THREE.LineBasicMaterial({
-        color: mat.emissive.getHex(),
-        transparent: true,
-        opacity: 0.3,
-        linewidth: 1
-    });
+**シェーダー実装:**
 
-    const lightTrail = new THREE.Line(lineGeometry, lineMaterial);
-    child.add(lightTrail); // 子として追加（メッシュと一緒に移動）
+内側コア（明るい）:
+```glsl
+// Vertex Shader
+varying float vDistance;
+void main() {
+    vDistance = uv.x; // 0（探査機側）〜 1（末端）
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}
+
+// Fragment Shader
+uniform vec3 color;
+uniform float glowIntensity; // 2.0
+varying float vDistance;
+
+void main() {
+    float alpha = 1.0 - vDistance;
+    alpha = pow(alpha, 2.0); // 指数関数的減衰
+    float brightness = 1.0 + (1.0 - vDistance) * glowIntensity;
+    gl_FragColor = vec4(color * brightness, alpha * 0.6);
 }
 ```
 
+外側オーラ（柔らかい）:
+```glsl
+// Fragment Shader（Vertex Shaderは同じ）
+uniform vec3 color;
+uniform float glowIntensity; // 1.0
+varying float vDistance;
+
+void main() {
+    float alpha = 1.0 - vDistance;
+    alpha = pow(alpha, 3.0); // より急速な減衰
+    float brightness = 0.5 + (1.0 - vDistance) * glowIntensity;
+    gl_FragColor = vec4(color * brightness, alpha * 0.2);
+}
+```
+
+**表示制御:**
+
+**初期状態:**
+- すべての光跡は `visible = false` で非表示
+- GLBモデルのロード時に `model.lightTrails` 配列に保存
+
+**実行時制御（GameCanvas.tsx）:**
+```typescript
+if (probe && (probe as any).lightTrails) {
+    const isForwardThrusting = inputState.up && state.fuel > 0;
+    const lightTrails = (probe as any).lightTrails;
+    lightTrails.forEach((trail: any) => {
+        trail.visible = isForwardThrusting;
+    });
+}
+```
+
+**表示条件:**
+- `inputState.up === true`（上矢印キーが押されている）
+- `state.fuel > 0`（燃料が残っている）
+
+**データ構造:**
+
+モデルに保存されるプロパティ:
+```typescript
+(model as any).lightTrails = [
+    lightTrail1,      // 内側コア（メッシュ1）
+    outerLightTrail1, // 外側オーラ（メッシュ1）
+    lightTrail2,      // 内側コア（メッシュ2）
+    outerLightTrail2, // 外側オーラ（メッシュ2）
+    // ... エミッシブメッシュごとに2つ
+];
+```
+
+**パフォーマンス考慮:**
+
+- **メッシュ数**: エミッシブメッシュ数 × 2（コア + オーラ）
+- **頂点数**: 各チューブあたり約256頂点（8 × 32）
+- **ドローコール**: visible = false の間は描画されない
+- **シェーダー**: 軽量な計算（UV座標ベース）
+- **メモリ**: ジオメトリとマテリアルは事前生成、実行時の生成なし
+
+**技術的実装の詳細:**
+
+**モデルロード時の処理（threeSetup.ts）:**
+
+1. **lightTrails配列の初期化**:
+```typescript
+const lightTrails: any[] = [];
+```
+
+2. **エミッシブメッシュの検出とトレイル生成**:
+```typescript
+model.traverse((child: any) => {
+    if (child.isMesh && mat.emissive && mat.emissive.getHex() !== 0x000000) {
+        // チューブジオメトリ作成
+        const curve = new THREE.LineCurve3(
+            new THREE.Vector3(0, 0, 0),
+            new THREE.Vector3(0, trailLength, 0)
+        );
+        const tubeGeometry = new THREE.TubeGeometry(/*...*/);
+
+        // シェーダーマテリアル作成
+        const trailMaterial = new THREE.ShaderMaterial({/*...*/});
+
+        // メッシュ生成と追加
+        const lightTrail = new THREE.Mesh(tubeGeometry, trailMaterial);
+        lightTrail.visible = false;
+        child.add(lightTrail);
+        lightTrails.push(lightTrail, outerLightTrail);
+    }
+});
+```
+
+3. **モデルへの保存**:
+```typescript
+(model as any).lightTrails = lightTrails;
+```
+
+**プローブ参照の維持（重要）:**
+
+GLBモデルロード後、元の `probe` オブジェクトの参照を維持するため、子要素とプロパティをコピー:
+
+```typescript
+// 既存の子要素をクリア
+while (probe.children.length > 0) {
+    probe.remove(probe.children[0]);
+}
+
+// loadedModelから子要素を移動
+while (loadedModel.children.length > 0) {
+    const child = loadedModel.children[0];
+    loadedModel.remove(child);
+    probe.add(child);
+}
+
+// プロパティのコピー
+probe.rotation.copy(loadedModel.rotation);
+probe.scale.copy(loadedModel.scale);
+probe.visible = true;
+(probe as any).thrusterMaterials = (loadedModel as any).thrusterMaterials;
+(probe as any).lightTrails = (loadedModel as any).lightTrails;
+(probe as any).orientationConfig = (loadedModel as any).orientationConfig;
+```
+
+これにより、GameCanvas.tsxで保持している `probe` 参照が新しいモデルのプロパティにアクセスできます。
+
 **カスタマイズ:**
-- **長さ調整**: `lineLength` の値を変更（推奨: 20〜100）
-- **透明度調整**: `opacity` の値を変更（推奨: 0.1〜0.5）
-- **方向変更**: `new THREE.Vector3(x, y, z)` で任意の方向に設定可能
-  - Y軸: `(0, lineLength, 0)`
-  - Z軸: `(0, 0, -lineLength)`
-  - X軸: `(lineLength, 0, 0)`
+
+**長さ調整:**
+```typescript
+const trailLength = 100; // 推奨: 50〜200
+```
+
+**太さ調整:**
+```typescript
+const trailRadius = 0.15;        // 内側コア
+const outerRadius = trailRadius * 2.5; // 外側オーラ（比率で調整）
+```
+
+**明るさ調整:**
+```typescript
+// シェーダーのuniformsで調整
+uniforms: {
+    glowIntensity: { value: 2.0 } // 内側: 1.0〜3.0
+}
+uniforms: {
+    glowIntensity: { value: 1.0 } // 外側: 0.5〜2.0
+}
+```
+
+**透明度調整:**
+```typescript
+// Fragment Shader内で調整
+gl_FragColor = vec4(color * brightness, alpha * 0.6); // 0.3〜1.0
+gl_FragColor = vec4(color * brightness, alpha * 0.2); // 0.1〜0.5
+```
+
+**色の変更:**
+デフォルトではエミッシブカラーを使用。独自の色を指定する場合:
+```typescript
+uniforms: {
+    color: { value: new THREE.Color(0x00ffff) } // カスタムカラー
+}
+```
+
+**方向変更:**
+```typescript
+const curve = new THREE.LineCurve3(
+    new THREE.Vector3(0, 0, 0),
+    new THREE.Vector3(0, 0, -lineLength) // Z軸負方向など
+);
+```
+
+**トラブルシューティング:**
+
+**光跡が表示されない:**
+1. 上矢印キーを押しているか確認
+2. 燃料が残っているか確認（`state.fuel > 0`）
+3. コンソールで `probe.lightTrails` が存在するか確認
+4. エミッシブマテリアルがGLBモデルに含まれているか確認
+
+**光跡が見えにくい:**
+1. Bloomエフェクトの強度を上げる（`threeSetup.ts` の `UnrealBloomPass` パラメータ）
+2. `glowIntensity` の値を増やす
+3. トレイルの太さ（`trailRadius`）を増やす
+4. 背景が明るすぎる場合は環境光を下げる
+
+**パフォーマンスが低い:**
+1. `tubularSegments` を減らす（32 → 16）
+2. `radialSegments` を減らす（8 → 6）
+3. エミッシブメッシュの数を減らす
+4. 外側オーラを無効化（コアのみ使用）
+
+**注意事項:**
+- 光跡はエミッシブマテリアル（`emissive`プロパティ）を持つメッシュにのみ追加されます
+- GLBモデルに適切なエミッシブ設定が必要です
+- シェーダーはWebGL対応ブラウザが必要です
+- モバイルデバイスでは性能に応じて調整が必要な場合があります
 
 ### 3.8 軌道可視化
 

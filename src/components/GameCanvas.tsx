@@ -211,10 +211,22 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = CELESTIAL_CO
     (window as any).__restartSimulation = restartSimulation;
 
     const onKeyDown = (e: KeyboardEvent) => {
-        if (e.key === 'ArrowLeft') inputState.left = true;
-        if (e.key === 'ArrowRight') inputState.right = true;
-        if (e.key === 'ArrowUp') inputState.up = true;
-        if (e.key === 'ArrowDown') inputState.down = true;
+        if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            inputState.left = true;
+        }
+        if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            inputState.right = true;
+        }
+        if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            inputState.up = true;
+        }
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            inputState.down = true;
+        }
         if (e.key === 'r' || e.key === 'R') {
             restartSimulation();
         }
@@ -232,8 +244,8 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = CELESTIAL_CO
         if (e.key === 'ArrowDown') inputState.down = false;
     };
 
-    window.addEventListener('keydown', onKeyDown);
-    window.addEventListener('keyup', onKeyUp);
+    window.addEventListener('keydown', onKeyDown, { passive: false });
+    window.addEventListener('keyup', onKeyUp, { passive: false });
 
         // Fixed timestep physics loop
         const fixedTimeStep = 1 / GAME_LOOP_CONSTANTS.FIXED_TIMESTEP_HZ;
@@ -331,6 +343,15 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = CELESTIAL_CO
                                         mat.emissiveIntensity = 1.0;
                                     }
                                 }
+                            });
+                        }
+
+                        // Update light trail visibility based on up arrow key (forward thrust)
+                        if (probe && (probe as any).lightTrails) {
+                            const isForwardThrusting = inputState.up && state.fuel > 0;
+                            const lightTrails = (probe as any).lightTrails;
+                            lightTrails.forEach((trail: any) => {
+                                trail.visible = isForwardThrusting;
                             });
                         }
 
