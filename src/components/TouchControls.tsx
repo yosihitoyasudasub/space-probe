@@ -1,28 +1,25 @@
 import React from 'react';
+import { InputState } from '../lib/thrust';
 
-const TouchControls: React.FC = () => {
-    const handleTouchStart = (key: 'left' | 'right' | 'up' | 'down' | 'restart') => (e: React.TouchEvent | React.MouseEvent) => {
+interface Props {
+    /** Shared input state read by the game loop each physics step */
+    inputStateRef: React.RefObject<InputState>;
+    onRestart: () => void;
+}
+
+const TouchControls: React.FC<Props> = ({ inputStateRef, onRestart }) => {
+    const handleTouchStart = (key: keyof InputState | 'restart') => (e: React.TouchEvent | React.MouseEvent) => {
         e.preventDefault();
         if (key === 'restart') {
-            // Call restart function
-            if ((window as any).__restartSimulation) {
-                (window as any).__restartSimulation();
-            }
+            onRestart();
         } else {
-            // Set input state
-            const inputState = (window as any).__gameInputState;
-            if (inputState) {
-                inputState[key] = true;
-            }
+            inputStateRef.current[key] = true;
         }
     };
 
-    const handleTouchEnd = (key: 'left' | 'right' | 'up' | 'down') => (e: React.TouchEvent | React.MouseEvent) => {
+    const handleTouchEnd = (key: keyof InputState) => (e: React.TouchEvent | React.MouseEvent) => {
         e.preventDefault();
-        const inputState = (window as any).__gameInputState;
-        if (inputState) {
-            inputState[key] = false;
-        }
+        inputStateRef.current[key] = false;
     };
 
     return (

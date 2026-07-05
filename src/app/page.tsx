@@ -7,6 +7,7 @@ import CameraControls from '../components/CameraControls';
 import TouchControls from '../components/TouchControls';
 import { PHYSICS_SCALE } from '../lib/threeSetup';
 import { CameraView, DataPoint } from '../lib/types';
+import { InputState } from '../lib/thrust';
 
 const Page = () => {
     const [status, setStatus] = useState<string>('Stopped');
@@ -17,6 +18,13 @@ const Page = () => {
 
     // Simulation control
     const [isSimulationStarted, setIsSimulationStarted] = useState<boolean>(false);
+
+    // Shared bridge between GameCanvas (game loop) and TouchControls (UI):
+    // TouchControls mutates the input state and triggers restart; GameCanvas
+    // reads the input every physics step and registers its restart handler.
+    const inputStateRef = useRef<InputState>({ left: false, right: false, up: false, down: false });
+    const restartRef = useRef<(() => void) | null>(null);
+    const handleRestart = useCallback(() => restartRef.current?.(), []);
 
     // 履歴データの保存（最大100ポイント）
     const [velocityHistory, setVelocityHistory] = useState<DataPoint[]>([]);
@@ -70,7 +78,7 @@ const Page = () => {
 
     return (
         <div>
-            <GameCanvas hudSetters={hudSetters} probeSpeedMult={probeSpeedMult} gravityG={gravityG} starMass={starMass} cameraView={cameraView} gravityGridEnabled={gravityGridEnabled} gridEnabled={gridEnabled} selectedModel={selectedModel} isSimulationStarted={isSimulationStarted} />
+            <GameCanvas hudSetters={hudSetters} probeSpeedMult={probeSpeedMult} gravityG={gravityG} starMass={starMass} cameraView={cameraView} gravityGridEnabled={gravityGridEnabled} gridEnabled={gridEnabled} selectedModel={selectedModel} isSimulationStarted={isSimulationStarted} inputStateRef={inputStateRef} restartRef={restartRef} />
             <HUD
                 status={status}
                 velocity={velocity}
@@ -95,7 +103,7 @@ const Page = () => {
                 setIsSimulationStarted={setIsSimulationStarted}
             />
             <CameraControls cameraView={cameraView} setCameraView={setCameraView} />
-            <TouchControls />
+            <TouchControls inputStateRef={inputStateRef} onRestart={handleRestart} />
         </div>
     );
 };

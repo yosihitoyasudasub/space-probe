@@ -24,9 +24,13 @@ interface Props {
     gridEnabled?: boolean;
     selectedModel?: string;
     isSimulationStarted?: boolean;
+    /** Shared input state mutated by TouchControls, read every physics step */
+    inputStateRef?: React.RefObject<InputState>;
+    /** Receives the restart handler so external UI (TouchControls) can trigger it */
+    restartRef?: React.RefObject<(() => void) | null>;
 }
 
-const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravityG = 1.0, starMass = 4000, cameraView = 'free', gravityGridEnabled = false, gridEnabled = true, selectedModel = 'space_fighter', isSimulationStarted = false }) => {
+const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravityG = 1.0, starMass = 4000, cameraView = 'free', gravityGridEnabled = false, gridEnabled = true, selectedModel = 'space_fighter', isSimulationStarted = false, inputStateRef, restartRef }) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const rafRef = useRef<number | null>(null);
     const threeObjRef = useRef<any>(null);
@@ -90,13 +94,10 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
         let threeObj = initThreeJS(canvas, buildOptions());
         threeObjRef.current = threeObj;
 
-        // input state
-        const inputState: InputState = { left: false, right: false, up: false, down: false };
+        // input state shared with TouchControls (falls back to a local object
+        // when no ref is provided)
+        const inputState: InputState = inputStateRef?.current ?? { left: false, right: false, up: false, down: false };
 
-        // Expose input state to window for touch controls
-        (window as any).__gameInputState = inputState;
-
-        // Expose restart function for touch controls
         const restartSimulation = () => {
             try {
                 if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -111,7 +112,8 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
             accumulator = 0;
             rafRef.current = requestAnimationFrame(animate);
         };
-        (window as any).__restartSimulation = restartSimulation;
+        // Register the restart handler for external UI (TouchControls)
+        if (restartRef) restartRef.current = restartSimulation;
 
         const onKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'ArrowLeft') inputState.left = true;
@@ -282,9 +284,7 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
             threeObjRef.current = null;
             window.removeEventListener('keydown', onKeyDown);
             window.removeEventListener('keyup', onKeyUp);
-            // Cleanup window properties
-            delete (window as any).__gameInputState;
-            delete (window as any).__restartSimulation;
+            if (restartRef) restartRef.current = null;
         };
     }, [hudSetters, probeSpeedMult, gravityG, starMass]);
 
