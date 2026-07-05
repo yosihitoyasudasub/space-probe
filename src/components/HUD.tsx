@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { DataPoint, PROBE_MODELS } from '../app/page';
+import { DataPoint } from '../lib/types';
+import { PROBE_MODELS } from '../lib/probeModels';
 import MiniChart from './MiniChart';
 import MissionProgress from './MissionProgress';
 import ControlsHelp from './ControlsHelp';

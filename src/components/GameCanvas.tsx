@@ -3,7 +3,7 @@
 import React, { useEffect, useRef } from 'react';
 import { initThreeJS, PHYSICS_SCALE } from '../lib/threeSetup';
 import { CameraView } from './Controls';
-import { PROBE_MODELS } from '../app/page';
+import { PROBE_MODELS } from '../lib/probeModels';
 
 type HUDSetters = {
     setStatus: React.Dispatch<React.SetStateAction<string>>;

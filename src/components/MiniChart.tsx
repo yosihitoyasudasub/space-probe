@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { DataPoint } from '../app/page';
+import { DataPoint } from '../lib/types';
 
 interface MiniChartProps {
     data: DataPoint[];
