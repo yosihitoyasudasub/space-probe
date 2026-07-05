@@ -225,13 +225,14 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: InitOptions) {
 
     function flashProbeEmissive() {
         try {
-            const bodyMesh: any = probe.children[0]; // Main body is first child
-            const mat: any = bodyMesh?.material;
+            const bodyMesh = probe.children[0] as THREE.Mesh | undefined; // Main body is first child
+            const rawMat = bodyMesh?.material;
+            const mat = (Array.isArray(rawMat) ? rawMat[0] : rawMat) as THREE.MeshStandardMaterial | undefined;
             if (mat && mat.emissive) {
-                const prev = mat.emissive.clone ? mat.emissive.clone() : null;
+                const prev = mat.emissive.clone();
                 mat.emissive.setHex(0xff4444);
                 setTimeout(() => {
-                    if (prev && mat.emissive && mat.emissive.set) mat.emissive.copy(prev);
+                    if (mat.emissive) mat.emissive.copy(prev);
                 }, 500);
             }
         } catch {
@@ -306,12 +307,13 @@ export function initThreeJS(canvas: HTMLCanvasElement, options?: InitOptions) {
         window.removeEventListener('resize', onResize);
         composer.dispose();
         renderer.dispose();
-        scene.traverse((obj: any) => {
-            if (obj.geometry) obj.geometry.dispose?.();
-            if (obj.material) {
-                const mat = obj.material as any;
-                if (Array.isArray(mat)) mat.forEach((m) => m.dispose?.());
-                else mat.dispose?.();
+        scene.traverse((obj: THREE.Object3D) => {
+            // Meshes, Lines, and Points all carry geometry/material
+            const mesh = obj as THREE.Mesh;
+            if (mesh.geometry) mesh.geometry.dispose();
+            if (mesh.material) {
+                const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+                mats.forEach((m) => m.dispose());
             }
         });
     }

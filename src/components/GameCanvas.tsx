@@ -30,10 +30,12 @@ interface Props {
     restartRef?: React.RefObject<(() => void) | null>;
 }
 
+type ThreeSetup = ReturnType<typeof initThreeJS>;
+
 const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravityG = 1.0, starMass = 4000, cameraView = 'free', gravityGridEnabled = false, gridEnabled = true, selectedModel = 'space_fighter', isSimulationStarted = false, inputStateRef, restartRef }) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const rafRef = useRef<number | null>(null);
-    const threeObjRef = useRef<any>(null);
+    const threeObjRef = useRef<ThreeSetup | null>(null);
 
     // Mirror frequently-changing props into refs so the long-lived animation
     // loop (and restart) always sees the current values without re-mounting.
@@ -75,8 +77,9 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
-        const hudUpdateRef = { current: undefined as any } as React.MutableRefObject<any>;
-        const trailRef = { current: undefined as any } as React.MutableRefObject<any>;
+        // Throttling state local to this effect instance
+        let hudLast: { ms: number; velocity: number; distance: number; fuel: number; slingshots: number; status: string } | null = null;
+        let trailLastMs = 0;
 
         const buildOptions = () => {
             const modelData = findProbeModel(selectedModelRef.current);
@@ -101,10 +104,10 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
         const restartSimulation = () => {
             try {
                 if (rafRef.current) cancelAnimationFrame(rafRef.current);
-            } catch (e) {}
+            } catch {}
             try {
                 threeObj.dispose();
-            } catch (e) {}
+            } catch {}
             threeObj = initThreeJS(canvas, buildOptions());
             threeObjRef.current = threeObj;
             // Restart animation loop
@@ -199,13 +202,12 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
             if (!hudSetters) return;
             const { state } = threeObj;
             const nowMs = performance.now();
-            const lastMs = (hudUpdateRef.current && hudUpdateRef.current.lastMs) || 0;
-            const lastVals = (hudUpdateRef.current && hudUpdateRef.current.lastVals) || { velocity: -1, distance: -1, fuel: -1, slingshots: -1, status: '' };
+            const last = hudLast ?? { ms: 0, velocity: -1, distance: -1, fuel: -1, slingshots: -1, status: '' };
 
             const speed = state.velocity ? state.velocity.length() : 0;
             const speedKmPerSec = speed * PHYSICS_SCALE.VELOCITY_TO_KM_PER_SEC;
-            const shouldUpdateTime = nowMs - lastMs > 200; // 200ms throttle
-            const largeChange = Math.abs(speedKmPerSec - lastVals.velocity) > 0.7 || Math.abs(state.distance - lastVals.distance) > 0.1 || Math.abs(state.fuel - lastVals.fuel) > 1 || state.slingshots !== lastVals.slingshots || state.status !== lastVals.status;
+            const shouldUpdateTime = nowMs - last.ms > 200; // 200ms throttle
+            const largeChange = Math.abs(speedKmPerSec - last.velocity) > 0.7 || Math.abs(state.distance - last.distance) > 0.1 || Math.abs(state.fuel - last.fuel) > 1 || state.slingshots !== last.slingshots || state.status !== last.status;
 
             if (shouldUpdateTime || largeChange) {
                 hudSetters.setVelocity(speedKmPerSec);
@@ -214,7 +216,7 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
                 hudSetters.setSlingshots(state.slingshots);
                 hudSetters.setStatus(state.status);
 
-                hudUpdateRef.current = { lastMs: nowMs, lastVals: { velocity: speedKmPerSec, distance: state.distance, fuel: state.fuel, slingshots: state.slingshots, status: state.status } };
+                hudLast = { ms: nowMs, velocity: speedKmPerSec, distance: state.distance, fuel: state.fuel, slingshots: state.slingshots, status: state.status };
             }
         };
 
@@ -246,27 +248,27 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
             // synchronize visual probe mesh with simulated state
             try {
                 if (threeObj.probe && threeObj.state.position) threeObj.probe.position.copy(threeObj.state.position);
-            } catch (e) {
+            } catch {
                 // ignore copy errors in unusual cases
             }
 
             // update camera position based on view mode
             try {
                 updateCamera();
-            } catch (e) {
+            } catch {
                 // ignore camera update errors
             }
 
             // add trail point periodically (every 100ms)
             const nowMsPoint = performance.now();
-            if (!trailRef.current) trailRef.current = { lastMs: nowMsPoint };
-            if (nowMsPoint - trailRef.current.lastMs > 100) {
+            if (trailLastMs === 0) trailLastMs = nowMsPoint;
+            if (nowMsPoint - trailLastMs > 100) {
                 try {
                     threeObj.addTrailPoint(threeObj.state.position);
-                } catch (e) {
+                } catch {
                     // ignore
                 }
-                trailRef.current.lastMs = nowMsPoint;
+                trailLastMs = nowMsPoint;
             }
 
             // update HUD if setters provided (throttled)
@@ -286,7 +288,7 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
             window.removeEventListener('keyup', onKeyUp);
             if (restartRef) restartRef.current = null;
         };
-    }, [hudSetters, probeSpeedMult, gravityG, starMass]);
+    }, [hudSetters, probeSpeedMult, gravityG, starMass, inputStateRef, restartRef]);
 
     return <canvas ref={canvasRef} style={{ display: 'block', width: '100vw', height: '100vh' }} />;
 };

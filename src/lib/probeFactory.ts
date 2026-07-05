@@ -87,7 +87,7 @@ export function createVoyagerProbe(): ProbeObject {
 export function loadGLBProbe(
     modelPath: string,
     onLoad: (model: ProbeObject) => void,
-    onError: (error: any) => void,
+    onError: (error: unknown) => void,
     orientation?: ProbeOrientation
 ): void {
     const loader = new GLTFLoader();
@@ -151,14 +151,16 @@ export function loadGLBProbe(
             model.orientationConfig = orientation;
 
             // Brighten all materials in the model
-            model.traverse((child: any) => {
-                if (child.isMesh && child.material) {
-                    const material = child.material;
-
+            model.traverse((child: THREE.Object3D) => {
+                const meshChild = child as THREE.Mesh;
+                if (meshChild.isMesh && meshChild.material) {
                     // Handle both single material and array of materials
-                    const materials = Array.isArray(material) ? material : [material];
+                    const materials = Array.isArray(meshChild.material) ? meshChild.material : [meshChild.material];
 
-                    materials.forEach((mat: any) => {
+                    materials.forEach((material) => {
+                        // Not every material has color/emissive/metalness; the
+                        // checks below guard each property before touching it
+                        const mat = material as THREE.MeshStandardMaterial;
                         // Check if material color is dark or light
                         let isDark = false;
                         const hsl = { h: 0, s: 0, l: 0 };
