@@ -90,8 +90,18 @@ export function createGravityWellGrid(
         return total;
     }
 
+    // Recomputing deforms 200x200 = ~40k vertices against every body
+    // (~360k distance calculations); doing that every frame causes visible
+    // stutter. The bodies move little between frames, so refreshing the
+    // grid every 4th frame (~15 Hz at 60 fps) is visually indistinguishable.
+    const updateInterval = 4;
+    let frameCounter = 0;
+
     function update() {
         if (!mesh.visible) return;
+        frameCounter++;
+        if (frameCounter < updateInterval) return;
+        frameCounter = 0;
         recompute();
     }
 
