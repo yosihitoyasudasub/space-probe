@@ -39,3 +39,22 @@ export interface DataPoint {
 
 // Camera view modes selectable in the UI
 export type CameraView = 'free' | 'top' | 'probe';
+
+// Throttled snapshot of the probe state, emitted by the game loop and
+// displayed in the HUD
+export type HudSample = {
+    status: string;
+    velocityKmPerSec: number;
+    distance: number;
+    fuel: number;
+    slingshots: number;
+};
+
+// User-tunable simulation settings edited in the settings panel
+export type SimulationSettings = {
+    probeSpeedMult: number;
+    gravityG: number;
+    starMass: number;
+    gravityGridEnabled: boolean;
+    gridEnabled: boolean;
+};

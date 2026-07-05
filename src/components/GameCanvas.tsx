@@ -1,21 +1,14 @@
 "use client";
 
 import React, { useEffect, useRef } from 'react';
-import { createGameLoop, GameLoop, HudSample } from '../lib/gameLoop';
-import { CameraView } from '../lib/types';
+import { createGameLoop, GameLoop } from '../lib/gameLoop';
+import { CameraView, HudSample } from '../lib/types';
 import { findProbeModel } from '../lib/probeModels';
 import { InputState } from '../lib/thrust';
 
-type HUDSetters = {
-    setStatus: React.Dispatch<React.SetStateAction<string>>;
-    setVelocity: (value: number) => void;
-    setDistance: (value: number) => void;
-    setFuel: React.Dispatch<React.SetStateAction<number>>;
-    setSlingshots: React.Dispatch<React.SetStateAction<number>>;
-};
-
 interface Props {
-    hudSetters?: HUDSetters;
+    /** Receives throttled probe-state snapshots for the HUD */
+    onHudSample?: (sample: HudSample) => void;
     probeSpeedMult?: number;
     gravityG?: number;
     starMass?: number;
@@ -35,7 +28,7 @@ interface Props {
  * canvas, mirrors props into refs the loop can read live, and forwards HUD
  * samples back into React state.
  */
-const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravityG = 1.0, starMass = 4000, cameraView = 'free', gravityGridEnabled = false, gridEnabled = true, selectedModel = 'space_fighter', isSimulationStarted = false, inputStateRef, restartRef }) => {
+const GameCanvas: React.FC<Props> = ({ onHudSample, probeSpeedMult = 1.05, gravityG = 1.0, starMass = 4000, cameraView = 'free', gravityGridEnabled = false, gridEnabled = true, selectedModel = 'space_fighter', isSimulationStarted = false, inputStateRef, restartRef }) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const loopRef = useRef<GameLoop | null>(null);
 
@@ -80,16 +73,6 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
         const canvas = canvasRef.current;
         if (!canvas) return;
 
-        const forwardHudSample = hudSetters
-            ? (sample: HudSample) => {
-                hudSetters.setVelocity(sample.velocityKmPerSec);
-                hudSetters.setDistance(sample.distance);
-                hudSetters.setFuel(sample.fuel);
-                hudSetters.setSlingshots(sample.slingshots);
-                hudSetters.setStatus(sample.status);
-            }
-            : undefined;
-
         const loop = createGameLoop({
             canvas,
             // input state shared with TouchControls (falls back to a local
@@ -109,7 +92,7 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
             },
             getCameraView: () => cameraViewRef.current,
             isSimulationStarted: () => isSimulationStartedRef.current,
-            onHudSample: forwardHudSample,
+            onHudSample,
         });
 
         loopRef.current = loop;
@@ -123,7 +106,7 @@ const GameCanvas: React.FC<Props> = ({ hudSetters, probeSpeedMult = 1.05, gravit
             loopRef.current = null;
             if (restartRef) restartRef.current = null;
         };
-    }, [hudSetters, probeSpeedMult, gravityG, starMass, inputStateRef, restartRef]);
+    }, [onHudSample, probeSpeedMult, gravityG, starMass, inputStateRef, restartRef]);
 
     return <canvas ref={canvasRef} style={{ display: 'block', width: '100vw', height: '100vh' }} />;
 };

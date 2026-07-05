@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { DataPoint } from '../lib/types';
+import { DataPoint, HudSample, SimulationSettings } from '../lib/types';
 import { PROBE_MODELS } from '../lib/probeModels';
 import MiniChart from './MiniChart';
 import MissionProgress from './MissionProgress';
@@ -7,91 +7,38 @@ import ControlsHelp from './ControlsHelp';
 import SettingsPanel from './SettingsPanel';
 
 interface HUDProps {
-    status?: string;
-    velocity?: number;
-    distance?: number;
-    fuel?: number;
-    slingshots?: number;
+    /** Probe statistics sampled by the game loop */
+    stats: HudSample;
     velocityHistory?: DataPoint[];
     distanceHistory?: DataPoint[];
-    probeSpeedMult?: number;
-    setProbeSpeedMult?: (v: number) => void;
-    gravityG?: number;
-    setGravityG?: (v: number) => void;
-    starMass?: number;
-    setStarMass?: (v: number) => void;
-    gravityGridEnabled?: boolean;
-    setGravityGridEnabled?: (v: boolean) => void;
-    gridEnabled?: boolean;
-    setGridEnabled?: (v: boolean) => void;
-    selectedModel?: string;
-    setSelectedModel?: (v: string) => void;
-    isSimulationStarted?: boolean;
-    setIsSimulationStarted?: (v: boolean) => void;
+    /** Current simulation settings shown in the settings panel */
+    settings: SimulationSettings;
+    /** Apply a partial settings update */
+    onSettingsChange: (patch: Partial<SimulationSettings>) => void;
+    selectedModel: string;
+    setSelectedModel: (v: string) => void;
+    isSimulationStarted: boolean;
+    onStart: () => void;
 }
 
+type Panel = 'charts' | 'missions' | 'help' | 'settings';
+
 const HUD: React.FC<HUDProps> = ({
-    status = 'Idle',
-    velocity = 0,
-    distance = 0,
-    fuel = 100,
-    slingshots = 0,
+    stats,
     velocityHistory = [],
     distanceHistory = [],
-    probeSpeedMult = 1.05,
-    setProbeSpeedMult = () => {},
-    gravityG = 0.133,
-    setGravityG = () => {},
-    starMass = 333000,
-    setStarMass = () => {},
-    gravityGridEnabled = false,
-    setGravityGridEnabled = () => {},
-    gridEnabled = true,
-    setGridEnabled = () => {},
-    selectedModel = 'space_fighter',
-    setSelectedModel = () => {},
-    isSimulationStarted = false,
-    setIsSimulationStarted = () => {},
+    settings,
+    onSettingsChange,
+    selectedModel,
+    setSelectedModel,
+    isSimulationStarted,
+    onStart,
 }) => {
-    const [showCharts, setShowCharts] = useState(false);
-    const [showMissions, setShowMissions] = useState(false);
-    const [showHelp, setShowHelp] = useState(false);
-    const [showSettings, setShowSettings] = useState(false);
+    // At most one panel is open at a time
+    const [openPanel, setOpenPanel] = useState<Panel | null>(null);
 
-    const handleChartsToggle = () => {
-        setShowCharts(!showCharts);
-        if (!showCharts) {
-            setShowMissions(false);
-            setShowHelp(false);
-            setShowSettings(false);
-        }
-    };
-
-    const handleMissionsToggle = () => {
-        setShowMissions(!showMissions);
-        if (!showMissions) {
-            setShowCharts(false);
-            setShowHelp(false);
-            setShowSettings(false);
-        }
-    };
-
-    const handleHelpToggle = () => {
-        setShowHelp(!showHelp);
-        if (!showHelp) {
-            setShowCharts(false);
-            setShowMissions(false);
-            setShowSettings(false);
-        }
-    };
-
-    const handleSettingsToggle = () => {
-        setShowSettings(!showSettings);
-        if (!showSettings) {
-            setShowCharts(false);
-            setShowMissions(false);
-            setShowHelp(false);
-        }
+    const togglePanel = (panel: Panel) => {
+        setOpenPanel(prev => (prev === panel ? null : panel));
     };
 
     return (
@@ -99,10 +46,7 @@ const HUD: React.FC<HUDProps> = ({
             {/* Free mode Start button - shown only when simulation hasn't started */}
             {!isSimulationStarted && (
                 <div className="start-screen">
-                    <button
-                        className="start-button"
-                        onClick={() => setIsSimulationStarted(true)}
-                    >
+                    <button className="start-button" onClick={onStart}>
                         Free mode Start
                     </button>
                 </div>
@@ -112,23 +56,23 @@ const HUD: React.FC<HUDProps> = ({
                 <div className="hud-compact-line">
                     <span className="stat-item">
                         STS:
-                        <span className={`stat-value status-${status.toLowerCase().replace(' ', '-')}`}>
-                            {status}
+                        <span className={`stat-value status-${stats.status.toLowerCase().replace(' ', '-')}`}>
+                            {stats.status}
                         </span>
                     </span>
                     <span className="stat-separator">|</span>
                     <span className="stat-item">
-                        V:<span className="stat-value">{velocity.toFixed(1)}</span>km/s
+                        V:<span className="stat-value">{stats.velocityKmPerSec.toFixed(1)}</span>km/s
                     </span>
                     <span className="stat-separator">|</span>
                     <span className="stat-item">
-                        D:<span className="stat-value">{distance.toFixed(0)}</span>AU
+                        D:<span className="stat-value">{stats.distance.toFixed(0)}</span>AU
                     </span>
                     <span className="stat-separator">|</span>
                     <span className="stat-item">
                         Fuel:
-                        <span className={`stat-value ${fuel < 20 ? 'low-fuel' : ''}`}>
-                            {fuel.toFixed(1)}
+                        <span className={`stat-value ${stats.fuel < 20 ? 'low-fuel' : ''}`}>
+                            {stats.fuel.toFixed(1)}
                         </span>%
                     </span>
                 </div>
@@ -137,29 +81,29 @@ const HUD: React.FC<HUDProps> = ({
                 <div className="hud-compact-line">
                     <div className="hud-toggle-buttons">
                         <button
-                            className={`toggle-btn ${showCharts ? 'active' : ''}`}
-                            onClick={handleChartsToggle}
+                            className={`toggle-btn ${openPanel === 'charts' ? 'active' : ''}`}
+                            onClick={() => togglePanel('charts')}
                             title="Toggle charts"
                         >
                             Charts
                         </button>
                         <button
-                            className={`toggle-btn ${showMissions ? 'active' : ''}`}
-                            onClick={handleMissionsToggle}
+                            className={`toggle-btn ${openPanel === 'missions' ? 'active' : ''}`}
+                            onClick={() => togglePanel('missions')}
                             title="Toggle mission progress"
                         >
                             Missions
                         </button>
                         <button
-                            className={`toggle-btn ${showHelp ? 'active' : ''}`}
-                            onClick={handleHelpToggle}
+                            className={`toggle-btn ${openPanel === 'help' ? 'active' : ''}`}
+                            onClick={() => togglePanel('help')}
                             title="Show controls"
                         >
                             Controls
                         </button>
                         <button
-                            className={`toggle-btn ${showSettings ? 'active' : ''}`}
-                            onClick={handleSettingsToggle}
+                            className={`toggle-btn ${openPanel === 'settings' ? 'active' : ''}`}
+                            onClick={() => togglePanel('settings')}
                             title="Simulation settings"
                         >
                             Settings
@@ -181,7 +125,7 @@ const HUD: React.FC<HUDProps> = ({
                 </div>
             </div>
 
-            {showCharts && (
+            {openPanel === 'charts' && (
                 <div className="hud-charts-panel">
                     <MiniChart
                         data={velocityHistory}
@@ -197,42 +141,31 @@ const HUD: React.FC<HUDProps> = ({
                     />
                     <div className="chart-slingshots">
                         <span className="chart-label">Swing-by count:</span>
-                        <span className="chart-current" style={{ color: '#0f0' }}>{slingshots}</span>
+                        <span className="chart-current" style={{ color: '#0f0' }}>{stats.slingshots}</span>
                     </div>
                 </div>
             )}
 
-            {showMissions && (
+            {openPanel === 'missions' && (
                 <div className="hud-missions-panel">
                     <MissionProgress
-                        distance={distance}
-                        velocity={velocity}
-                        slingshots={slingshots}
-                        fuel={fuel}
+                        distance={stats.distance}
+                        velocity={stats.velocityKmPerSec}
+                        slingshots={stats.slingshots}
+                        fuel={stats.fuel}
                     />
                 </div>
             )}
 
-            {showHelp && (
+            {openPanel === 'help' && (
                 <div className="hud-help-panel">
                     <ControlsHelp />
                 </div>
             )}
 
-            {showSettings && (
+            {openPanel === 'settings' && (
                 <div className="hud-settings-panel">
-                    <SettingsPanel
-                        probeSpeedMult={probeSpeedMult}
-                        setProbeSpeedMult={setProbeSpeedMult}
-                        gravityG={gravityG}
-                        setGravityG={setGravityG}
-                        starMass={starMass}
-                        setStarMass={setStarMass}
-                        gravityGridEnabled={gravityGridEnabled}
-                        setGravityGridEnabled={setGravityGridEnabled}
-                        gridEnabled={gridEnabled}
-                        setGridEnabled={setGridEnabled}
-                    />
+                    <SettingsPanel settings={settings} onChange={onSettingsChange} />
                 </div>
             )}
         </>

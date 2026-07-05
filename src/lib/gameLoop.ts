@@ -1,17 +1,8 @@
 import { initThreeJS, PHYSICS_SCALE } from './threeSetup';
 import { computeThrustDV, InputState } from './thrust';
-import { CameraView, InitOptions } from './types';
+import { CameraView, HudSample, InitOptions } from './types';
 
 export type ThreeSetup = ReturnType<typeof initThreeJS>;
-
-// Throttled snapshot of the probe state for the HUD
-export type HudSample = {
-    status: string;
-    velocityKmPerSec: number;
-    distance: number;
-    fuel: number;
-    slingshots: number;
-};
 
 export type GameLoopConfig = {
     canvas: HTMLCanvasElement;

@@ -6,18 +6,24 @@ import HUD from '../components/HUD';
 import CameraControls from '../components/CameraControls';
 import TouchControls from '../components/TouchControls';
 import { PHYSICS_SCALE } from '../lib/threeSetup';
-import { CameraView, DataPoint } from '../lib/types';
+import { CameraView, DataPoint, HudSample, SimulationSettings } from '../lib/types';
 import { InputState } from '../lib/thrust';
 
+const INITIAL_STATS: HudSample = {
+    status: 'Stopped',
+    velocityKmPerSec: 0,
+    distance: 0,
+    fuel: 100,
+    slingshots: 0,
+};
+
 const Page = () => {
-    const [status, setStatus] = useState<string>('Stopped');
-    const [velocity, setVelocity] = useState<number>(0);
-    const [distance, setDistance] = useState<number>(0);
-    const [fuel, setFuel] = useState<number>(100);
-    const [slingshots, setSlingshots] = useState<number>(0);
+    // Probe statistics displayed in the HUD, updated from game loop samples
+    const [stats, setStats] = useState<HudSample>(INITIAL_STATS);
 
     // Simulation control
     const [isSimulationStarted, setIsSimulationStarted] = useState<boolean>(false);
+    const handleStart = useCallback(() => setIsSimulationStarted(true), []);
 
     // Shared bridge between GameCanvas (game loop) and TouchControls (UI):
     // TouchControls mutates the input state and triggers restart; GameCanvas
@@ -31,76 +37,56 @@ const Page = () => {
     const [distanceHistory, setDistanceHistory] = useState<DataPoint[]>([]);
     // Lazily initialized on first sample so render stays pure
     const startTimeRef = useRef<number | null>(null);
-    const getElapsedSec = useCallback(() => {
+
+    // Each HUD sample updates the stats and appends to the history charts
+    const handleHudSample = useCallback((sample: HudSample) => {
+        setStats(sample);
         if (startTimeRef.current === null) startTimeRef.current = Date.now();
-        return (Date.now() - startTimeRef.current) / 1000;
+        const elapsed = (Date.now() - startTimeRef.current) / 1000; // 秒単位
+        setVelocityHistory(prev => [...prev, { time: elapsed, value: sample.velocityKmPerSec }].slice(-100));
+        setDistanceHistory(prev => [...prev, { time: elapsed, value: sample.distance }].slice(-100));
     }, []);
 
-    // simulation tuning parameters (editable via Controls)
-    const [probeSpeedMult, setProbeSpeedMult] = useState<number>(1.05);
-    const [gravityG, setGravityG] = useState<number>(PHYSICS_SCALE.G);
-    const [starMass, setStarMass] = useState<number>(PHYSICS_SCALE.SUN_MASS);
+    // simulation tuning parameters (editable via the settings panel)
+    const [settings, setSettings] = useState<SimulationSettings>({
+        probeSpeedMult: 1.05,
+        gravityG: PHYSICS_SCALE.G,
+        starMass: PHYSICS_SCALE.SUN_MASS,
+        gravityGridEnabled: false,
+        gridEnabled: true,
+    });
+    const handleSettingsChange = useCallback((patch: Partial<SimulationSettings>) => {
+        setSettings(prev => ({ ...prev, ...patch }));
+    }, []);
+
     const [cameraView, setCameraView] = useState<CameraView>('free');
-    const [gravityGridEnabled, setGravityGridEnabled] = useState<boolean>(false);
-    const [gridEnabled, setGridEnabled] = useState<boolean>(true);
     const [selectedModel, setSelectedModel] = useState<string>('space_fighter');
-
-    // 履歴データ付きセッター
-    const setVelocityWithHistory = useCallback((value: number) => {
-        setVelocity(value);
-        const elapsed = getElapsedSec(); // 秒単位
-        setVelocityHistory(prev => {
-            const updated = [...prev, { time: elapsed, value }];
-            return updated.slice(-100); // 最大100ポイント
-        });
-    }, [getElapsedSec]);
-
-    const setDistanceWithHistory = useCallback((value: number) => {
-        setDistance(value);
-        const elapsed = getElapsedSec();
-        setDistanceHistory(prev => {
-            const updated = [...prev, { time: elapsed, value }];
-            return updated.slice(-100);
-        });
-    }, [getElapsedSec]);
-
-    // stable setters object to pass down (memoized so reference is stable)
-    const hudSetters = React.useMemo(
-        () => ({
-            setStatus,
-            setVelocity: setVelocityWithHistory,
-            setDistance: setDistanceWithHistory,
-            setFuel,
-            setSlingshots
-        }),
-        [setStatus, setVelocityWithHistory, setDistanceWithHistory, setFuel, setSlingshots]
-    );
 
     return (
         <div>
-            <GameCanvas hudSetters={hudSetters} probeSpeedMult={probeSpeedMult} gravityG={gravityG} starMass={starMass} cameraView={cameraView} gravityGridEnabled={gravityGridEnabled} gridEnabled={gridEnabled} selectedModel={selectedModel} isSimulationStarted={isSimulationStarted} inputStateRef={inputStateRef} restartRef={restartRef} />
+            <GameCanvas
+                onHudSample={handleHudSample}
+                probeSpeedMult={settings.probeSpeedMult}
+                gravityG={settings.gravityG}
+                starMass={settings.starMass}
+                cameraView={cameraView}
+                gravityGridEnabled={settings.gravityGridEnabled}
+                gridEnabled={settings.gridEnabled}
+                selectedModel={selectedModel}
+                isSimulationStarted={isSimulationStarted}
+                inputStateRef={inputStateRef}
+                restartRef={restartRef}
+            />
             <HUD
-                status={status}
-                velocity={velocity}
-                distance={distance}
-                fuel={fuel}
-                slingshots={slingshots}
+                stats={stats}
                 velocityHistory={velocityHistory}
                 distanceHistory={distanceHistory}
-                probeSpeedMult={probeSpeedMult}
-                setProbeSpeedMult={setProbeSpeedMult}
-                gravityG={gravityG}
-                setGravityG={setGravityG}
-                starMass={starMass}
-                setStarMass={setStarMass}
-                gravityGridEnabled={gravityGridEnabled}
-                setGravityGridEnabled={setGravityGridEnabled}
-                gridEnabled={gridEnabled}
-                setGridEnabled={setGridEnabled}
+                settings={settings}
+                onSettingsChange={handleSettingsChange}
                 selectedModel={selectedModel}
                 setSelectedModel={setSelectedModel}
                 isSimulationStarted={isSimulationStarted}
-                setIsSimulationStarted={setIsSimulationStarted}
+                onStart={handleStart}
             />
             <CameraControls cameraView={cameraView} setCameraView={setCameraView} />
             <TouchControls inputStateRef={inputStateRef} onRestart={handleRestart} />
