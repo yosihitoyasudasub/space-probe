@@ -23,3 +23,6 @@ build/
 Thumbs.db
 
 .vercel
+
+# Next.js build output
+.next/
