@@ -3,7 +3,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 import GameCanvas from '../components/GameCanvas';
 import HUD from '../components/HUD';
-import Controls, { CameraView } from '../components/Controls';
+import { CameraView } from '../components/Controls';
 import CameraControls from '../components/CameraControls';
 import TouchControls from '../components/TouchControls';
 import { PHYSICS_SCALE } from '../lib/threeSetup';
@@ -22,7 +22,12 @@ const Page = () => {
     // 履歴データの保存（最大100ポイント）
     const [velocityHistory, setVelocityHistory] = useState<DataPoint[]>([]);
     const [distanceHistory, setDistanceHistory] = useState<DataPoint[]>([]);
-    const startTimeRef = useRef<number>(Date.now());
+    // Lazily initialized on first sample so render stays pure
+    const startTimeRef = useRef<number | null>(null);
+    const getElapsedSec = useCallback(() => {
+        if (startTimeRef.current === null) startTimeRef.current = Date.now();
+        return (Date.now() - startTimeRef.current) / 1000;
+    }, []);
 
     // simulation tuning parameters (editable via Controls)
     const [probeSpeedMult, setProbeSpeedMult] = useState<number>(1.05);
@@ -36,21 +41,21 @@ const Page = () => {
     // 履歴データ付きセッター
     const setVelocityWithHistory = useCallback((value: number) => {
         setVelocity(value);
-        const elapsed = (Date.now() - startTimeRef.current) / 1000; // 秒単位
+        const elapsed = getElapsedSec(); // 秒単位
         setVelocityHistory(prev => {
             const updated = [...prev, { time: elapsed, value }];
             return updated.slice(-100); // 最大100ポイント
         });
-    }, []);
+    }, [getElapsedSec]);
 
     const setDistanceWithHistory = useCallback((value: number) => {
         setDistance(value);
-        const elapsed = (Date.now() - startTimeRef.current) / 1000;
+        const elapsed = getElapsedSec();
         setDistanceHistory(prev => {
             const updated = [...prev, { time: elapsed, value }];
             return updated.slice(-100);
         });
-    }, []);
+    }, [getElapsedSec]);
 
     // stable setters object to pass down (memoized so reference is stable)
     const hudSetters = React.useMemo(
