@@ -36,3 +36,6 @@ export interface DataPoint {
     time: number;
     value: number;
 }
+
+// Camera view modes selectable in the UI
+export type CameraView = 'free' | 'top' | 'probe';

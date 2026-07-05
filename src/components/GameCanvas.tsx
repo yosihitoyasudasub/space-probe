@@ -2,8 +2,8 @@
 
 import React, { useEffect, useRef } from 'react';
 import { initThreeJS, PHYSICS_SCALE } from '../lib/threeSetup';
-import { CameraView } from './Controls';
-import { PROBE_MODELS, findProbeModel } from '../lib/probeModels';
+import { CameraView } from '../lib/types';
+import { findProbeModel } from '../lib/probeModels';
 import { computeThrustDV, InputState } from '../lib/thrust';
 
 type HUDSetters = {

@@ -3,11 +3,10 @@
 import React, { useState, useCallback, useRef } from 'react';
 import GameCanvas from '../components/GameCanvas';
 import HUD from '../components/HUD';
-import { CameraView } from '../components/Controls';
 import CameraControls from '../components/CameraControls';
 import TouchControls from '../components/TouchControls';
 import { PHYSICS_SCALE } from '../lib/threeSetup';
-import { DataPoint } from '../lib/types';
+import { CameraView, DataPoint } from '../lib/types';
 
 const Page = () => {
     const [status, setStatus] = useState<string>('Stopped');

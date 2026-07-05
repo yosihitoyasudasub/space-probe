@@ -1,5 +1,5 @@
 import React from 'react';
-import { CameraView } from './Controls';
+import { CameraView } from '../lib/types';
 
 interface CameraControlsProps {
     cameraView: CameraView;
